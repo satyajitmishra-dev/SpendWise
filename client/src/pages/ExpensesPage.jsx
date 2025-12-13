@@ -23,12 +23,12 @@ const ExpensesPage = () => {
     return (
         <div className="p-6 pb-24">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">Daily Expenses</h1>
+                <h1 className="text-2xl font-bold dark:text-white">Daily Expenses</h1>
                 <div className="relative">
                     <select
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="appearance-none bg-gray-100 pl-3 pr-8 py-2 rounded-lg text-sm font-medium focus:outline-none"
+                        className="appearance-none bg-gray-100 dark:bg-slate-800 pl-3 pr-8 py-2 rounded-lg text-sm font-medium focus:outline-none dark:text-white"
                     >
                         <option value="all">All</option>
                         <option value="food">Food</option>
@@ -62,10 +62,10 @@ const ExpensesPage = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200"
+                                className="text-center py-20 bg-gray-50 dark:bg-slate-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-800"
                             >
-                                <p className="text-gray-400 font-medium">No expenses found</p>
-                                <p className="text-xs text-gray-300 mt-1">Try changing filter or add one</p>
+                                <p className="text-gray-400 dark:text-slate-500 font-medium">No expenses found</p>
+                                <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try changing filter or add one</p>
                             </motion.div>
                         ) : (
                             filteredItems.map(expense => (

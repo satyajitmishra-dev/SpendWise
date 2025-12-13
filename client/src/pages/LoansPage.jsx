@@ -28,17 +28,17 @@ const LoansPage = () => {
     };
 
     const LoanItem = ({ item }) => (
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-4">
                 <div className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center text-xl",
-                    item.type === 'given' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+                    item.type === 'given' ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400" : "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
                 )}>
                     {item.type === 'given' ? '⬆️' : '⬇️'}
                 </div>
                 <div>
-                    <h3 className="font-bold text-gray-800">{item.person}</h3>
-                    <p className="text-xs text-gray-400">
+                    <h3 className="font-bold text-gray-800 dark:text-white">{item.person}</h3>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                         {new Date(item.createdAt).toLocaleDateString()}
                     </p>
                     {item.dueDate && (
@@ -56,13 +56,13 @@ const LoansPage = () => {
                     ₹{item.amount}
                 </p>
                 {item.status === 'settled' ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full mt-1">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 px-2 py-1 rounded-full mt-1">
                         <CheckCircle size={10} /> Settled
                     </span>
                 ) : (
                     <button
                         onClick={() => handleSettle(item._id)}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full mt-1 hover:bg-orange-100 transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400 px-2 py-1 rounded-full mt-1 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
                     >
                         <Clock size={10} /> Pending
                     </button>
@@ -74,13 +74,13 @@ const LoansPage = () => {
     return (
         <div className="p-6 pb-24">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">Loans & Debts</h1>
+                <h1 className="text-2xl font-bold dark:text-white">Loans & Debts</h1>
                 <div className="flex gap-2">
                     <div className="relative">
                         <select
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            className="appearance-none bg-gray-100 pl-3 pr-8 py-2 rounded-lg text-sm font-medium focus:outline-none"
+                            className="appearance-none bg-gray-100 dark:bg-slate-800 dark:text-white pl-3 pr-8 py-2 rounded-lg text-sm font-medium focus:outline-none"
                         >
                             <option value="all">All</option>
                             <option value="given">Lent</option>
@@ -111,10 +111,10 @@ const LoansPage = () => {
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
-                                className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200"
+                                className="text-center py-20 bg-gray-50 dark:bg-slate-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-800"
                             >
-                                <p className="text-gray-400 font-medium">No active loans</p>
-                                <p className="text-xs text-gray-300 mt-1">Track money you owe or are owed</p>
+                                <p className="text-gray-400 dark:text-slate-500 font-medium">No active loans</p>
+                                <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Track money you owe or are owed</p>
                             </motion.div>
                         ) : (
                             filteredItems.map(item => (

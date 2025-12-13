@@ -6,15 +6,15 @@ const SubscriptionItem = ({ subscription }) => {
     const isUrgent = daysLeft <= 3 && daysLeft >= 0;
 
     return (
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between group">
             <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${isUrgent ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-indigo-50 text-indigo-600'}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${isUrgent ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 animate-pulse' : 'bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400'}`}>
                     {/* Placeholder for now, can be mapped to real icons later */}
                     {subscription.name[0].toUpperCase()}
                 </div>
                 <div>
-                    <h3 className="font-bold text-gray-900">{subscription.name}</h3>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <h3 className="font-bold text-gray-900 dark:text-white">{subscription.name}</h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                         <RefreshCw size={12} />
                         <span className="capitalize">{subscription.cycle}</span>
                         <span>•</span>
@@ -26,8 +26,8 @@ const SubscriptionItem = ({ subscription }) => {
             </div>
 
             <div className="text-right">
-                <p className="font-bold text-gray-900">₹{subscription.amount}</p>
-                <p className="text-xs text-gray-400">{format(new Date(subscription.renewalDate), 'MMM d')}</p>
+                <p className="font-bold text-gray-900 dark:text-white">₹{subscription.amount}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{format(new Date(subscription.renewalDate), 'MMM d')}</p>
             </div>
         </div>
     );

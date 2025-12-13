@@ -6,23 +6,24 @@ import AddExpenseSheet from '../features/AddExpenseSheet';
 import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
+import ThemeToggler from './ThemeToggler';
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
+        <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-slate-100 transition-colors duration-300">
             {/* Toaster moved to App.jsx */}
             <GuestWarning />
             <ProfileReminder />
 
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 p-6 z-50 shadow-sm">
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 p-6 z-50 shadow-sm transition-colors duration-300">
                 <div className="flex items-center gap-3 mb-10 pl-2">
-                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
                         <Sparkles size={24} className="text-yellow-500 fill-yellow-500" />
                     </div>
-                    <span className="font-bold text-xl tracking-tight text-gray-900">SpendWise</span>
+                    <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">SpendWise</span>
                 </div>
 
                 <nav className="space-y-1 flex-1">
@@ -33,7 +34,8 @@ const Layout = () => {
                     <SidebarItem to="/subscriptions" icon={Repeat} label="Subscriptions" />
                 </nav>
 
-                <div className="pt-6 border-t border-gray-100 mt-auto">
+                <div className="pt-6 border-t border-gray-100 dark:border-slate-800 mt-auto space-y-2">
+                    <ThemeToggler showLabel className="w-full px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-800/50 rounded-xl" />
                     <SidebarItem to="/profile" icon={User} label="My Profile" />
                 </div>
             </aside>
@@ -58,7 +60,7 @@ const Layout = () => {
                 </div>
 
                 {/* Mobile Bottom Navigation */}
-                <nav className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t border-gray-200 px-6 py-3 flex justify-between items-center z-40 pb-safe">
+                <nav className="md:hidden fixed bottom-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-40 pb-safe">
                     <NavItem to="/" icon={<Home size={22} />} label="Home" />
                     <NavItem to="/expenses" icon={<ListMinus size={22} />} label="Expenses" />
                     <div className="w-8"></div> {/* Spacer for FAB visual balance */}
@@ -78,7 +80,7 @@ const NavItem = ({ to, icon, label }) => (
         to={to}
         className={({ isActive }) => cn(
             "flex flex-col items-center gap-1 transition-colors duration-200 p-2",
-            isActive ? "text-indigo-600" : "text-gray-400 hover:text-gray-600"
+            isActive ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
         )}
     >
         {icon}
@@ -92,8 +94,8 @@ const SidebarItem = ({ to, icon: Icon, label }) => (
         className={({ isActive }) => cn(
             "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium",
             isActive
-                ? "bg-indigo-50 text-indigo-700"
-                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400"
+                : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white"
         )}
     >
         <Icon size={20} />

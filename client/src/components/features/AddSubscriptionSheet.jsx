@@ -59,10 +59,11 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            {/* Sheet */}
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold">New Subscription</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <h2 className="text-xl font-bold dark:text-white">New Subscription</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
                         <X size={20} />
                     </button>
                 </div>
@@ -75,17 +76,17 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                             onClick={() => { setName(service.name); setIcon(service.icon); }}
                             className="flex flex-col items-center gap-1 min-w-[70px]"
                         >
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-gray-50 border border-gray-100 shadow-sm">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">
                                 {service.icon}
                             </div>
-                            <span className="text-xs font-medium text-gray-600">{service.name}</span>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">{service.name}</span>
                         </button>
                     ))}
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Service Name</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl">{icon}</span>
                             <input
@@ -93,14 +94,14 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="e.g. ChatGPT Plus"
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Cost</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-gray-400">₹</span>
                                 <input
@@ -108,16 +109,16 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
                                     placeholder="0"
-                                    className="w-full pl-8 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
+                                    className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Cycle</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cycle</label>
                             <select
                                 value={cycle}
                                 onChange={(e) => setCycle(e.target.value)}
-                                className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                                className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 appearance-none dark:text-white"
                             >
                                 {CYCLES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                             </select>
@@ -125,19 +126,19 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Next Renewal</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Next Renewal</label>
                         <div className="relative">
                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
                                 type="date"
                                 value={renewalDate}
                                 onChange={(e) => setRenewalDate(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl text-indigo-700 text-sm">
+                    <div className="flex items-center gap-3 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-700 dark:text-indigo-300 text-sm">
                         <Bell size={18} />
                         <span>We'll remind you 2 days before payment.</span>
                     </div>

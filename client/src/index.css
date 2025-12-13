@@ -1,10 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50 text-gray-900 font-sans;
-  font-family: 'Outfit', sans-serif;
+@layer base {
+  body {
+    @apply bg-gray-50 text-slate-900 font-sans antialiased transition-colors duration-300;
+  }
+
+  /* Dark Mode Globals */
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
 }
 
 @layer utilities {
@@ -17,25 +25,19 @@ body {
     scrollbar-width: none;
   }
 
-  .animate-blob {
-    animation: blob 7s infinite;
-  }
-}
-
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-xl;
   }
 
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
+  .dark .glass-card {
+    @apply bg-slate-800/60 border-slate-700/50 shadow-black/20;
   }
 
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
+  .glass-input {
+    @apply bg-gray-50/50 border-gray-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all;
   }
 
-  100% {
-    transform: translate(0px, 0px) scale(1);
+  .dark .glass-input {
+    @apply bg-slate-900/50 border-slate-700 focus:ring-indigo-500/30 text-white placeholder-slate-400;
   }
 }

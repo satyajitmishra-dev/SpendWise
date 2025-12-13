@@ -62,23 +62,23 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold">Add Account</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <h2 className="text-xl font-bold dark:text-white">Add Account</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
                         <X size={20} />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Name</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g. SBI Savings, Paytm"
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
                             autoFocus
                         />
                     </div>
@@ -92,20 +92,20 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
                                 className={cn(
                                     "flex flex-col items-center gap-2 p-3 rounded-xl transition-all border-2",
                                     type === accType.id
-                                        ? "border-indigo-600 ring-1 ring-indigo-50 bg-gray-50"
-                                        : "border-transparent bg-gray-50 hover:bg-gray-100"
+                                        ? "border-indigo-600 ring-1 ring-indigo-50 dark:ring-indigo-900 bg-gray-50 dark:bg-slate-800"
+                                        : "border-transparent bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700"
                                 )}
                             >
                                 <div className={cn("p-2 rounded-full", accType.color)}>
                                     <accType.icon size={20} />
                                 </div>
-                                <span className="text-xs font-medium">{accType.label}</span>
+                                <span className={cn("text-xs font-medium", type === accType.id ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-300")}>{accType.label}</span>
                             </button>
                         ))}
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Current Balance</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Balance</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-400">₹</span>
                             <input
@@ -113,13 +113,13 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
                                 value={balance}
                                 onChange={(e) => setBalance(e.target.value)}
                                 placeholder="0.00"
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 outline-none font-bold"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl border-none focus:ring-2 focus:ring-indigo-500 outline-none font-bold dark:text-white"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Card Color</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Card Color</label>
                         <div className="flex gap-3 overflow-x-auto py-1 no-scrollbar">
                             {COLORS.map(c => (
                                 <button

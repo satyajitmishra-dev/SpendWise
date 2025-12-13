@@ -67,9 +67,19 @@ function App() {
     root.classList.remove('light', 'dark');
 
     if (themeMode === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-      return;
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+      const handleChange = (e) => {
+        const newSystemTheme = e.matches ? 'dark' : 'light';
+        root.classList.remove('light', 'dark');
+        root.classList.add(newSystemTheme);
+      };
+
+      // Initial check
+      handleChange(mediaQuery);
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
 
     root.classList.add(themeMode);

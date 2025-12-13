@@ -23,17 +23,17 @@ const AccountsPage = () => {
             {/* Header & Total Balance */}
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">My Wallets</h1>
+                    <h1 className="text-2xl font-bold dark:text-white">My Wallets</h1>
                     <button
                         onClick={() => setIsAddOpen(true)}
-                        className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                        className="p-2 bg-gray-100 dark:bg-slate-800 dark:text-white rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                         aria-label="Add Wallet"
                     >
                         <Plus size={24} />
                     </button>
                 </div>
 
-                <div className="bg-gray-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
+                <div className="bg-gray-900 dark:bg-slate-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden border border-gray-800 dark:border-slate-800">
                     {/* Abstract Background */}
                     <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
@@ -53,7 +53,7 @@ const AccountsPage = () => {
 
             {/* Account List */}
             <div>
-                <h3 className="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider">Your Accounts</h3>
+                <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 mb-4 uppercase tracking-wider">Your Accounts</h3>
 
 
                 {loading ? (
@@ -65,8 +65,8 @@ const AccountsPage = () => {
                 ) : (
                     <div className="grid gap-4">
                         {items.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                                <p className="text-gray-400 font-medium">No accounts added</p>
+                            <div className="text-center py-12 bg-gray-50 dark:bg-slate-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-800">
+                                <p className="text-gray-400 dark:text-slate-500 font-medium">No accounts added</p>
                                 <button
                                     onClick={() => setIsAddOpen(true)}
                                     className="mt-2 text-indigo-600 font-bold hover:underline"

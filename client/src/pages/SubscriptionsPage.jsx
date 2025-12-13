@@ -23,10 +23,10 @@ const SubscriptionsPage = () => {
         <div className="p-6 pb-24 space-y-6">
             {/* Header */}
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Subscriptions</h1>
+                <h1 className="text-2xl font-bold dark:text-white">Subscriptions</h1>
                 <button
                     onClick={() => setIsAddOpen(true)}
-                    className="p-2 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 transition-colors"
+                    className="p-2 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-100 dark:hover:bg-slate-700 transition-colors"
                 >
                     <Plus size={24} />
                 </button>
@@ -49,8 +49,8 @@ const SubscriptionsPage = () => {
             {/* List */}
             <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Active Services</h3>
-                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-md">{items.length} Active</span>
+                    <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Active Services</h3>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded-md">{items.length} Active</span>
                 </div>
 
 
@@ -64,10 +64,10 @@ const SubscriptionsPage = () => {
                 ) : (
                     <div className="space-y-3">
                         {items.length === 0 ? (
-                            <div className="text-center py-16 bg-gray-50 rounded-3xl">
-                                <Bell className="mx-auto text-gray-300 mb-2" size={32} />
-                                <p className="text-gray-400 font-medium">No subscriptions tracked</p>
-                                <p className="text-xs text-gray-300 mt-1">Add Netflix, Gym, etc.</p>
+                            <div className="text-center py-16 bg-gray-50 dark:bg-slate-900 rounded-3xl">
+                                <Bell className="mx-auto text-gray-300 dark:text-slate-600 mb-2" size={32} />
+                                <p className="text-gray-400 dark:text-slate-500 font-medium">No subscriptions tracked</p>
+                                <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Add Netflix, Gym, etc.</p>
                             </div>
                         ) : (
                             items.map(sub => (

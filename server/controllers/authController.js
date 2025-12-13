@@ -17,8 +17,16 @@ const transporter = nodemailer.createTransport({
 
 // Helper to generate tokens
 const generateTokens = (userId) => {
-    const accessToken = jwt.sign({ user: { id: userId } }, JWT_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ user: { id: userId } }, REFRESH_SECRET, { expiresIn: '7d' });
+    const accessToken = jwt.sign(
+        { user: { id: userId } },
+        JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRE || '15m' }
+    );
+    const refreshToken = jwt.sign(
+        { user: { id: userId } },
+        REFRESH_SECRET,
+        { expiresIn: process.env.REFRESH_EXPIRE || '7d' }
+    );
     return { accessToken, refreshToken };
 };
 

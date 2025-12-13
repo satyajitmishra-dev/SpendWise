@@ -58,10 +58,10 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
 
             {/* Sheet */}
-            <div className="relative bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold">Add Expense</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
+                    <h2 className="text-xl font-bold dark:text-white">Add Expense</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
                         <X size={20} />
                     </button>
                 </div>
@@ -76,7 +76,7 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="0"
-                                className="w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                                className="w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 dark:bg-slate-800 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
                                 autoFocus
                             />
                         </div>
@@ -92,8 +92,8 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 className={cn(
                                     "p-3 rounded-xl text-sm font-medium transition-all border-2",
                                     category === cat.id
-                                        ? `border-indigo-600 ${cat.color} ring-2 ring-indigo-100`
-                                        : "border-transparent bg-gray-50 hover:bg-gray-100 text-gray-600"
+                                        ? `border-indigo-600 ${cat.color} ring-2 ring-indigo-100 dark:ring-indigo-900`
+                                        : "border-transparent bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300"
                                 )}
                             >
                                 {cat.label}
@@ -110,7 +110,7 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
                                 placeholder="Note (optional)"
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>
                         <div className="relative">
@@ -119,7 +119,7 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500"
+                                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>
                     </div>

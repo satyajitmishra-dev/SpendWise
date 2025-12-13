@@ -90,15 +90,15 @@ const Home = () => {
         <div className="p-6 pb-24">
             {/* Header */}
             <div className="mb-8">
-                <p className="text-gray-400 text-sm font-medium">{greeting()},</p>
-                <h1 className="text-2xl font-bold text-gray-800">{user?.name || 'Guest'} 👋</h1>
+                <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">{greeting()},</p>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{user?.name || 'Guest'} 👋</h1>
             </div>
 
             {/* Balance Card */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-indigo-600 text-white p-6 rounded-3xl shadow-xl shadow-indigo-200 mb-8 relative overflow-hidden"
+                className="bg-indigo-600 dark:bg-indigo-700 text-white p-6 rounded-3xl shadow-xl shadow-indigo-200 dark:shadow-none mb-8 relative overflow-hidden"
             >
                 <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
                 <div className="relative z-10">
@@ -125,18 +125,18 @@ const Home = () => {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <Link to="/accounts" className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
-                    <Wallet className="text-indigo-500" size={24} />
+                <Link to="/accounts" className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
+                    <Wallet className="text-indigo-500 dark:text-indigo-400" size={24} />
                     <div>
-                        <p className="text-xs text-gray-400 font-bold uppercase">Accounts</p>
-                        <p className="font-bold text-lg">{accounts.length} Active</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Accounts</p>
+                        <p className="font-bold text-lg dark:text-white">{accounts.length} Active</p>
                     </div>
                 </Link>
-                <Link to="/loans" className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">₹</div>
+                <Link to="/loans" className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
+                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold">₹</div>
                     <div>
-                        <p className="text-xs text-gray-400 font-bold uppercase">Loans</p>
-                        <p className="font-bold text-lg">{loans.filter(l => l.status === 'pending').length} Pending</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Loans</p>
+                        <p className="font-bold text-lg dark:text-white">{loans.filter(l => l.status === 'pending').length} Pending</p>
                     </div>
                 </Link>
             </div>
@@ -144,33 +144,33 @@ const Home = () => {
             {/* Recent Activity */}
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-lg text-gray-800">Recent Spending</h3>
-                    <Link to="/expenses" className="text-indigo-600 text-xs font-bold flex items-center gap-1">
+                    <h3 className="font-bold text-lg text-gray-800 dark:text-white">Recent Spending</h3>
+                    <Link to="/expenses" className="text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1">
                         View All <ArrowRight size={12} />
                     </Link>
                 </div>
 
                 <div className="space-y-3">
                     {recentExpenses.length === 0 ? (
-                        <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                            <p className="text-gray-400 text-sm">No expenses yet</p>
+                        <div className="text-center py-10 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800">
+                            <p className="text-gray-400 dark:text-slate-500 text-sm">No expenses yet</p>
                         </div>
                     ) : (
                         recentExpenses.map(exp => (
-                            <Link to="/expenses" key={exp._id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between active:scale-98 transition-transform">
+                            <Link to="/expenses" key={exp._id} className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between active:scale-98 transition-transform">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-xl">
+                                    <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-slate-800 flex items-center justify-center text-xl">
                                         {/* Simple mapping for now, ideally reused from specific component */}
                                         {exp.category === 'food' ? '🍔' :
                                             exp.category === 'travel' ? '🚕' :
                                                 exp.category === 'shopping' ? '🛍️' : '💰'}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-800 text-sm">{exp.note || capitalize(exp.category)}</p>
-                                        <p className="text-xs text-gray-400">{new Date(exp.date).toLocaleDateString()}</p>
+                                        <p className="font-bold text-gray-800 dark:text-slate-200 text-sm">{exp.note || capitalize(exp.category)}</p>
+                                        <p className="text-xs text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                                <span className="font-bold text-red-500">-₹{exp.amount}</span>
+                                <span className="font-bold text-red-500 dark:text-red-400">-₹{exp.amount}</span>
                             </Link>
                         ))
                     )}

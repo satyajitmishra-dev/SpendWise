@@ -49,7 +49,7 @@ const SignupPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col md:flex-row">
+        <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col md:flex-row">
             {/* Left Side - Visual */}
             <div className="hidden md:flex flex-col justify-between w-1/2 p-12 bg-indigo-600 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-50 translate-x-1/2 -translate-y-1/2"></div>
@@ -73,11 +73,11 @@ const SignupPage = () => {
             </div>
 
             {/* Right Side - Form */}
-            <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+            <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white dark:bg-slate-900">
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center md:text-left">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
-                        <p className="text-gray-500">Enter your details to get started.</p>
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h2>
+                        <p className="text-gray-500 dark:text-gray-400">Enter your details to get started.</p>
                     </div>
 
                     {/* Explicit Error Box */}
@@ -98,7 +98,7 @@ const SignupPage = () => {
                     {!otpSent ? (
                         <form onSubmit={handleSendOtp} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                     <input
@@ -106,14 +106,14 @@ const SignupPage = () => {
                                         name="name"
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white"
                                         placeholder="John Doe"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                     <input
@@ -121,7 +121,7 @@ const SignupPage = () => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white"
                                         placeholder="john@college.edu"
                                     />
                                 </div>
@@ -130,7 +130,7 @@ const SignupPage = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? (
                                     <>
@@ -147,17 +147,17 @@ const SignupPage = () => {
                         </form>
                     ) : (
                         <form onSubmit={handleVerifyOtp} className="space-y-5 animate-in fade-in slide-in-from-right duration-300">
-                            <div className="p-4 bg-indigo-50 text-indigo-700 rounded-xl text-sm mb-4">
+                            <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-xl text-sm mb-4">
                                 OTP sent to <b>{formData.email}</b>. Please check your inbox (and spam).
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Enter OTP</label>
                                 <input
                                     type="text"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    className="w-full px-4 py-3 bg-white border-2 border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-center text-2xl font-bold tracking-widest"
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-center text-2xl font-bold tracking-widest dark:text-white"
                                     placeholder="••••••"
                                     maxLength={6}
                                     autoFocus
