@@ -1,0 +1,142 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchLoans, updateLoan } from '../store/slices/loanSlice';
+import { Plus, Filter, CheckCircle, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AddLoanSheet from '../components/features/AddLoanSheet';
+import { cn } from '../lib/utils';
+
+const LoansPage = () => {
+    const dispatch = useDispatch();
+    const { items, loading } = useSelector((state) => state.loans);
+    const [filter, setFilter] = useState('all'); // all, given, taken
+    const [isAddOpen, setIsAddOpen] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchLoans());
+    }, [dispatch]);
+
+    const filteredItems = items.filter(item => {
+        if (filter === 'all') return true;
+        return item.type === filter;
+    });
+
+    const handleSettle = (id) => {
+        if (confirm('Mark this loan as settled?')) {
+            dispatch(updateLoan({ id, data: { status: 'settled' } }));
+        }
+    };
+
+    const LoanItem = ({ item }) => (
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+                <div className={cn(
+                    "w-12 h-12 rounded-full flex items-center justify-center text-xl",
+                    item.type === 'given' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+                )}>
+                    {item.type === 'given' ? '⬆️' : '⬇️'}
+                </div>
+                <div>
+                    <h3 className="font-bold text-gray-800">{item.person}</h3>
+                    <p className="text-xs text-gray-400">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                    </p>
+                    {item.dueDate && (
+                        <p className="text-[10px] text-orange-500 font-medium">
+                            Due: {new Date(item.dueDate).toLocaleDateString()}
+                        </p>
+                    )}
+                </div>
+            </div>
+            <div className="text-right">
+                <p className={cn(
+                    "text-lg font-bold",
+                    item.type === 'given' ? "text-red-600" : "text-green-600"
+                )}>
+                    ₹{item.amount}
+                </p>
+                {item.status === 'settled' ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full mt-1">
+                        <CheckCircle size={10} /> Settled
+                    </span>
+                ) : (
+                    <button
+                        onClick={() => handleSettle(item._id)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full mt-1 hover:bg-orange-100 transition-colors"
+                    >
+                        <Clock size={10} /> Pending
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="p-6 pb-24">
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold">Loans & Debts</h1>
+                <div className="flex gap-2">
+                    <div className="relative">
+                        <select
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value)}
+                            className="appearance-none bg-gray-100 pl-3 pr-8 py-2 rounded-lg text-sm font-medium focus:outline-none"
+                        >
+                            <option value="all">All</option>
+                            <option value="given">Lent</option>
+                            <option value="taken">Borrowed</option>
+                        </select>
+                        <Filter size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
+                    <button
+                        onClick={() => setIsAddOpen(true)}
+                        className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 active:scale-95 transition-all"
+                    >
+                        <Plus size={20} />
+                    </button>
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-10 text-gray-400">Loading loans...</div>
+            ) : (
+                <motion.div
+                    className="space-y-3"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                >
+                    <AnimatePresence mode='popLayout'>
+                        {filteredItems.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200"
+                            >
+                                <p className="text-gray-400 font-medium">No active loans</p>
+                                <p className="text-xs text-gray-300 mt-1">Track money you owe or are owed</p>
+                            </motion.div>
+                        ) : (
+                            filteredItems.map(item => (
+                                <motion.div
+                                    key={item._id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, x: -100 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                >
+                                    <LoanItem item={item} />
+                                </motion.div>
+                            ))
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            )}
+
+            <AddLoanSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+        </div>
+    );
+};
+
+export default LoansPage;
