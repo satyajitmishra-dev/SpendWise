@@ -134,12 +134,26 @@ exports.loginSendOtp = async (req, res) => {
 
 exports.signupInit = async (req, res) => {
     const { name, email, status, currency } = req.body;
-    if (!email) return res.status(400).json({ msg: 'Email is required' });
-    if (!validator.validate(email)) return res.status(400).json({ msg: 'Invalid email address' });
+
+    // Debug logging for production
+    console.log('Signup request received:', { name, email, status, currency });
+
+    if (!email) {
+        console.log('Error: Email is required');
+        return res.status(400).json({ msg: 'Email is required' });
+    }
+
+    if (!validator.validate(email)) {
+        console.log('Error: Invalid email format:', email);
+        return res.status(400).json({ msg: 'Invalid email address' });
+    }
 
     try {
         let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ msg: 'User already exists. Please login.' });
+        if (user) {
+            console.log('Error: User already exists:', email);
+            return res.status(400).json({ msg: 'User already exists. Please login.' });
+        }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
