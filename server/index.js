@@ -46,13 +46,27 @@ app.use('/api/budgets', require('./routes/budgets'));
 
 // Serve Static Assets in Production
 const path = require('path');
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+const distPath = path.join(__dirname, '../client/dist');
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*splat', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+// Serve static files with proper MIME types
+app.use(express.static(distPath, {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
+    }
+}));
+
+// The "catchall" handler: for any request that doesn't match API or static files
+// Only serve index.html for non-file requests (no extension)
+app.get('*', (req, res, next) => {
+    // If the request has a file extension, it's likely a static asset that wasn't found
+    if (path.extname(req.path)) {
+        return next();
+    }
+    res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

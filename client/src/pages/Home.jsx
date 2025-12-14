@@ -70,7 +70,7 @@ const Home = () => {
     }
 
     return (
-        <div className="p-6 pb-32 space-y-8 animate-in fade-in duration-500">
+        <div className="p-6 sm:p-8 pb-32 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
             <div>
                 <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wide uppercase">{greeting()},</p>
@@ -116,7 +116,7 @@ const Home = () => {
             </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Link to="/accounts" className="group relative bg-white dark:bg-slate-900/60 p-5 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-xl hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
                     <div className="absolute top-4 right-4 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 transition-colors">
                         <ArrowUpRight size={20} />

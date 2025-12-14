@@ -1,16 +1,19 @@
 import { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
-import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, Sparkles, LogOut, PieChart, BarChart } from 'lucide-react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, Sparkles, MoreHorizontal, PieChart, BarChart, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
 import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
 import ThemeToggler from './ThemeToggler';
+import { useSelector } from 'react-redux';
 
 const Layout = () => {
-    // HMR Force Update 1
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const { user } = useSelector((state) => state.auth);
+    const navigate = useNavigate();
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-slate-100 transition-colors duration-300 relative selection:bg-indigo-500/30">
@@ -52,7 +55,31 @@ const Layout = () => {
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col h-full overflow-hidden relative w-full perspective-1000">
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 md:pb-6 md:p-6 w-full scroll-smooth">
+                {/* Mobile Top Bar with Profile - Ultra Premium */}
+                <div className="md:hidden fixed top-0 left-0 right-0 z-40">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white via-white/95 to-white/80 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-900/80 backdrop-blur-3xl"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 dark:from-indigo-500/10 dark:via-purple-500/10 dark:to-pink-500/10"></div>
+                    <div className="relative px-5 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white rounded-xl shadow-lg shadow-indigo-500/20">
+                                    <Sparkles size={16} className="text-yellow-200 fill-yellow-200/50" />
+                                </div>
+                                <div>
+                                    <span className="font-bold text-base tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">SpendWise</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20"
+                            >
+                                {user?.name?.[0]?.toUpperCase() || 'U'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-0 md:pb-6 md:p-6 w-full scroll-smooth">
                     {/* Constraints for large screens */}
                     <div className="max-w-7xl mx-auto w-full h-full p-2 md:p-4">
                         <Outlet />
@@ -70,16 +97,60 @@ const Layout = () => {
                     </button>
                 </div>
 
-                {/* Mobile Bottom Navigation - Glassmorphism */}
-                <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-2xl shadow-xl flex justify-between items-center z-40 px-6 py-4">
+                {/* Mobile Bottom Navigation - Simplified 5 Items */}
+                <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-2xl shadow-xl flex justify-around items-center z-40 px-4 py-4">
                     <NavItem to="/" icon={<Home size={22} />} label="Home" />
                     <NavItem to="/expenses" icon={<ListMinus size={22} />} label="Expenses" />
-                    <NavItem to="/budgets" icon={<PieChart size={22} />} label="Budgets" />
-                    <div className="w-8"></div> {/* Spacer for FAB visual balance */}
+                    <div className="w-12"></div> {/* Spacer for FAB */}
                     <NavItem to="/loans" icon={<ArrowRightLeft size={22} />} label="Loans" />
-                    <NavItem to="/reports" icon={<BarChart size={22} />} label="Reports" />
-                    <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
+                    <button
+                        onClick={() => setIsMoreOpen(true)}
+                        className="flex flex-col items-center gap-1 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-all"
+                    >
+                        <MoreHorizontal size={22} />
+                        <span className="text-[10px] font-medium">More</span>
+                    </button>
                 </nav>
+
+                {/* More Menu Modal */}
+                {isMoreOpen && (
+                    <div className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end" onClick={() => setIsMoreOpen(false)}>
+                        <div
+                            className="w-full bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-8 animate-slide-up"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">More Options</h3>
+                                <button
+                                    onClick={() => setIsMoreOpen(false)}
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                <MoreMenuItem
+                                    to="/budgets"
+                                    icon={<PieChart size={20} />}
+                                    label="Budgets"
+                                    onClick={() => setIsMoreOpen(false)}
+                                />
+                                <MoreMenuItem
+                                    to="/reports"
+                                    icon={<BarChart size={20} />}
+                                    label="Reports"
+                                    onClick={() => setIsMoreOpen(false)}
+                                />
+                                <MoreMenuItem
+                                    to="/profile"
+                                    icon={<User size={20} />}
+                                    label="Profile"
+                                    onClick={() => setIsMoreOpen(false)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* Modals */}
@@ -101,6 +172,25 @@ const NavItem = ({ to, icon, label }) => (
         <span className="text-[10px] font-medium">{label}</span>
     </NavLink>
 );
+
+const MoreMenuItem = ({ to, icon, label, onClick }) => {
+    const navigate = useNavigate();
+
+    return (
+        <button
+            onClick={() => {
+                navigate(to);
+                onClick();
+            }}
+            className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl transition-colors text-left"
+        >
+            <div className="text-gray-600 dark:text-gray-400">
+                {icon}
+            </div>
+            <span className="font-medium text-gray-900 dark:text-white">{label}</span>
+        </button>
+    );
+};
 
 const SidebarItem = ({ to, icon: Icon, label }) => (
     <NavLink
