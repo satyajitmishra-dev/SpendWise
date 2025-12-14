@@ -94,7 +94,7 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="e.g. ChatGPT Plus"
+                                placeholder="e.g. Netflix, Spotify"
                                 className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>
@@ -109,7 +109,7 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                                     type="number"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="0"
+                                    placeholder="199"
                                     className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold dark:text-white"
                                 />
                             </div>

@@ -100,7 +100,7 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0"
+                                placeholder="100"
                                 className="w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 dark:bg-slate-800 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
                                 autoFocus
                             />
@@ -134,7 +134,7 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                                 type="text"
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                placeholder="Note (optional)"
+                                placeholder="e.g. Coffee, Lunch"
                                 className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 dark:text-white"
                             />
                         </div>

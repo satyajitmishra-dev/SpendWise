@@ -61,7 +61,7 @@ app.use(express.static(distPath, {
 
 // The "catchall" handler: for any request that doesn't match API or static files
 // Only serve index.html for non-file requests (no extension)
-app.get('*', (req, res, next) => {
+app.get(/^\/(?!api).*/, (req, res, next) => {
     // If the request has a file extension, it's likely a static asset that wasn't found
     if (path.extname(req.path)) {
         return next();

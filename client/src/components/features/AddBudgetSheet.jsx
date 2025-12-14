@@ -93,7 +93,7 @@ const AddBudgetSheet = ({ isOpen, onClose, initialData }) => {
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
-                                placeholder="0"
+                                placeholder="5000"
                                 className="w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 dark:bg-slate-800 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white"
                                 autoFocus
                             />

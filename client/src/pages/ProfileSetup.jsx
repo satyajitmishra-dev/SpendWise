@@ -228,7 +228,7 @@ const ProfileSetup = () => {
                                     name="name"
                                     value={profileData.name}
                                     onChange={handleProfileChange}
-                                    placeholder="Your Name"
+                                    placeholder="John Doe"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all dark:text-white"
                                     autoFocus
                                 />
@@ -243,7 +243,7 @@ const ProfileSetup = () => {
                                     name="college"
                                     value={profileData.college}
                                     onChange={handleProfileChange}
-                                    placeholder="e.g. IIT Bombay"
+                                    placeholder="e.g. IIT Delhi"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all dark:text-white"
                                 />
                             </div>
@@ -343,7 +343,7 @@ const ProfileSetup = () => {
                                     type="text"
                                     value={accountData.name}
                                     onChange={(e) => setAccountData({ ...accountData, name: e.target.value })}
-                                    placeholder="e.g. Cash, SBI, HDFC"
+                                    placeholder="e.g. Cash, SBI"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:text-white"
                                 />
                             </div>
@@ -356,7 +356,7 @@ const ProfileSetup = () => {
                                     type="number"
                                     value={accountData.balance}
                                     onChange={(e) => setAccountData({ ...accountData, balance: e.target.value })}
-                                    placeholder="0"
+                                    placeholder="1000"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:text-white"
                                 />
                             </div>
@@ -397,7 +397,7 @@ const ProfileSetup = () => {
                                     type="text"
                                     value={expenseData.note}
                                     onChange={(e) => setExpenseData({ ...expenseData, note: e.target.value })}
-                                    placeholder="e.g. Coffee, Bus Ticket"
+                                    placeholder="e.g. Coffee"
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:text-white"
                                 />
                             </div>
