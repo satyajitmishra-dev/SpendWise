@@ -9,7 +9,9 @@ import Profile from './pages/Profile';
 import LoansPage from './pages/LoansPage';
 import AccountsPage from './pages/AccountsPage';
 import SubscriptionsPage from './pages/SubscriptionsPage';
+import BudgetPage from './pages/BudgetPage';
 import ExpensesPage from './pages/ExpensesPage';
+import ReportsPage from './pages/ReportsPage';
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ProfileSetup from './pages/ProfileSetup';
@@ -104,7 +106,9 @@ function App() {
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
+          <Route path="budgets" element={<BudgetPage />} />
           <Route path="loans" element={<LoansPage />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 

@@ -14,6 +14,9 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error(err));
 
+const { initScheduler } = require('./services/scheduler');
+initScheduler();
+
 app.get('/', (req, res) => res.send('API Running'));
 
 app.use('/api/auth', require('./routes/auth'));
@@ -21,5 +24,6 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/accounts', require('./routes/accounts'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/loans', require('./routes/loans'));
+app.use('/api/budgets', require('./routes/budgets'));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

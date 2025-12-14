@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { addSubscription } from '../../store/slices/subscriptionSlice';
 import { X, Bell, Calendar, Repeat } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { toast } from 'sonner';
 
 const CYCLES = [
     { id: 'monthly', label: 'Monthly' },

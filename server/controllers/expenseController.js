@@ -1,10 +1,11 @@
 const Expense = require('../models/Expense');
+const mongoose = require('mongoose');
 
 exports.getExpenses = async (req, res) => {
     try {
-        console.log('GET Expenses for User:', req.user.id);
+
         const expenses = await Expense.find({ userId: req.user.id }).sort({ date: -1 });
-        console.log('Found Expenses:', expenses.length);
+
         res.json(expenses);
     } catch (err) {
         console.error(err.message);
@@ -24,9 +25,9 @@ exports.addExpense = async (req, res) => {
             date,
             accountId
         });
-        console.log('ADD Expense for User:', req.user.id);
+
         const expense = await newExpense.save();
-        console.log('Saved Expense:', expense._id);
+
         res.json(expense);
     } catch (err) {
         console.error(err.message);
@@ -74,10 +75,87 @@ exports.syncExpenses = async (req, res) => {
             await Expense.insertMany(newExpenses);
         }
 
-        console.log(`Synced ${newExpenses.length} expenses for user ${req.user.id}`);
+
         res.json({ msg: 'Sync successful', count: newExpenses.length });
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.getExpenseStats = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
+
+        // 1. Monthly Trend (Last 6 Months)
+        const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+        const monthlyStats = await Expense.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    date: { $gte: sixMonthsAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$date" },
+                        year: { $year: "$date" }
+                    },
+                    total: { $sum: "$amount" }
+                }
+            },
+            { $sort: { "_id.year": 1, "_id.month": 1 } }
+        ]);
+
+        // Format for frontend
+        const formatMonth = (m, y) => new Date(y, m - 1).toLocaleString('default', { month: 'short' });
+
+        // Fill in missing months
+        const trendData = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const month = d.getMonth() + 1;
+            const year = d.getFullYear();
+
+            const found = monthlyStats.find(s => s._id.month === month && s._id.year === year);
+            trendData.push({
+                name: formatMonth(month, year),
+                amount: found ? found.total : 0
+            });
+        }
+
+        // 2. Category Breakdown (Current Month)
+        const startOfMonth = new Date(currentYear, currentMonth, 1);
+        const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+        const categoryStats = await Expense.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    date: { $gte: startOfMonth, $lte: endOfMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: "$category",
+                    value: { $sum: "$amount" }
+                }
+            }
+        ]);
+
+        const categoryData = categoryStats.map(s => ({
+            name: s._id,
+            value: s.value
+        }));
+
+        res.json({ trend: trendData, category: categoryData });
+    } catch (err) {
+        console.error('Stats Error:', err.message);
         res.status(500).send('Server Error');
     }
 };

@@ -76,9 +76,23 @@ export const deleteExpense = createAsyncThunk(
     }
 );
 
+export const fetchExpenseStats = createAsyncThunk(
+    'expenses/fetchStats',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get('/expenses/stats');
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { msg: 'Failed to fetch stats' });
+        }
+    }
+);
+
 const initialState = {
     items: [],
     loading: false,
+    stats: null, // New field for stats
+    statsLoading: false,
     error: null,
 };
 
@@ -99,6 +113,18 @@ const expenseSlice = createSlice({
             .addCase(fetchExpenses.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            // Fetch Stats
+            .addCase(fetchExpenseStats.pending, (state) => {
+                state.statsLoading = true;
+            })
+            .addCase(fetchExpenseStats.fulfilled, (state, action) => {
+                state.statsLoading = false;
+                state.stats = action.payload;
+            })
+            .addCase(fetchExpenseStats.rejected, (state, action) => {
+                state.statsLoading = false;
+                // state.error = action.payload; // Optional: don't block main UI on stats fail
             })
             // Add
             .addCase(addExpense.fulfilled, (state, action) => {

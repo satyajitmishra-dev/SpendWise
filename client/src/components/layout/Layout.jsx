@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, Sparkles, LogOut } from 'lucide-react';
+import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, Sparkles, LogOut, PieChart, BarChart } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
 import { Toaster } from 'sonner';
@@ -33,12 +33,14 @@ const Layout = () => {
                     </div>
                 </div>
 
-                <nav className="space-y-1.5 flex-1 px-4">
+                <nav className="space-y-1.5 flex-1 px-4 overflow-y-auto no-scrollbar min-h-0">
                     <SidebarItem to="/" icon={Home} label="Dashboard" />
                     <SidebarItem to="/expenses" icon={ListMinus} label="Expenses" />
                     <SidebarItem to="/accounts" icon={Wallet} label="Accounts & Cards" />
                     <SidebarItem to="/loans" icon={ArrowRightLeft} label="Loans & Debts" />
                     <SidebarItem to="/subscriptions" icon={Repeat} label="Subscriptions" />
+                    <SidebarItem to="/budgets" icon={PieChart} label="Budgets" />
+                    <SidebarItem to="/reports" icon={BarChart} label="Reports" />
                 </nav>
 
                 <div className="p-4 mt-auto space-y-3">
@@ -72,8 +74,10 @@ const Layout = () => {
                 <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-2xl shadow-xl flex justify-between items-center z-40 px-6 py-4">
                     <NavItem to="/" icon={<Home size={22} />} label="Home" />
                     <NavItem to="/expenses" icon={<ListMinus size={22} />} label="Expenses" />
+                    <NavItem to="/budgets" icon={<PieChart size={22} />} label="Budgets" />
                     <div className="w-8"></div> {/* Spacer for FAB visual balance */}
                     <NavItem to="/loans" icon={<ArrowRightLeft size={22} />} label="Loans" />
+                    <NavItem to="/reports" icon={<BarChart size={22} />} label="Reports" />
                     <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
                 </nav>
             </main>

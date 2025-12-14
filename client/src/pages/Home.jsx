@@ -151,7 +151,7 @@ const Home = () => {
 
                 <div className="space-y-3">
                     {/* DEBUG LOG */}
-                    {console.log('Rendering Recent Expenses. Count:', recentExpenses.length, 'Items:', recentExpenses)}
+
 
                     {recentExpenses.length === 0 ? (
                         <div className="text-center py-12 bg-white/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-800">

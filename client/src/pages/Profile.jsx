@@ -40,17 +40,20 @@ const Profile = () => {
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 dark:text-white">{user?.name || 'Guest User'}</h2>
                 <p className="text-gray-400 dark:text-gray-500 text-sm">{user?.email || 'guest@spendwise.app'}</p>
-                <button className="mt-4 px-6 py-2 bg-gray-900 dark:bg-slate-900 text-white rounded-full text-sm font-bold shadow-lg shadow-gray-200 dark:shadow-none border border-transparent dark:border-slate-700">
+                <button
+                    onClick={() => navigate('/edit-profile')}
+                    className="mt-4 px-6 py-2 bg-gray-900 dark:bg-slate-900 text-white rounded-full text-sm font-bold shadow-lg shadow-gray-200 dark:shadow-none border border-transparent dark:border-slate-700 hover:scale-105 transition-transform"
+                >
                     Edit Profile
                 </button>
             </div>
 
             {/* Menu */}
             <div className="rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden mb-8">
-                <MenuItem icon={Settings} label="Preferences" />
-                <MenuItem icon={Bell} label="Notifications" />
-                <MenuItem icon={Shield} label="Security" />
-                <MenuItem icon={HelpCircle} label="Help & Support" />
+                <MenuItem icon={Settings} label="Preferences" onClick={() => navigate('/preferences')} />
+                <MenuItem icon={Bell} label="Notifications" onClick={() => navigate('/notifications')} />
+                <MenuItem icon={Shield} label="Security" onClick={() => navigate('/security')} />
+                <MenuItem icon={HelpCircle} label="Help & Support" onClick={() => navigate('/help')} />
             </div>
 
             {/* Theme Settings */}
