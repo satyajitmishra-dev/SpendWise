@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux';
 import { deleteExpense } from '../../store/slices/expenseSlice';
 import { format } from 'date-fns';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORY_ICONS = {
@@ -13,7 +13,7 @@ const CATEGORY_ICONS = {
     other: '🔹'
 };
 
-const ExpenseItem = ({ expense }) => {
+const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
     const dispatch = useDispatch();
 
     const handleDelete = async () => {
@@ -40,15 +40,28 @@ const ExpenseItem = ({ expense }) => {
                     </p>
                 </div>
             </div>
-            <div className="text-right flex items-center gap-3">
-                <span className="block font-bold text-lg text-gray-900 dark:text-white">-₹{expense.amount}</span>
-                <button
-                    onClick={handleDelete}
-                    className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                    <Trash2 size={18} />
-                </button>
-            </div>
+            {!readOnly && (
+                <div className="text-right flex items-center gap-3">
+                    <span className="block font-bold text-lg text-gray-900 dark:text-white mr-2">-₹{expense.amount}</span>
+                    <button
+                        onClick={onEdit}
+                        className="text-gray-300 hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                    >
+                        <Pencil size={18} />
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                    >
+                        <Trash2 size={18} />
+                    </button>
+                </div>
+            )}
+            {readOnly && (
+                <div className="text-right">
+                    <span className="block font-bold text-lg text-gray-900 dark:text-white">-₹{expense.amount}</span>
+                </div>
+            )}
         </div>
     );
 };

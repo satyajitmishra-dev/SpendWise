@@ -1,4 +1,4 @@
-import { Landmark, Wallet, Banknote, CreditCard } from 'lucide-react';
+import { Landmark, Wallet, Banknote, CreditCard, Pencil, Trash2 } from 'lucide-react';
 
 const TYPE_ICONS = {
     bank: Landmark,
@@ -7,12 +7,13 @@ const TYPE_ICONS = {
     other: CreditCard
 };
 
-const AccountCard = ({ account }) => {
+const AccountCard = ({ account, onEdit, onDelete, onClick }) => {
     const Icon = TYPE_ICONS[account.type] || CreditCard;
 
     return (
         <div
-            className="relative overflow-hidden rounded-2xl p-5 text-white shadow-lg transition-transform active:scale-95"
+            onClick={onClick}
+            className="relative overflow-hidden rounded-2xl p-5 text-white shadow-lg transition-transform active:scale-95 cursor-pointer hover:shadow-xl"
             style={{ backgroundColor: account.color || '#6366f1' }}
         >
             {/* Decorative Circles */}
@@ -30,7 +31,17 @@ const AccountCard = ({ account }) => {
 
                 <div>
                     <p className="text-white/80 text-sm font-medium mb-1">{account.name}</p>
-                    <h3 className="text-2xl font-bold tracking-tight">₹ {account.balance.toLocaleString('en-IN')}</h3>
+                    <div className="flex justify-between items-end">
+                        <h3 className="text-2xl font-bold tracking-tight">₹ {account.balance.toLocaleString('en-IN')}</h3>
+                        <div className="flex gap-2">
+                            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors">
+                                <Pencil size={14} />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1.5 bg-white/20 hover:bg-red-500/50 rounded-lg backdrop-blur-sm transition-colors">
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

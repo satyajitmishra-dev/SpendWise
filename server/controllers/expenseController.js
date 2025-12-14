@@ -16,7 +16,26 @@ exports.getExpenses = async (req, res) => {
 exports.addExpense = async (req, res) => {
     const { amount, category, note, date, accountId } = req.body;
 
+    // Start a transaction or just do sequential updates (No transaction for simple MVP)
     try {
+        // If accountId is provided, deduct from account
+        if (accountId) {
+            const Account = require('../models/Account'); // Lazy import to avoid circular dependency if any
+            const account = await Account.findById(accountId);
+
+            if (!account) {
+                return res.status(404).json({ msg: 'Account not found' });
+            }
+
+            // Verify ownership
+            if (account.userId.toString() !== req.user.id) {
+                return res.status(401).json({ msg: 'Unauthorized access to account' });
+            }
+
+            account.balance -= amount;
+            await account.save();
+        }
+
         const newExpense = new Expense({
             userId: req.user.id,
             amount,
@@ -28,6 +47,23 @@ exports.addExpense = async (req, res) => {
 
         const expense = await newExpense.save();
 
+        res.json(expense);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.updateExpense = async (req, res) => {
+    try {
+        let expense = await Expense.findById(req.params.id);
+        if (!expense) return res.status(404).json({ msg: 'Expense not found' });
+
+        if (expense.userId.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Not authorized' });
+        }
+
+        expense = await Expense.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
         res.json(expense);
     } catch (err) {
         console.error(err.message);

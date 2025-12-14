@@ -53,6 +53,86 @@ export const addAccount = createAsyncThunk(
     }
 );
 
+export const updateAccountBalance = createAsyncThunk(
+    'accounts/updateBalance',
+    async ({ accountId, amount }, { rejectWithValue, getState }) => {
+        try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestAccounts = JSON.parse(localStorage.getItem('guest_accounts') || '[]');
+                const updatedAccounts = guestAccounts.map(acc => {
+                    if (acc._id === accountId) {
+                        return { ...acc, balance: parseFloat(acc.balance) + parseFloat(amount) };
+                    }
+                    return acc;
+                });
+                localStorage.setItem('guest_accounts', JSON.stringify(updatedAccounts));
+                return { accountId, amount };
+            }
+
+            return { accountId, amount };
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
+export const deleteAccount = createAsyncThunk(
+    'accounts/deleteAccount',
+    async (id, { rejectWithValue, getState }) => {
+        try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestAccounts = JSON.parse(localStorage.getItem('guest_accounts') || '[]');
+                const updatedAccounts = guestAccounts.filter(acc => acc._id !== id);
+                localStorage.setItem('guest_accounts', JSON.stringify(updatedAccounts));
+                return id;
+            }
+
+            await api.delete(`/accounts/${id}`);
+            return id;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { msg: 'Failed to delete' });
+        }
+    }
+);
+
+export const updateAccount = createAsyncThunk(
+    'accounts/updateAccount',
+    async ({ id, data }, { rejectWithValue, getState }) => {
+        try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestAccounts = JSON.parse(localStorage.getItem('guest_accounts') || '[]');
+                let updatedAccount = null;
+                const updatedAccounts = guestAccounts.map(acc => {
+                    if (acc._id === id) {
+                        updatedAccount = { ...acc, ...data };
+                        return updatedAccount;
+                    }
+                    return acc;
+                });
+                localStorage.setItem('guest_accounts', JSON.stringify(updatedAccounts));
+                return updatedAccount;
+            }
+
+            const res = await api.put(`/accounts/${id}`, data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { msg: 'Failed to update' });
+        }
+    }
+);
+
 const initialState = {
     items: [],
     loading: false,
@@ -78,6 +158,24 @@ const accountSlice = createSlice({
             })
             .addCase(addAccount.fulfilled, (state, action) => {
                 state.items.push(action.payload);
+            })
+            .addCase(updateAccountBalance.fulfilled, (state, action) => {
+                const { accountId, amount } = action.payload;
+                state.items = state.items.map(acc => {
+                    if (acc._id === accountId) {
+                        return { ...acc, balance: acc.balance + amount };
+                    }
+                    return acc;
+                });
+            })
+            .addCase(deleteAccount.fulfilled, (state, action) => {
+                state.items = state.items.filter(item => item._id !== action.payload);
+            })
+            .addCase(updateAccount.fulfilled, (state, action) => {
+                const index = state.items.findIndex(item => item._id === action.payload._id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
             });
     },
 });

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addAccount } from '../../store/slices/accountSlice';
+import { addAccount, updateAccount } from '../../store/slices/accountSlice';
+import { toast } from 'sonner';
 import { X, CreditCard, Wallet, Banknote, Landmark } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -22,13 +23,29 @@ const COLORS = [
     '#6b7280', // Gray
 ];
 
-const AddAccountSheet = ({ isOpen, onClose }) => {
+const AddAccountSheet = ({ isOpen, onClose, accountToEdit }) => {
     const dispatch = useDispatch();
     const [name, setName] = useState('');
     const [type, setType] = useState('bank');
     const [balance, setBalance] = useState('');
     const [color, setColor] = useState(COLORS[0]);
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            if (accountToEdit) {
+                setName(accountToEdit.name);
+                setType(accountToEdit.type);
+                setBalance(accountToEdit.balance.toString());
+                setColor(accountToEdit.color);
+            } else {
+                setName('');
+                setType('bank');
+                setBalance('');
+                setColor(COLORS[0]);
+            }
+        }
+    }, [isOpen, accountToEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -38,20 +55,28 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
         }
 
         setSubmitting(true);
+        setSubmitting(true);
         try {
-            await dispatch(addAccount({
-                name,
-                type,
-                balance: parseFloat(balance),
-                color
-            })).unwrap();
-
-            toast.success('Wallet added successfully!');
+            if (accountToEdit) {
+                await dispatch(updateAccount({
+                    id: accountToEdit._id,
+                    data: { name, type, balance: parseFloat(balance), color }
+                })).unwrap();
+                toast.success('Wallet updated successfully!');
+            } else {
+                await dispatch(addAccount({
+                    name,
+                    type,
+                    balance: parseFloat(balance),
+                    color
+                })).unwrap();
+                toast.success('Wallet added successfully!');
+            }
             onClose();
             setName('');
             setBalance('');
         } catch (err) {
-            toast.error('Failed to add wallet. Please try again.');
+            toast.error('Failed to save wallet. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -64,7 +89,7 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
             <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold dark:text-white">Add Account</h2>
+                    <h2 className="text-xl font-bold dark:text-white">{accountToEdit ? 'Edit Account' : 'Add Account'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
                         <X size={20} />
                     </button>
@@ -141,7 +166,7 @@ const AddAccountSheet = ({ isOpen, onClose }) => {
                         disabled={submitting}
                         className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 active:scale-95 transition-all"
                     >
-                        {submitting ? 'Creating...' : 'Create Account'}
+                        {submitting ? 'Saving...' : (accountToEdit ? 'Update Account' : 'Create Account')}
                     </button>
                 </form>
             </div>

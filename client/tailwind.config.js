@@ -22,6 +22,7 @@ export default {
             animation: {
                 blob: "blob 7s infinite",
                 "fade-in": "fadeIn 0.5s ease-out forwards",
+                "gradient-xy": "gradient-xy 6s ease infinite",
             },
             keyframes: {
                 blob: {
@@ -34,8 +35,20 @@ export default {
                     "0%": { opacity: "0", transform: "translateY(10px)" },
                     "100%": { opacity: "1", transform: "translateY(0)" },
                 },
+                "gradient-xy": {
+                    "0%, 100%": {
+                        "background-size": "200% 200%",
+                        "background-position": "left center",
+                    },
+                    "50%": {
+                        "background-size": "200% 200%",
+                        "background-position": "right center",
+                    },
+                },
             },
         },
     },
-    plugins: [],
+    plugins: [
+        require("tailwindcss-animate"),
+    ],
 }

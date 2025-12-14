@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAccounts } from '../store/slices/accountSlice';
+import { fetchAccounts, deleteAccount } from '../store/slices/accountSlice';
 import AccountCard from '../components/features/AccountCard';
 import AddAccountSheet from '../components/features/AddAccountSheet';
+import AccountDetailsSheet from '../components/features/AccountDetailsSheet';
+import { toast } from 'sonner';
 import { Plus, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/utils'; // Assuming cn is available
 
@@ -11,6 +13,33 @@ const AccountsPage = () => {
     const dispatch = useDispatch();
     const { items, loading } = useSelector((state) => state.accounts);
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [accountToEdit, setAccountToEdit] = useState(null);
+    const [viewAccount, setViewAccount] = useState(null);
+
+    const handleEdit = (account) => {
+        setAccountToEdit(account);
+        setIsAddOpen(true);
+    };
+
+    const handleView = (account) => {
+        setViewAccount(account);
+    };
+
+    const handleDelete = async (id) => {
+        if (confirm('Are you sure you want to delete this account?')) {
+            try {
+                await dispatch(deleteAccount(id)).unwrap();
+                toast.success('Account deleted');
+            } catch (err) {
+                toast.error('Failed to delete account');
+            }
+        }
+    };
+
+    const handleCloseSheet = () => {
+        setIsAddOpen(false);
+        setAccountToEdit(null);
+    };
 
     useEffect(() => {
         dispatch(fetchAccounts());
@@ -25,7 +54,7 @@ const AccountsPage = () => {
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold dark:text-white">My Wallets</h1>
                     <button
-                        onClick={() => setIsAddOpen(true)}
+                        onClick={() => { setAccountToEdit(null); setIsAddOpen(true); }}
                         className="p-2 bg-gray-100 dark:bg-slate-800 dark:text-white rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                         aria-label="Add Wallet"
                     >
@@ -68,7 +97,7 @@ const AccountsPage = () => {
                             <div className="text-center py-12 bg-gray-50 dark:bg-slate-900 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-800">
                                 <p className="text-gray-400 dark:text-slate-500 font-medium">No accounts added</p>
                                 <button
-                                    onClick={() => setIsAddOpen(true)}
+                                    onClick={() => { setAccountToEdit(null); setIsAddOpen(true); }}
                                     className="mt-2 text-indigo-600 font-bold hover:underline"
                                 >
                                     Add your first wallet
@@ -82,7 +111,12 @@ const AccountsPage = () => {
                                     className="animate-in slide-in-from-bottom fade-in duration-500"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
-                                    <AccountCard account={account} />
+                                    <AccountCard
+                                        account={account}
+                                        onEdit={() => handleEdit(account)}
+                                        onDelete={() => handleDelete(account._id)}
+                                        onClick={() => handleView(account)}
+                                    />
                                 </div>
                             ))
                         )}
@@ -90,7 +124,8 @@ const AccountsPage = () => {
                 )}
             </div>
 
-            <AddAccountSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+            <AddAccountSheet isOpen={isAddOpen} onClose={handleCloseSheet} accountToEdit={accountToEdit} />
+            <AccountDetailsSheet isOpen={!!viewAccount} onClose={() => setViewAccount(null)} account={viewAccount} />
         </div>
     );
 };

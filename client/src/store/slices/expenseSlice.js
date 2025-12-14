@@ -76,6 +76,36 @@ export const deleteExpense = createAsyncThunk(
     }
 );
 
+export const updateExpense = createAsyncThunk(
+    'expenses/updateExpense',
+    async ({ id, data }, { rejectWithValue, getState }) => {
+        try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestExpenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
+                let updatedExpense = null;
+                const updatedExpenses = guestExpenses.map(item => {
+                    if (item._id === id) {
+                        updatedExpense = { ...item, ...data };
+                        return updatedExpense;
+                    }
+                    return item;
+                });
+                localStorage.setItem('guest_expenses', JSON.stringify(updatedExpenses));
+                return updatedExpense;
+            }
+
+            const res = await api.put(`/expenses/${id}`, data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || { msg: 'Failed to update' });
+        }
+    }
+);
+
 export const fetchExpenseStats = createAsyncThunk(
     'expenses/fetchStats',
     async (_, { rejectWithValue }) => {
@@ -133,6 +163,12 @@ const expenseSlice = createSlice({
             // Delete
             .addCase(deleteExpense.fulfilled, (state, action) => {
                 state.items = state.items.filter(item => item._id !== action.payload);
+            })
+            .addCase(updateExpense.fulfilled, (state, action) => {
+                const index = state.items.findIndex(item => item._id === action.payload._id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
             });
     },
 });
