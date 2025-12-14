@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { addExpense } from '../../store/slices/expenseSlice';
 import { X, Calendar, Tag, FileText } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -16,6 +17,8 @@ const CATEGORIES = [
 
 const AddExpenseSheet = ({ isOpen, onClose }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { isAuthenticated, user } = useSelector(state => state.auth);
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0].id);
     const [note, setNote] = useState('');
@@ -29,6 +32,12 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
             return;
         }
 
+        const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            toast.error('Amount must be greater than 0');
+            return;
+        }
+
         setSubmitting(true);
         try {
             await dispatch(addExpense({
@@ -38,15 +47,31 @@ const AddExpenseSheet = ({ isOpen, onClose }) => {
                 date
             })).unwrap();
 
-            toast.success('Expense added successfully!');
+            // Check if guest (not authenticated OR (authenticated but no email))
+            const isGuest = !isAuthenticated || (user && !user.email);
+
+            if (isGuest) {
+                toast.warning('Expense saved locally', {
+                    description: 'Log in to sync and keep your data safe.',
+                    action: {
+                        label: 'Login',
+                        onClick: () => navigate('/login')
+                    },
+                    duration: 5000,
+                });
+            } else {
+                toast.success('Expense added successfully!');
+            }
             onClose();
             // Reset form
             setAmount('');
             setNote('');
         } catch (error) {
+            console.error(error);
             toast.error('Failed to add expense. Try again.');
         } finally {
             setSubmitting(false);
+            onClose();
         }
     };
 

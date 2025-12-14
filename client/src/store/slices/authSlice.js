@@ -45,6 +45,45 @@ export const verifyOtp = createAsyncThunk('auth/verifyOtp', async ({ email, otp 
     }
 });
 
+
+
+// Connect Guest Data to Account
+export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { getState, dispatch, rejectWithValue }) => {
+    try {
+        const state = getState();
+        const expenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
+
+        // Sync Expenses
+        if (expenses.length > 0) {
+            await api.post('/expenses/sync', { expenses });
+        }
+
+        // Sync Settings (Budget, Currency) - if guest had set them
+        // Note: For now, we assume profile update happened separately or we do it here
+        const guestUser = JSON.parse(localStorage.getItem('guestUser') || '{}');
+        if (guestUser.budget || guestUser.currency) {
+            const { user } = state.auth;
+            if (user) {
+                await api.post('/auth/update-profile', {
+                    userId: user.id || user._id,
+                    budget: guestUser.budget || user.budget,
+                    currency: guestUser.currency || user.currency
+                });
+            }
+        }
+
+        // Clear Local Guest Data
+        localStorage.removeItem('guest_expenses');
+        localStorage.removeItem('guestUser');
+        // Do NOT remove token yet, we are logged in
+
+        return { success: true };
+    } catch (err) {
+        console.error("Sync Failed", err);
+        return rejectWithValue(err.response?.data || 'Sync Failed');
+    }
+});
+
 export const loadUser = createAsyncThunk('auth/loadUser', async (_, { rejectWithValue }) => {
     try {
         const res = await api.get('/auth/me');

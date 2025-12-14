@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { signupInit, verifyOtp, clearError } from '../store/slices/authSlice';
+import { signupInit, verifyOtp, clearError, syncGuestData } from '../store/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, User, ArrowRight, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
@@ -41,6 +41,9 @@ const SignupPage = () => {
 
         const result = await dispatch(verifyOtp({ email: formData.email, otp }));
         if (verifyOtp.fulfilled.match(result)) {
+            // Trigger Sync for new users too (if they did guest things before signup)
+            await dispatch(syncGuestData());
+
             toast.success("Account created successfully!");
             navigate('/');
         } else {

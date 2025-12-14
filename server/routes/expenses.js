@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { getExpenses, addExpense, deleteExpense } = require('../controllers/expenseController');
+const { getExpenses, addExpense, deleteExpense, syncExpenses } = require('../controllers/expenseController');
 
 // @route   GET api/expenses
 // @desc    Get all user expenses
@@ -17,5 +17,10 @@ router.post('/', auth, addExpense);
 // @desc    Delete expense
 // @access  Private
 router.delete('/:id', auth, deleteExpense);
+
+// @route   POST api/expenses/sync
+// @desc    Sync guest expenses (Bulk Insert)
+// @access  Private
+router.post('/sync', auth, syncExpenses);
 
 module.exports = router;

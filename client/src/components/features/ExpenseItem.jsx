@@ -2,6 +2,7 @@ import { useDispatch } from 'react-redux';
 import { deleteExpense } from '../../store/slices/expenseSlice';
 import { format } from 'date-fns';
 import { Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const CATEGORY_ICONS = {
     food: '🍔',
@@ -15,9 +16,14 @@ const CATEGORY_ICONS = {
 const ExpenseItem = ({ expense }) => {
     const dispatch = useDispatch();
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (window.confirm('Delete this expense?')) {
-            dispatch(deleteExpense(expense._id));
+            try {
+                await dispatch(deleteExpense(expense._id)).unwrap();
+                toast.success('Expense deleted');
+            } catch (error) {
+                toast.error('Failed to delete expense');
+            }
         }
     };
 

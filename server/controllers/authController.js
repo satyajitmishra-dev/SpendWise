@@ -264,8 +264,14 @@ exports.verifyOtp = async (req, res) => {
 exports.loadUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-otp -otpExpires -refreshToken');
+        if (!user) {
+            console.log('loadUser: User not found for ID', req.user.id);
+            // If user deleted but token exists?
+            return res.status(404).json({ msg: 'User not found' });
+        }
         res.json(user);
     } catch (err) {
+        console.error('loadUser Error:', err);
         res.status(500).send('Server Error');
     }
 };

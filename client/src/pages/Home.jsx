@@ -4,10 +4,10 @@ import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
-import { motion } from 'framer-motion';
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight } from 'lucide-react';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
+// import { Skeleton } from '../components/ui/Skeleton'; // Assuming this exists or using simple div
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -17,12 +17,19 @@ const Home = () => {
     const subscriptions = useSelector((state) => state.subscriptions.items);
     const loans = useSelector((state) => state.loans.items);
 
+    const expensesLoading = useSelector(state => state.expenses.loading);
+    const accountsLoading = useSelector(state => state.accounts.loading);
+    const authLoading = useSelector(state => state.auth.loading);
+    const isLoading = expensesLoading || accountsLoading || authLoading;
+
     useEffect(() => {
-        dispatch(fetchExpenses());
-        dispatch(fetchAccounts());
-        dispatch(fetchSubscriptions());
-        dispatch(fetchLoans());
-    }, [dispatch]);
+        if (!authLoading) {
+            dispatch(fetchExpenses());
+            dispatch(fetchAccounts());
+            dispatch(fetchSubscriptions());
+            dispatch(fetchLoans());
+        }
+    }, [dispatch, authLoading]);
 
     // Calculate Totals
     const totalBalance = useMemo(() => {
@@ -58,119 +65,117 @@ const Home = () => {
         return 'Good Evening';
     };
 
-    const expensesLoading = useSelector(state => state.expenses.loading);
-    const accountsLoading = useSelector(state => state.accounts.loading);
-    const isLoading = expensesLoading || accountsLoading;
-
     if (isLoading) {
-        return (
-            <div className="p-6 pb-24 space-y-8">
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-8 w-48" />
-                </div>
-                <Skeleton className="h-56 w-full rounded-3xl" />
-                <div className="grid grid-cols-2 gap-4">
-                    <Skeleton className="h-24 rounded-2xl" />
-                    <Skeleton className="h-24 rounded-2xl" />
-                </div>
-                <div className="space-y-4">
-                    <div className="flex justify-between">
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="h-4 w-16" />
-                    </div>
-                    <Skeleton className="h-20 w-full rounded-2xl" />
-                    <Skeleton className="h-20 w-full rounded-2xl" />
-                </div>
-            </div>
-        );
+        return <DashboardSkeleton />;
     }
 
     return (
-        <div className="p-6 pb-24">
+        <div className="p-6 pb-32 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <div className="mb-8">
-                <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">{greeting()},</p>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{user?.name || 'Guest'} 👋</h1>
+            <div>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wide uppercase">{greeting()},</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-1 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                    {user?.name || 'Guest'} <span className="text-2xl">👋</span>
+                </h1>
             </div>
 
-            {/* Balance Card */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-indigo-600 dark:bg-indigo-700 text-white p-6 rounded-3xl shadow-xl shadow-indigo-200 dark:shadow-none mb-8 relative overflow-hidden"
-            >
-                <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
-                <div className="relative z-10">
-                    <p className="text-indigo-200 font-medium mb-1">Total Balance</p>
-                    <h2 className="text-4xl font-bold">₹{totalBalance.toLocaleString()}</h2>
-                    <div className="mt-6 flex gap-4">
-                        <div className="bg-white/10 p-3 rounded-xl flex-1 backdrop-blur-sm">
+            {/* Balance Card - Premium Gradient Mesh */}
+            <div className="relative overflow-hidden rounded-[2rem] p-8 shadow-2xl shadow-indigo-500/20 group cursor-pointer active:scale-[0.98] transition-all duration-500">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 animate-gradient-xy"></div>
+                <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-white/20 rounded-full blur-3xl mix-blend-overlay animate-blob"></div>
+                <div className="absolute bottom-[-50%] left-[-10%] w-64 h-64 bg-yellow-300/20 rounded-full blur-3xl mix-blend-overlay animate-blob animation-delay-2000"></div>
+
+                <div className="relative z-10 text-white">
+                    <div className="flex justify-between items-start mb-2">
+                        <p className="text-indigo-100 font-medium text-sm tracking-wider uppercase opacity-80">Total Balance</p>
+                        <div className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/20">
+                            <Wallet size={16} />
+                        </div>
+                    </div>
+                    <h2 className="text-5xl font-black mb-8 tracking-tight drop-shadow-lg">
+                        ₹{totalBalance.toLocaleString()}
+                    </h2>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-black/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-black/30 transition-colors">
                             <div className="flex items-center gap-2 mb-1">
                                 <TrendingDown size={14} className="text-red-300" />
-                                <span className="text-xs text-indigo-100">Spent this month</span>
+                                <span className="text-xs text-indigo-100/80 font-medium">Spent (Month)</span>
                             </div>
-                            <p className="font-bold text-lg">₹{monthlySpending.toLocaleString()}</p>
+                            <p className="font-bold text-xl">₹{monthlySpending.toLocaleString()}</p>
                         </div>
-                        <div className="bg-white/10 p-3 rounded-xl flex-1 backdrop-blur-sm">
+                        <div className="bg-black/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-black/30 transition-colors">
                             <div className="flex items-center gap-2 mb-1">
                                 <CreditCard size={14} className="text-yellow-300" />
-                                <span className="text-xs text-indigo-100">Fixed Subs</span>
+                                <span className="text-xs text-indigo-100/80 font-medium">Fixed Subs</span>
                             </div>
-                            <p className="font-bold text-lg">₹{activeSubscriptionsCost.toLocaleString()}</p>
+                            <p className="font-bold text-xl">₹{activeSubscriptionsCost.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
-            </motion.div>
+            </div>
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-                <Link to="/accounts" className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
-                    <Wallet className="text-indigo-500 dark:text-indigo-400" size={24} />
-                    <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Accounts</p>
-                        <p className="font-bold text-lg dark:text-white">{accounts.length} Active</p>
+            <div className="grid grid-cols-2 gap-4">
+                <Link to="/accounts" className="group relative bg-white dark:bg-slate-900/60 p-5 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-xl hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
+                    <div className="absolute top-4 right-4 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 transition-colors">
+                        <ArrowUpRight size={20} />
                     </div>
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <Wallet size={24} />
+                    </div>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">Accounts</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{accounts.length}</p>
                 </Link>
-                <Link to="/loans" className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between h-24 hover:shadow-md transition-all active:scale-95">
-                    <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold">₹</div>
-                    <div>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-bold uppercase">Loans</p>
-                        <p className="font-bold text-lg dark:text-white">{loans.filter(l => l.status === 'pending').length} Pending</p>
+
+                <Link to="/loans" className="group relative bg-white dark:bg-slate-900/60 p-5 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-xl hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
+                    <div className="absolute top-4 right-4 text-gray-300 dark:text-gray-600 group-hover:text-orange-500 transition-colors">
+                        <ArrowUpRight size={20} />
                     </div>
+                    <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <span className="text-xl font-bold">₹</span>
+                    </div>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">Pending Loans</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{loans.filter(l => l.status === 'pending').length}</p>
                 </Link>
             </div>
 
             {/* Recent Activity */}
-            <div>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-lg text-gray-800 dark:text-white">Recent Spending</h3>
-                    <Link to="/expenses" className="text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1">
-                        View All <ArrowRight size={12} />
+            <div className="space-y-4">
+                <div className="flex justify-between items-end px-1">
+                    <h3 className="font-bold text-xl text-gray-800 dark:text-white">Recent Activity</h3>
+                    <Link to="/expenses" className="text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:text-indigo-700 flex items-center gap-1 transition-colors">
+                        See All <ArrowRight size={16} />
                     </Link>
                 </div>
 
                 <div className="space-y-3">
+                    {/* DEBUG LOG */}
+                    {console.log('Rendering Recent Expenses. Count:', recentExpenses.length, 'Items:', recentExpenses)}
+
                     {recentExpenses.length === 0 ? (
-                        <div className="text-center py-10 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-dashed border-gray-200 dark:border-slate-800">
-                            <p className="text-gray-400 dark:text-slate-500 text-sm">No expenses yet</p>
+                        <div className="text-center py-12 bg-white/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-800">
+                            <p className="text-gray-400 dark:text-slate-500 font-medium">No expenses recorded yet</p>
                         </div>
                     ) : (
-                        recentExpenses.map(exp => (
-                            <Link to="/expenses" key={exp._id} className="glass-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between active:scale-98 transition-transform">
+                        recentExpenses.map((exp, i) => (
+                            <Link
+                                to="/expenses"
+                                key={exp._id}
+                                className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800/50 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-[0.99]"
+                            >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-slate-800 flex items-center justify-center text-xl">
-                                        {/* Simple mapping for now, ideally reused from specific component */}
-                                        {exp.category === 'food' ? '🍔' :
-                                            exp.category === 'travel' ? '🚕' :
-                                                exp.category === 'shopping' ? '🛍️' : '💰'}
+                                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                        {getCategoryEmoji(exp.category)}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-800 dark:text-slate-200 text-sm">{exp.note || capitalize(exp.category)}</p>
-                                        <p className="text-xs text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString()}</p>
+                                        <p className="font-bold text-gray-900 dark:text-white mb-0.5">{exp.note || capitalize(exp.category)}</p>
+                                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                                     </div>
                                 </div>
-                                <span className="font-bold text-red-500 dark:text-red-400">-₹{exp.amount}</span>
+                                <span className="font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-lg text-sm">
+                                    -₹{exp.amount}
+                                </span>
                             </Link>
                         ))
                     )}
@@ -180,6 +185,38 @@ const Home = () => {
     );
 };
 
+const DashboardSkeleton = () => (
+    <div className="p-6 pb-24 space-y-8 animate-pulse">
+        <div className="space-y-2">
+            <div className="h-4 w-24 bg-gray-200 dark:bg-slate-800 rounded"></div>
+            <div className="h-8 w-48 bg-gray-200 dark:bg-slate-800 rounded"></div>
+        </div>
+        <div className="h-64 w-full bg-gray-200 dark:bg-slate-800 rounded-[2rem]"></div>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="h-32 bg-gray-200 dark:bg-slate-800 rounded-[2rem]"></div>
+            <div className="h-32 bg-gray-200 dark:bg-slate-800 rounded-[2rem]"></div>
+        </div>
+        <div className="space-y-4">
+            <div className="flex justify-between">
+                <div className="h-6 w-32 bg-gray-200 dark:bg-slate-800 rounded"></div>
+                <div className="h-4 w-16 bg-gray-200 dark:bg-slate-800 rounded"></div>
+            </div>
+            <div className="h-20 w-full bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
+            <div className="h-20 w-full bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
+        </div>
+    </div>
+);
+
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const getCategoryEmoji = (cat) => {
+    switch (cat) {
+        case 'food': return '🍔';
+        case 'travel': return '🚕';
+        case 'shopping': return '🛍️';
+        case 'entertainment': return '🎬';
+        case 'health': return '💊';
+        default: return '💰';
+    }
+}
 
 export default Home;

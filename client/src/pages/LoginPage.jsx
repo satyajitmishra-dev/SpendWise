@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginSendOtp, verifyOtp } from '../store/slices/authSlice';
+import { loginSendOtp, verifyOtp, syncGuestData } from '../store/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
@@ -31,6 +31,8 @@ const LoginPage = () => {
 
         const result = await dispatch(verifyOtp({ email, otp }));
         if (verifyOtp.fulfilled.match(result)) {
+            // Trigger Sync
+            await dispatch(syncGuestData());
             toast.success("Welcome back!");
             navigate('/');
         } else {

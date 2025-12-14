@@ -3,8 +3,17 @@ import api from '../../services/api';
 
 export const fetchAccounts = createAsyncThunk(
     'accounts/fetchAccounts',
-    async (_, { rejectWithValue }) => {
+    async (_, { rejectWithValue, getState }) => {
         try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestAccounts = JSON.parse(localStorage.getItem('guest_accounts') || '[]');
+                return guestAccounts;
+            }
+
             const res = await api.get('/accounts');
             return res.data;
         } catch (err) {
@@ -15,8 +24,27 @@ export const fetchAccounts = createAsyncThunk(
 
 export const addAccount = createAsyncThunk(
     'accounts/addAccount',
-    async (accountData, { rejectWithValue }) => {
+    async (accountData, { rejectWithValue, getState }) => {
         try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const newAccount = {
+                    ...accountData,
+                    _id: Date.now().toString(),
+                    createdAt: new Date().toISOString()
+                };
+                const guestAccounts = JSON.parse(localStorage.getItem('guest_accounts') || '[]');
+                const updatedAccounts = [...guestAccounts, newAccount];
+                localStorage.setItem('guest_accounts', JSON.stringify(updatedAccounts));
+
+                // Simulate delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return newAccount;
+            }
+
             const res = await api.post('/accounts', accountData);
             return res.data;
         } catch (err) {

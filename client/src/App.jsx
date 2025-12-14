@@ -14,6 +14,7 @@ import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ProfileSetup from './pages/ProfileSetup';
 import WelcomeScreen from './pages/WelcomeScreen';
+import NotFoundPage from './pages/NotFoundPage';
 // const Expenses = () => <div className="p-4">Expenses</div>;
 // const Accounts = () => <div className="p-4">Accounts</div>;
 
@@ -87,7 +88,7 @@ function App() {
 
   return (
     <Router>
-      <Toaster position="top-center" richColors />
+      <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
       <Routes>
         <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
         <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
@@ -106,6 +107,9 @@ function App() {
           <Route path="loans" element={<LoansPage />} />
           <Route path="profile" element={<Profile />} />
         </Route>
+
+        {/* 404 Catch-All */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

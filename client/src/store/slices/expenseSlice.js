@@ -4,36 +4,74 @@ import api from '../../services/api';
 // Async Thunks
 export const fetchExpenses = createAsyncThunk(
     'expenses/fetchExpenses',
-    async (_, { rejectWithValue }) => {
+    async (_, { rejectWithValue, getState }) => {
         try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestExpenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
+                return guestExpenses;
+            }
             const res = await api.get('/expenses');
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { msg: 'Failed to fetch' });
         }
     }
 );
 
 export const addExpense = createAsyncThunk(
     'expenses/addExpense',
-    async (expenseData, { rejectWithValue }) => {
+    async (expenseData, { rejectWithValue, getState }) => {
         try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email); // Treat as guest if no token or no email (backend guest)
+
+            if (isGuest) {
+                const newExpense = {
+                    ...expenseData,
+                    _id: Date.now().toString(),
+                    user: 'guest',
+                    createdAt: new Date().toISOString()
+                };
+                const guestExpenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
+                const updatedExpenses = [newExpense, ...guestExpenses];
+                localStorage.setItem('guest_expenses', JSON.stringify(updatedExpenses));
+
+                // Simulate network delay for better UX
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                return newExpense;
+            }
             const res = await api.post('/expenses', expenseData);
             return res.data;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { msg: 'Failed to add' });
         }
     }
 );
 
 export const deleteExpense = createAsyncThunk(
     'expenses/deleteExpense',
-    async (id, { rejectWithValue }) => {
+    async (id, { rejectWithValue, getState }) => {
         try {
+            const { user } = getState().auth;
+            const token = localStorage.getItem('token');
+            const isGuest = !token || (user && !user.email);
+
+            if (isGuest) {
+                const guestExpenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
+                const updatedExpenses = guestExpenses.filter(item => item._id !== id);
+                localStorage.setItem('guest_expenses', JSON.stringify(updatedExpenses));
+                return id;
+            }
             await api.delete(`/expenses/${id}`);
             return id;
         } catch (err) {
-            return rejectWithValue(err.response.data);
+            return rejectWithValue(err.response?.data || { msg: 'Failed to delete' });
         }
     }
 );
