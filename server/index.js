@@ -3,8 +3,26 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const helmet = require('helmet');
+const compression = require('compression');
+
 const app = express();
 app.use(cors());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com"],
+                imgSrc: ["'self'", "data:", "https://images.unsplash.com"],
+                connectSrc: ["'self'"],
+            },
+        },
+    })
+);
+app.use(compression());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
@@ -25,5 +43,16 @@ app.use('/api/accounts', require('./routes/accounts'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/loans', require('./routes/loans'));
 app.use('/api/budgets', require('./routes/budgets'));
+
+// Serve Static Assets in Production
+const path = require('path');
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

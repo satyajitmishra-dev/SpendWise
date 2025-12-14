@@ -1,18 +1,24 @@
 {
-  "name": "expenseswise",
+  "name": "spendwise-root",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "SpendWise - Student Edition MERN Stack Application",
+  "main": "server/index.js",
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && npm start",
-    "client": "cd client && npm run dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install-all": "npm install && npm install --prefix client && npm install --prefix server",
+    "build": "npm install --prefix client && npm run build --prefix client",
+    "start": "node server/index.js",
+    "dev": "concurrently \"npm run start --prefix server\" \"npm run dev --prefix client\"",
+    "render-postbuild": "npm install --prefix server && npm install --prefix client && npm run build --prefix client"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mern",
+    "finance",
+    "student",
+    "tracker"
+  ],
+  "author": "SpendWise Team",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^8.2.2"
   }
 }
