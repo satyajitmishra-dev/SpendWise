@@ -35,7 +35,7 @@ mongoose.connect(MONGO_URI)
 const { initScheduler } = require('./services/scheduler');
 initScheduler();
 
-app.get('/', (req, res) => res.send('API Running'));
+// app.get('/', (req, res) => res.send('API Running'));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/expenses', require('./routes/expenses'));
