@@ -60,7 +60,7 @@ const Layout = () => {
                 </div>
 
                 {/* FAB - Premium Hover Effect */}
-                <div className="fixed bottom-24 right-5 md:bottom-12 md:right-12 z-50">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:bottom-12 md:right-12 z-50">
                     <button
                         onClick={() => setIsAddOpen(true)}
                         className="group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all active:scale-95 ring-4 ring-white/50 dark:ring-slate-900/50 hover:scale-110"
