@@ -3,18 +3,13 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const validator = require('email-validator');
+const { sendEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refreshsecret';
 
-// Configure Nodemailer (Gmail)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// Configure Nodemailer (Gmail) - MOVED TO emailService.js
+// const transporter = ...
 
 // Helper to generate tokens
 const generateTokens = (userId) => {
@@ -121,7 +116,8 @@ exports.loginSendOtp = async (req, res) => {
     `
         };
 
-        await transporter.sendMail(mailOptions);
+        // Use unified service
+        await sendEmail(mailOptions);
 
 
         res.json({ msg: 'OTP sent to email' });
@@ -193,7 +189,8 @@ exports.signupInit = async (req, res) => {
     `
         };
 
-        await transporter.sendMail(mailOptions);
+        // Use unified service
+        await sendEmail(mailOptions);
 
         res.json({ msg: 'OTP sent for verification', userId: user.id });
     } catch (err) {

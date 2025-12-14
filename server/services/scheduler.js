@@ -1,28 +1,21 @@
 const cron = require('node-cron');
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer'); // Removed
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
 const Loan = require('../models/Loan');
+const { sendEmail } = require('./emailService');
 
-// Email Transporter (Reusing same config as authController)
-// Email Transporter (Reusing same config as authController)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+// Email Transporter (Moved to emailService.js)
+// ...
 
-const sendEmail = async (to, subject, html) => {
+const triggerEmail = async (to, subject, html) => {
     try {
-        await transporter.sendMail({
+        await sendEmail({
             from: `"SpendWise Reminders" <${process.env.EMAIL_USER}>`,
             to,
             subject,
             html
         });
-
     } catch (error) {
         console.error(`Failed to send email to ${to}`, error);
     }
@@ -49,7 +42,7 @@ const checkSubscriptions = async () => {
 
             if (upcomingSubs.length > 0) {
                 const list = upcomingSubs.map(s => `<li><strong>${s.name}</strong>: ₹${s.amount} due on day ${s.date}</li>`).join('');
-                await sendEmail(
+                await triggerEmail(
                     user.email,
                     'Upcoming Subscription Renewals',
                     `<h3>Hi ${user.name},</h3><p>The following subscriptions are renewing in 3 days:</p><ul>${list}</ul>`
