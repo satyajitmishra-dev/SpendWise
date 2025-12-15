@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginSendOtp, verifyOtp, syncGuestData } from '../store/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Mail, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
+import { Mail, ArrowRight, Loader2 } from 'lucide-react';
 
 const LoginPage = () => {
     const dispatch = useDispatch();
@@ -43,12 +43,10 @@ const LoginPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-6">
             <div className="bg-white dark:bg-slate-900 w-full max-w-md p-8 md:p-10 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-8 justify-center">
-                    <div className="p-2 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                        <Sparkles size={24} className="text-yellow-500 fill-yellow-500" />
-                    </div>
-                    <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">SpendWise</span>
-                </div>
+                <Link to="/welcome" className="flex items-center gap-2 mb-8 justify-center group">
+                    <img src="/logo1.svg" alt="SpendWise Logo" className="w-16 h-16 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300 ease-out cursor-pointer" />
+                    <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">SpendWise</span>
+                </Link>
 
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h2>

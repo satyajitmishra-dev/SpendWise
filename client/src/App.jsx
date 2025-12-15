@@ -56,6 +56,8 @@ const PublicOnlyRoute = ({ children }) => {
 }
 
 
+import PageTitleUpdater from './components/common/PageTitleUpdater';
+
 function App() {
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
@@ -90,6 +92,7 @@ function App() {
 
   return (
     <Router>
+      <PageTitleUpdater />
       <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
       <Routes>
         <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />

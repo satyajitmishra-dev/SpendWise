@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, Sparkles, MoreHorizontal, PieChart, BarChart, X } from 'lucide-react';
+import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
 import { Toaster } from 'sonner';
@@ -27,9 +27,9 @@ const Layout = () => {
             {/* Desktop Sidebar - Premium Floating Dock Style */}
             <aside className="hidden md:flex flex-col w-72 h-[96vh] my-auto ml-4 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl z-50 transition-all duration-300 relative">
                 <div className="flex items-center gap-3 p-6 pb-8">
-                    <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg shadow-indigo-500/20">
-                        <Sparkles size={24} className="text-yellow-200 fill-yellow-200/50" />
-                    </div>
+                    <NavLink to="/" className="flex items-center justify-center w-16 h-16 shrink-0">
+                        <img src="/logo1.svg" alt="SpendWise Logo" className="w-12 h-12 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300 ease-out cursor-pointer" />
+                    </NavLink>
                     <div>
                         <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white block">SpendWise</span>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Student Edition</span>
@@ -62,9 +62,9 @@ const Layout = () => {
                     <div className="relative px-5 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
-                                <div className="p-2 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white rounded-xl shadow-lg shadow-indigo-500/20">
-                                    <Sparkles size={16} className="text-yellow-200 fill-yellow-200/50" />
-                                </div>
+                                <NavLink to="/" className="flex items-center justify-center w-12 h-12 shrink-0">
+                                    <img src="/logo1.svg" alt="SpendWise Logo" className="w-10 h-10 object-contain drop-shadow-sm hover:scale-105 transition-transform duration-300 ease-out cursor-pointer" />
+                                </NavLink>
                                 <div>
                                     <span className="font-bold text-base tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">SpendWise</span>
                                 </div>

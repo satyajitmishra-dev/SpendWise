@@ -59,12 +59,12 @@ const SignupPage = () => {
                 <div className="absolute bottom-0 left-0 w-80 h-80 bg-pink-500 rounded-full mix-blend-overlay filter blur-3xl opacity-30 -translate-x-1/2 translate-y-1/2"></div>
 
                 <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-white/10 rounded-xl backdrop-blur-md">
-                            <Sparkles className="text-yellow-300" />
+                    <Link to="/welcome" className="flex items-center gap-3 mb-6 group">
+                        <div className="p-2">
+                            <img src="/logo1.svg" alt="SpendWise Logo" className="w-12 h-12 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300 ease-out cursor-pointer" />
                         </div>
-                        <span className="text-2xl font-bold tracking-tight">SpendWise</span>
-                    </div>
+                        <span className="text-2xl font-bold tracking-tight group-hover:text-indigo-200 transition-colors">SpendWise</span>
+                    </Link>
                     <h1 className="text-5xl font-bold mb-6 leading-tight">Master your money,<br />Student style.</h1>
                     <p className="text-indigo-100 text-lg max-w-md">Join thousands of students managing their expenses, loans, and subscriptions smarter.</p>
                 </div>

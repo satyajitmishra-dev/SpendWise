@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { loginAsGuest } from '../store/slices/authSlice';
-import { ArrowRight, Sparkles, LogIn, UserCircle } from 'lucide-react';
+import { ArrowRight, LogIn, UserCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 
@@ -35,9 +35,9 @@ const WelcomeScreen = () => {
             <div className="flex-1 flex flex-col justify-center items-center px-6 z-10 w-full max-w-lg mx-auto">
                 {/* Logo / Band */}
                 <div className="mb-12 text-center animate-in fade-in zoom-in duration-700">
-                    <div className="inline-flex p-4 rounded-3xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 mb-6 shadow-2xl">
-                        <Sparkles size={40} className="text-yellow-300" />
-                    </div>
+                    <Link to="/welcome" className="relative inline-flex mb-2 animate-in zoom-in duration-500">
+                        <img src="/logo1.svg" alt="SpendWise Logo" className="relative w-48 h-48 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
+                    </Link>
                     <h1 className="text-5xl font-black tracking-tight mb-2 drop-shadow-md">
                         SpendWise
                     </h1>
