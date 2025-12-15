@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Async Thunks
-
 // Guest Login
 export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestData, { rejectWithValue }) => {
     try {
@@ -14,7 +12,7 @@ export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestDa
     }
 });
 
-// Signup Init
+// Signup 
 export const signupInit = createAsyncThunk('auth/signupInit', async (userData, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/signup-init', userData);
@@ -44,8 +42,6 @@ export const verifyOtp = createAsyncThunk('auth/verifyOtp', async ({ email, otp 
         return rejectWithValue(err.response.data);
     }
 });
-
-
 
 // Connect Guest Data to Account
 export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { getState, dispatch, rejectWithValue }) => {

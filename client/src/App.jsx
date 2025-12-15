@@ -17,8 +17,6 @@ import LoginPage from './pages/LoginPage';
 import ProfileSetup from './pages/ProfileSetup';
 import WelcomeScreen from './pages/WelcomeScreen';
 import NotFoundPage from './pages/NotFoundPage';
-// const Expenses = () => <div className="p-4">Expenses</div>;
-// const Accounts = () => <div className="p-4">Accounts</div>;
 
 
 // Protected Route Component
@@ -32,8 +30,6 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/welcome" state={{ from: location }} replace />;
   }
 
-  // If user exists but hasn't completed onboarding, force them there
-  // Unless they are already there
   if (!user.onboardingComplete && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
@@ -45,13 +41,11 @@ const ProtectedRoute = ({ children }) => {
 const PublicOnlyRoute = ({ children }) => {
   const { user, loading } = useSelector((state) => state.auth);
 
-  // If user is logged in AND has an email (Real User), redirect to home
   if (!loading && user && user.email) {
     if (!user.onboardingComplete) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/" replace />;
   }
 
-  // Guests (no email) or non-logged-in users can access Public routes
   return children;
 }
 
