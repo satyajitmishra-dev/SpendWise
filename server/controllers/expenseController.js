@@ -14,11 +14,11 @@ exports.getExpenses = async (req, res) => {
 };
 
 exports.addExpense = async (req, res) => {
-    const { amount, category, note, date, accountId } = req.body;
+    const { amount, category, note, date, accountId, type = 'expense' } = req.body;
 
     // Start a transaction or just do sequential updates (No transaction for simple MVP)
     try {
-        // If accountId is provided, deduct from account
+        // If accountId is provided, update account balance
         if (accountId) {
             const Account = require('../models/Account'); // Lazy import to avoid circular dependency if any
             const account = await Account.findById(accountId);
@@ -32,7 +32,11 @@ exports.addExpense = async (req, res) => {
                 return res.status(401).json({ msg: 'Unauthorized access to account' });
             }
 
-            account.balance -= amount;
+            if (type === 'income') {
+                account.balance += amount;
+            } else {
+                account.balance -= amount;
+            }
             await account.save();
         }
 
@@ -42,7 +46,8 @@ exports.addExpense = async (req, res) => {
             category,
             note,
             date,
-            accountId
+            accountId,
+            type
         });
 
         const expense = await newExpense.save();
@@ -104,7 +109,8 @@ exports.syncExpenses = async (req, res) => {
             category: exp.category,
             note: exp.note,
             date: exp.date,
-            accountId: exp.accountId // Optional: might need mapping if account IDs are local
+            accountId: exp.accountId, // Optional: might need mapping if account IDs are local
+            type: exp.type || 'expense'
         }));
 
         if (newExpenses.length > 0) {

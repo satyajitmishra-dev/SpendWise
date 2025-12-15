@@ -27,22 +27,26 @@ const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
         }
     };
 
+    const isIncome = expense.type === 'income';
+
     return (
         <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 mb-3 group">
             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-2xl">
-                    {CATEGORY_ICONS[expense.category] || '🔹'}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${isIncome ? 'bg-green-100 text-green-600' : 'bg-gray-50 dark:bg-slate-800'}`}>
+                    {CATEGORY_ICONS[expense.category] || (isIncome ? '💰' : '🔹')}
                 </div>
                 <div>
                     <h3 className="font-bold text-gray-900 dark:text-white">{expense.note || expense.category}</h3>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
-                        {format(new Date(expense.date), 'MMM d, h:mm a')} • {expense.category}
+                        {format(new Date(expense.date), 'dd MMM yyyy, h:mm a')} • {expense.category}
                     </p>
                 </div>
             </div>
             {!readOnly && (
                 <div className="text-right flex items-center gap-3">
-                    <span className="block font-bold text-lg text-gray-900 dark:text-white mr-2">-₹{expense.amount}</span>
+                    <span className={`block font-bold text-lg mr-2 ${isIncome ? 'text-green-600' : 'text-red-600 dark:text-red-400'}`}>
+                        {isIncome ? '+' : '-'}₹{expense.amount}
+                    </span>
                     <button
                         onClick={onEdit}
                         className="text-gray-300 hover:text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
@@ -59,7 +63,9 @@ const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
             )}
             {readOnly && (
                 <div className="text-right">
-                    <span className="block font-bold text-lg text-gray-900 dark:text-white">-₹{expense.amount}</span>
+                    <span className={`block font-bold text-lg ${isIncome ? 'text-green-600' : 'text-red-600 dark:text-red-400'}`}>
+                        {isIncome ? '+' : '-'}₹{expense.amount}
+                    </span>
                 </div>
             )}
         </div>

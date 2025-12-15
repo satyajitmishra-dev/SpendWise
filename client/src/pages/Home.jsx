@@ -158,26 +158,29 @@ const Home = () => {
                             <p className="text-gray-400 dark:text-slate-500 font-medium">No expenses recorded yet</p>
                         </div>
                     ) : (
-                        recentExpenses.map((exp, i) => (
-                            <Link
-                                to="/expenses"
-                                key={exp._id}
-                                className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800/50 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-[0.99]"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                        {getCategoryEmoji(exp.category)}
+                        recentExpenses.map((exp, i) => {
+                            const isIncome = exp.type === 'income';
+                            return (
+                                <Link
+                                    to="/expenses"
+                                    key={exp._id}
+                                    className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800/50 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-[0.99]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${isIncome ? 'bg-green-100 text-green-600' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}>
+                                            {getCategoryEmoji(exp.category)}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-900 dark:text-white mb-0.5">{exp.note || capitalize(exp.category)}</p>
+                                            <p className="text-xs font-medium text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold text-gray-900 dark:text-white mb-0.5">{exp.note || capitalize(exp.category)}</p>
-                                        <p className="text-xs font-medium text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                                    </div>
-                                </div>
-                                <span className="font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-lg text-sm">
-                                    -₹{exp.amount}
-                                </span>
-                            </Link>
-                        ))
+                                    <span className={`font-bold px-3 py-1 rounded-lg text-sm ${isIncome ? 'text-green-600 bg-green-100 dark:bg-green-900/20' : 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20'}`}>
+                                        {isIncome ? '+' : '-'}₹{exp.amount}
+                                    </span>
+                                </Link>
+                            );
+                        })
                     )}
                 </div>
             </div>
@@ -218,7 +221,10 @@ const getCategoryEmoji = (cat) => {
         case 'shopping': return '🛍️';
         case 'entertainment': return '🎬'; // Legacy support
         case 'health': return '💊';
-        default: return '💰';
+        case 'salary': return '💰';
+        case 'gift': return '🎁';
+        case 'refund': return '↩️';
+        default: return '🔹';
     }
 }
 

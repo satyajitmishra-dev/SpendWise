@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn, formatSmartDate } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
@@ -104,18 +105,33 @@ const ExpensesPage = () => {
                                 <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Try changing filter or add one</p>
                             </motion.div>
                         ) : (
-                            filteredItems.map(expense => (
-                                <motion.div
-                                    key={expense._id}
-                                    layout
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, x: -100 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                >
-                                    <ExpenseItem expense={expense} onEdit={() => handleEdit(expense)} />
-                                </motion.div>
-                            ))
+                            Object.entries(
+                                filteredItems.reduce((groups, expense) => {
+                                    const dateStr = new Date(expense.date).toLocaleDateString();
+                                    if (!groups[dateStr]) groups[dateStr] = [];
+                                    groups[dateStr].push(expense);
+                                    return groups;
+                                }, {})
+                            ).sort((a, b) => new Date(b[1][0].date) - new Date(a[1][0].date))
+                                .map(([dateLabel, expenses]) => (
+                                    <div key={dateLabel} className="space-y-2 mb-6">
+                                        <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm py-2 z-10">
+                                            {formatSmartDate(expenses[0].date)}
+                                        </h3>
+                                        {expenses.map(expense => (
+                                            <motion.div
+                                                key={expense._id}
+                                                layout
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, x: -100 }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            >
+                                                <ExpenseItem expense={expense} onEdit={() => handleEdit(expense)} />
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                ))
                         )}
                     </AnimatePresence>
                 </motion.div>
