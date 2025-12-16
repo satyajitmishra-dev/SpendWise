@@ -23,6 +23,7 @@ export default {
                 blob: "blob 7s infinite",
                 "fade-in": "fadeIn 0.5s ease-out forwards",
                 "gradient-xy": "gradient-xy 6s ease infinite",
+                "gradient-x": "gradient-x 3s ease infinite",
             },
             keyframes: {
                 blob: {
@@ -43,6 +44,14 @@ export default {
                     "50%": {
                         "background-size": "200% 200%",
                         "background-position": "right center",
+                    },
+                },
+                "gradient-x": {
+                    "0%, 100%": {
+                        "background-position": "0% 50%",
+                    },
+                    "50%": {
+                        "background-position": "100% 50%",
                     },
                 },
             },

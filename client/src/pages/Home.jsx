@@ -4,8 +4,9 @@ import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info } from 'lucide-react';
+import { Link, useOutletContext } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 // import { Skeleton } from '../components/ui/Skeleton'; // Assuming this exists or using simple div
 
@@ -65,6 +66,9 @@ const Home = () => {
         return 'Good Evening';
     };
 
+    // Get openInfo from Layout context (may be null if not provided, handle safely)
+    const { openInfo } = useOutletContext() || {};
+
     if (isLoading) {
         return <DashboardSkeleton />;
     }
@@ -72,11 +76,21 @@ const Home = () => {
     return (
         <div className="p-6 sm:p-8 pb-32 space-y-8 animate-in fade-in duration-500">
             {/* Header */}
-            <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wide uppercase">{greeting()},</p>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-1 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                    {user?.name || 'Guest'} <span className="text-2xl">👋</span>
-                </h1>
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wide uppercase">{greeting()},</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-1 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                        {user?.name || 'Guest'} <span className="text-2xl">👋</span>
+                    </h1>
+                </div>
+                {/* Desktop Info Button */}
+                <button
+                    onClick={openInfo}
+                    className="hidden md:flex w-12 h-12 bg-white dark:bg-slate-800 rounded-full items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-md hover:shadow-lg hover:scale-105 transition-all border border-indigo-50 dark:border-slate-700"
+                    title="Help & Guide"
+                >
+                    <Info size={24} />
+                </button>
             </div>
 
             {/* Balance Card - Premium Gradient Mesh */}
@@ -184,6 +198,54 @@ const Home = () => {
                     )}
                 </div>
             </div>
+
+            {/* Footer - Premium Animated */}
+            <motion.div
+                className="mt-20 mb-8 flex flex-col items-center text-center space-y-6"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+                {/* Main Tagline - with gradient animation */}
+                <motion.div
+                    className="space-y-1"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                >
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight bg-gradient-to-r from-gray-400 via-gray-500 to-gray-400 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-x">
+                        SURVIVE EVERY<br />MONTH
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-600 font-medium tracking-[0.3em] uppercase transition-all duration-300 hover:tracking-[0.4em] hover:text-indigo-500 dark:hover:text-indigo-400">
+                        Like a Pro
+                    </p>
+                </motion.div>
+
+                {/* Attribution - staggered reveal */}
+                <motion.p
+                    className="text-xs text-gray-500 dark:text-gray-600 group cursor-default"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                >
+                    Crafted with <span className="text-red-500 inline-block animate-pulse">❤️</span> in <span className="font-semibold text-gray-700 dark:text-gray-400 transition-colors duration-300 hover:text-orange-500">India</span> by <span className="font-semibold text-indigo-600 dark:text-indigo-400 transition-all duration-300 hover:text-indigo-500 hover:scale-110 inline-block hover:drop-shadow-lg">Satyajit</span>
+                </motion.p>
+
+                {/* Copyright - delayed reveal */}
+                <motion.div
+                    className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-700 uppercase tracking-wider group cursor-default"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                >
+                    <Wallet size={12} className="opacity-50 group-hover:opacity-100 group-hover:text-indigo-500 transition-all duration-300" />
+                    <span className="group-hover:text-gray-600 dark:group-hover:text-gray-500 transition-colors duration-300">© {new Date().getFullYear()} SpendWise</span>
+                </motion.div>
+            </motion.div>
         </div>
     );
 };

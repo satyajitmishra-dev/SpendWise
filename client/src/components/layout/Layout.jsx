@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X } from 'lucide-react';
+import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X, Info } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
+import InfoDialog from '../common/InfoDialog'; // Import InfoDialog
 import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
@@ -11,6 +12,7 @@ import { useSelector } from 'react-redux';
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isInfoOpen, setIsInfoOpen] = useState(false); // Add Info State
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const { user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
@@ -44,6 +46,12 @@ const Layout = () => {
                     <SidebarItem to="/subscriptions" icon={Repeat} label="Subscriptions" />
                     <SidebarItem to="/budgets" icon={PieChart} label="Budgets" />
                     <SidebarItem to="/reports" icon={BarChart} label="Reports" />
+                    <div className="my-2 border-t border-gray-100 dark:border-slate-800/50 mx-4"></div>
+                    <SidebarItem
+                        icon={Info}
+                        label="Help & Guide"
+                        onClick={() => setIsInfoOpen(true)}
+                    />
                 </nav>
 
                 <div className="p-4 mt-auto space-y-3">
@@ -69,12 +77,20 @@ const Layout = () => {
                                     <span className="font-bold text-base tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">SpendWise</span>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20"
-                            >
-                                {user?.name?.[0]?.toUpperCase() || 'U'}
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setIsInfoOpen(true)}
+                                    className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm active:scale-95 transition-all"
+                                >
+                                    <Info size={20} className="fill-indigo-100 dark:fill-indigo-900/40" />
+                                </button>
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20"
+                                >
+                                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -82,7 +98,7 @@ const Layout = () => {
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-0 md:pb-6 md:p-6 w-full scroll-smooth">
                     {/* Constraints for large screens */}
                     <div className="max-w-7xl mx-auto w-full h-full p-2 md:p-4">
-                        <Outlet />
+                        <Outlet context={{ openInfo: () => setIsInfoOpen(true) }} />
                     </div>
                 </div>
 
@@ -155,6 +171,7 @@ const Layout = () => {
 
             {/* Modals */}
             <AddExpenseSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+            <InfoDialog isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
         </div>
     );
 };
@@ -192,23 +209,37 @@ const MoreMenuItem = ({ to, icon, label, onClick }) => {
     );
 };
 
-const SidebarItem = ({ to, icon: Icon, label }) => (
-    <NavLink
-        to={to}
-        className={({ isActive }) => cn(
-            "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium relative overflow-hidden group",
-            isActive
-                ? "bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-sm before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-r-full before:z-10"
-                : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-white"
-        )}
-    >
-        {({ isActive }) => (
-            <>
-                <Icon size={20} className={cn("transition-transform group-hover:scale-110", isActive && "text-indigo-600 dark:text-indigo-400")} />
+const SidebarItem = ({ to, icon: Icon, label, onClick }) => {
+    if (onClick) {
+        return (
+            <button
+                onClick={onClick}
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium relative overflow-hidden group text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-white"
+            >
+                <Icon size={20} className="transition-transform group-hover:scale-110" />
                 <span>{label}</span>
-            </>
-        )}
-    </NavLink>
-);
+            </button>
+        );
+    }
+
+    return (
+        <NavLink
+            to={to}
+            className={({ isActive }) => cn(
+                "flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium relative overflow-hidden group",
+                isActive
+                    ? "bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-sm before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1.5 before:bg-indigo-600 dark:before:bg-indigo-400 before:rounded-r-full before:z-10"
+                    : "text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 hover:text-gray-900 dark:hover:text-white"
+            )}
+        >
+            {({ isActive }) => (
+                <>
+                    <Icon size={20} className={cn("transition-transform group-hover:scale-110", isActive && "text-indigo-600 dark:text-indigo-400")} />
+                    <span>{label}</span>
+                </>
+            )}
+        </NavLink>
+    );
+};
 
 export default Layout;
