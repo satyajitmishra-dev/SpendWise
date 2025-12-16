@@ -36,7 +36,15 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onE
     const [type, setType] = useState('expense'); // 'expense' or 'income'
     const [category, setCategory] = useState(CATEGORIES[0].id);
     const [note, setNote] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    // Initialize date with local timezone YYYY-MM-DD
+    const getLocalDate = () => {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    const [date, setDate] = useState(getLocalDate());
     const [selectedAccount, setSelectedAccount] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [confirmNegative, setConfirmNegative] = useState(false);
@@ -64,7 +72,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onE
                 setType('expense');
                 setCategory(CATEGORIES[0].id);
                 setNote('');
-                setDate(new Date().toISOString().split('T')[0]);
+                setDate(getLocalDate());
                 setSelectedAccount(initialAccountId || '');
             }
         }
@@ -122,11 +130,35 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onE
                 toast.success('Transaction updated!');
             } else {
                 // Add Logic
+                // Include current time if date is today, or default/preserve logic
+                const now = new Date();
+                let finalDate = new Date(date); // This is usually UTC 00:00 or Local 00:00 depending on construction
+
+                // Fix: Construct date object explicitly from YYYY-MM-DD to avoid timezone shifts
+                const [y, m, d] = date.split('-').map(Number);
+                finalDate = new Date(y, m - 1, d); // Local Midnight
+
+                // If selected date is today (matches local YYYY-MM-DD), use current time
+                const todayStr = getLocalDate();
+                if (date === todayStr) {
+                    finalDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+                } else {
+                    // For past/future dates, maybe set to 12:00 PM to avoid timezone shifting issues or keep midnight?
+                    // User asked for "device time", usually implies "now" for today.
+                    // For others, we'll leaving it at start of day is safer, or set to 12:00
+                    // Let's set it to current TIME on that day to separate order if multiple entries?
+                    // Or just use 12:00. Let's start with keeping it simple (Start of Day) unless specific request.
+                    // Actually, to sort "Recent" correctly, if I add past date, it should just rely on date part?
+                    // But sorting is `new Date(b.date) - new Date(a.date)`.
+                    // If everything today is 00:00, sorting is arbitrary.
+                    // So for TODAY, adding time is critical.
+                }
+
                 await dispatch(addExpense({
                     amount: parsedAmount,
                     category,
                     note,
-                    date,
+                    date: finalDate.toISOString(),
                     accountId: selectedAccount || null,
                     type
                 })).unwrap();
