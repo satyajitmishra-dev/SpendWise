@@ -7,7 +7,36 @@ const helmet = require('helmet');
 const compression = require('compression');
 
 const app = express();
-app.use(cors());
+
+// CORS Configuration - Allow custom domain and localhost
+const allowedOrigins = [
+    'http://localhost:5173',           // Local development (Vite)
+    'http://localhost:3000',           // Alternative local port
+    'https://spendwise.satyajitmishra.me',  // Production domain
+];
+
+// Add additional origins from environment variable if present
+if (process.env.ALLOWED_ORIGINS) {
+    const additionalOrigins = process.env.ALLOWED_ORIGINS.split(',');
+    allowedOrigins.push(...additionalOrigins);
+}
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, or curl)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(
     helmet({
         contentSecurityPolicy: {

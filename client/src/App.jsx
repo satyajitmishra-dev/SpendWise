@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './store/slices/authSlice';
+import { addNetworkListeners } from './utils/networkUtils';
 import Layout from './components/layout/Layout';
 import { Toaster } from 'sonner';
+import OfflinePage from './components/common/OfflinePage';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import LoansPage from './pages/LoansPage';
@@ -58,10 +60,25 @@ import PageTitleUpdater from './components/common/PageTitleUpdater';
 function App() {
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.theme.mode);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
+
+  // Monitor network status
+  useEffect(() => {
+    // Set initial state
+    setIsOffline(!navigator.onLine);
+
+    // Setup network listeners
+    const cleanup = addNetworkListeners(
+      () => setIsOffline(false), // Online callback
+      () => setIsOffline(true)   // Offline callback
+    );
+
+    return cleanup;
+  }, []);
 
   // Apply Theme
   useEffect(() => {
@@ -86,6 +103,11 @@ function App() {
 
     root.classList.add(themeMode);
   }, [themeMode]);
+
+  // Show OfflinePage if user is offline
+  if (isOffline) {
+    return <OfflinePage />;
+  }
 
   return (
     <Router>
