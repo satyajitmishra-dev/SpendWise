@@ -20,11 +20,14 @@ import NotFoundPage from './pages/NotFoundPage';
 
 
 // Protected Route Component
+import LoadingScreen from './components/common/LoadingScreen';
+
+// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useSelector((state) => state.auth);
   const location = useLocation();
 
-  if (loading) return <div className="flex h-screen items-center justify-center bg-indigo-600 text-white">Loading...</div>;
+  if (loading) return <LoadingScreen />;
 
   if (!user) {
     return <Navigate to="/welcome" state={{ from: location }} replace />;

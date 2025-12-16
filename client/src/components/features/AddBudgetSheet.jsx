@@ -79,7 +79,7 @@ const AddBudgetSheet = ({ isOpen, onClose, initialData }) => {
                     <h2 className="text-xl font-bold dark:text-white">
                         {initialData ? 'Edit Budget' : 'Set Monthly Budget'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
+                    <button onClick={onClose} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} />
                     </button>
                 </div>

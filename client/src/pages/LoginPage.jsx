@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginSendOtp, verifyOtp, syncGuestData } from '../store/slices/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, ArrowRight, Loader2 } from 'lucide-react';
 
 const LoginPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const { loading, otpSent } = useSelector(state => state.auth);
 
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
+
+    useEffect(() => {
+        if (location.state?.email) {
+            setEmail(location.state.email);
+            // Optional: Auto-submit? No, let user confirm.
+            toast.info("Please login to continue.");
+        }
+    }, [location.state]);
 
     const handleSendOtp = async (e) => {
         e.preventDefault();
@@ -21,7 +30,13 @@ const LoginPage = () => {
         if (loginSendOtp.fulfilled.match(result)) {
             toast.success("OTP sent to your email!");
         } else {
-            toast.error(result.payload?.msg || "Failed to send OTP. User not found?");
+            const msg = result.payload?.msg || "Failed to send OTP";
+            if (msg.toLowerCase().includes("not found")) {
+                toast.error("Account not found. Redirecting to Signup...", { duration: 2000 });
+                setTimeout(() => navigate('/signup', { state: { email } }), 1500);
+                return;
+            }
+            toast.error(msg);
         }
     };
 

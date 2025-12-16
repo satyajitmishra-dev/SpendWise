@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { signupInit, verifyOtp, clearError, syncGuestData } from '../store/slices/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, User, ArrowRight, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
 
 const SignupPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const { loading, error, otpSent } = useSelector(state => state.auth);
 
     const [formData, setFormData] = useState({
@@ -16,8 +17,13 @@ const SignupPage = () => {
         status: 'student',
         currency: 'INR'
     });
-    // Explicitly reset error on mount/unmount
-    // useEffect(() => { return () => dispatch(clearError()); }, [dispatch]); // Optional refinement
+
+    useEffect(() => {
+        if (location.state?.email) {
+            setFormData(prev => ({ ...prev, email: location.state.email }));
+            toast.info("Please create an account to proceed.");
+        }
+    }, [location.state]);
 
     const [otp, setOtp] = useState('');
 
@@ -31,7 +37,13 @@ const SignupPage = () => {
         if (signupInit.fulfilled.match(result)) {
             toast.success("OTP sent to your email!");
         } else {
-            toast.error(result.payload?.msg || "Failed to send OTP");
+            const msg = result.payload?.msg || "Failed to send OTP";
+            if (msg.toLowerCase().includes("exists")) {
+                toast.error("Account already exists. Redirecting to Login...", { duration: 2000 });
+                setTimeout(() => navigate('/login', { state: { email: formData.email } }), 1500);
+                return;
+            }
+            toast.error(msg);
         }
     };
 

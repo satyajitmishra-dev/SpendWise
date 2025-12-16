@@ -4,6 +4,7 @@ import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizon
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
 import InfoDialog from '../common/InfoDialog'; // Import InfoDialog
+import InstallPrompt from '../common/InstallPrompt';
 import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
@@ -14,6 +15,7 @@ const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isInfoOpen, setIsInfoOpen] = useState(false); // Add Info State
     const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const [isInstallPromptOpen, setIsInstallPromptOpen] = useState(false);
     const { user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
 
@@ -139,12 +141,24 @@ const Layout = () => {
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">More Options</h3>
                                 <button
                                     onClick={() => setIsMoreOpen(false)}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
                             </div>
                             <div className="space-y-2">
+                                <MoreMenuItem
+                                    to="/accounts"
+                                    icon={<Wallet size={20} />}
+                                    label="Accounts & Cards"
+                                    onClick={() => setIsMoreOpen(false)}
+                                />
+                                <MoreMenuItem
+                                    to="/subscriptions"
+                                    icon={<Repeat size={20} />}
+                                    label="Subscriptions"
+                                    onClick={() => setIsMoreOpen(false)}
+                                />
                                 <MoreMenuItem
                                     to="/budgets"
                                     icon={<PieChart size={20} />}
@@ -170,8 +184,13 @@ const Layout = () => {
             </main>
 
             {/* Modals */}
-            <AddExpenseSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+            <AddExpenseSheet
+                isOpen={isAddOpen}
+                onClose={() => setIsAddOpen(false)}
+                onExpenseAdded={() => setIsInstallPromptOpen(true)}
+            />
             <InfoDialog isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
+            <InstallPrompt isOpen={isInstallPromptOpen} onClose={() => setIsInstallPromptOpen(false)} />
         </div>
     );
 };

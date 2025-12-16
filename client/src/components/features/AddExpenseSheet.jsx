@@ -26,7 +26,7 @@ const INCOME_CATEGORIES = [
     { id: 'other', label: 'Other', color: 'bg-gray-100 text-gray-600' },
 ];
 
-const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId }) => {
+const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onExpenseAdded }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -119,7 +119,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId }) =
                     id: expenseToEdit._id,
                     data: { amount: parsedAmount, category, note, date, accountId: selectedAccount || null, type }
                 })).unwrap();
-                toast.success('Expense updated!');
+                toast.success('Transaction updated!');
             } else {
                 // Add Logic
                 await dispatch(addExpense({
@@ -176,7 +176,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId }) =
             <div className={`relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto border-t-4 ${type === 'income' ? 'border-green-500' : 'border-indigo-500'}`}>
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold dark:text-white">{expenseToEdit ? 'Edit Transaction' : 'Add Transaction'}</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full dark:text-white">
+                    <button onClick={onClose} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} />
                     </button>
                 </div>

@@ -109,7 +109,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
                             Student Edition
                         </span>
                         <span className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-[10px] font-bold tracking-widest uppercase">
-                            V1.1.0
+                            V2.0.0
                         </span>
                     </div>
 
