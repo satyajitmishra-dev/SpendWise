@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Async Thunks
+
 export const fetchBudgets = createAsyncThunk(
     'budgets/fetchBudgets',
     async (_, { rejectWithValue, getState }) => {
@@ -103,7 +103,7 @@ const budgetSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // Fetch
+
             .addCase(fetchBudgets.pending, (state) => {
                 state.loading = true;
             })
@@ -115,18 +115,18 @@ const budgetSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // Add
+
             .addCase(addBudget.fulfilled, (state, action) => {
                 state.items.push(action.payload);
             })
-            // Update
+
             .addCase(updateBudget.fulfilled, (state, action) => {
                 const index = state.items.findIndex(item => item._id === action.payload._id);
                 if (index !== -1) {
                     state.items[index] = action.payload;
                 }
             })
-            // Delete
+
             .addCase(deleteBudget.fulfilled, (state, action) => {
                 state.items = state.items.filter(item => item._id !== action.payload);
             });

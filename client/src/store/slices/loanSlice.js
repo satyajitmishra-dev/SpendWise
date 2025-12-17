@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Async Thunks
+
 export const fetchLoans = createAsyncThunk(
     'loans/fetchLoans',
     async (_, { rejectWithValue }) => {
@@ -50,7 +50,7 @@ const loanSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // Fetch Loans
+
             .addCase(fetchLoans.pending, (state) => {
                 state.loading = true;
             })
@@ -62,11 +62,11 @@ const loanSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // Add Loan
+
             .addCase(addLoan.fulfilled, (state, action) => {
                 state.items.unshift(action.payload);
             })
-            // Update Loan
+
             .addCase(updateLoan.fulfilled, (state, action) => {
                 const index = state.items.findIndex(item => item._id === action.payload._id);
                 if (index !== -1) {

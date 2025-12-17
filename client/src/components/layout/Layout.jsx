@@ -36,7 +36,7 @@ const Layout = () => {
                     </NavLink>
                     <div>
                         <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white block">SpendWise</span>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Student Edition</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Student Edition <span className="text-indigo-500/50 ml-1">v2.1</span></span>
                     </div>
                 </div>
 

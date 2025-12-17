@@ -25,6 +25,30 @@ export const addSubscription = createAsyncThunk(
     }
 );
 
+export const updateSubscription = createAsyncThunk(
+    'subscriptions/updateSubscription',
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const res = await api.put(`/subscriptions/${id}`, data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+export const deleteSubscription = createAsyncThunk(
+    'subscriptions/deleteSubscription',
+    async (id, { rejectWithValue }) => {
+        try {
+            await api.delete(`/subscriptions/${id}`);
+            return id;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
 const initialState = {
     items: [],
     loading: false,
@@ -50,6 +74,15 @@ const subscriptionSlice = createSlice({
             })
             .addCase(addSubscription.fulfilled, (state, action) => {
                 state.items.push(action.payload);
+            })
+            .addCase(deleteSubscription.fulfilled, (state, action) => {
+                state.items = state.items.filter(item => item._id !== action.payload);
+            })
+            .addCase(updateSubscription.fulfilled, (state, action) => {
+                const index = state.items.findIndex(item => item._id === action.payload._id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
             });
     },
 });

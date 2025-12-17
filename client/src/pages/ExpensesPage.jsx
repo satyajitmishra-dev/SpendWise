@@ -6,9 +6,10 @@ import { fetchExpenses, deleteExpense } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import ExpenseItem from '../components/features/ExpenseItem';
 import AddExpenseSheet from '../components/features/AddExpenseSheet';
-import { Filter, Plus, Trash2, Pencil } from 'lucide-react';
+import { Filter, Plus, Trash2, Pencil, Search, Calendar, Copy, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import InfoDialog from '../components/common/InfoDialog';
 
 const ExpensesPage = () => {
     const dispatch = useDispatch();
@@ -16,12 +17,24 @@ const ExpensesPage = () => {
     const { items: accounts } = useSelector((state) => state.accounts);
     const [filter, setFilter] = useState('all');
     const [accountFilter, setAccountFilter] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [dateFilter, setDateFilter] = useState('this-month'); // 'all', 'this-month', 'last-month'
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [expenseToEdit, setExpenseToEdit] = useState(null);
+    const [initialData, setInitialData] = useState(null); // For duplication
+    const [isInfoOpen, setIsInfoOpen] = useState(false);
 
     const handleEdit = (expense) => {
         setExpenseToEdit(expense);
+        setInitialData(null);
         setIsSheetOpen(true);
+    };
+
+    const handleDuplicate = (expense) => {
+        setExpenseToEdit(null);
+        setInitialData(expense);
+        setIsSheetOpen(true);
+        toast.info("Duplicating transaction...", { duration: 2000 });
     };
 
     const handleDelete = async (id) => {
@@ -38,6 +51,7 @@ const ExpensesPage = () => {
     const handleCloseSheet = () => {
         setIsSheetOpen(false);
         setExpenseToEdit(null);
+        setInitialData(null);
     };
 
     useEffect(() => {
@@ -46,9 +60,41 @@ const ExpensesPage = () => {
     }, [dispatch]);
 
     const filteredItems = items.filter(item => {
+        // 1. Text Search (Note, Category, Amount)
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = !query ||
+            (item.note && item.note.toLowerCase().includes(query)) ||
+            item.category.toLowerCase().includes(query) ||
+            item.amount.toString().includes(query);
+
+        // 2. Category Filter
         const matchesCategory = filter === 'all' || item.category === filter;
+
+        // 3. Account Filter
         const matchesAccount = accountFilter === 'all' || item.accountId === accountFilter;
-        return matchesCategory && matchesAccount;
+
+        // 4. Date Filter
+        let matchesDate = true;
+        if (dateFilter !== 'all') {
+            const date = new Date(item.date);
+            const now = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth(); // 0-11
+
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+
+            if (dateFilter === 'this-month') {
+                matchesDate = year === currentYear && month === currentMonth;
+            } else if (dateFilter === 'last-month') {
+                const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+                const lastMonthYear = lastMonthDate.getFullYear();
+                const lastMonth = lastMonthDate.getMonth();
+                matchesDate = year === lastMonthYear && month === lastMonth;
+            }
+        }
+
+        return matchesCategory && matchesAccount && matchesSearch && matchesDate;
     });
 
     const getAccountName = (id) => {
@@ -59,43 +105,82 @@ const ExpensesPage = () => {
     return (
         <div className="p-6 pb-24 md:pb-8 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold dark:text-white mb-1">Expenses</h1>
-                    <p className="text-gray-500 dark:text-slate-400">Track and manage your spending.</p>
+                <div className="flex items-start justify-between md:block">
+                    <div>
+                        <h1 className="text-3xl font-bold dark:text-white mb-1">Expenses</h1>
+                        <p className="text-gray-500 dark:text-slate-400">Track and manage your spending.</p>
+                    </div>
                 </div>
 
-                <div className="flex flex-row overflow-x-auto pb-2 md:pb-0 gap-3 no-scrollbar mask-gradient-right">
-                    {/* Account Filter */}
-                    <div className="relative shrink-0">
-                        <select
-                            value={accountFilter}
-                            onChange={(e) => setAccountFilter(e.target.value)}
-                            className="appearance-none bg-white dark:bg-slate-900 pl-4 pr-10 py-2.5 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm min-w-[130px] transition-all hover:border-indigo-300"
-                        >
-                            <option value="all">All Wallets</option>
-                            {accounts.map(acc => (
-                                <option key={acc._id} value={acc._id}>{acc.name}</option>
-                            ))}
-                        </select>
-                        <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <div className="flex flex-col gap-3 w-full md:w-auto">
+                    {/* Search Bar */}
+                    <div className="relative w-full md:w-64">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search expenses..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-11 pr-4 py-2.5 bg-white dark:bg-slate-900 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm transition-all hover:border-indigo-300"
+                        />
                     </div>
 
-                    {/* Category Filter */}
-                    <div className="relative shrink-0">
-                        <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            className="appearance-none bg-white dark:bg-slate-900 pl-4 pr-10 py-2.5 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm min-w-[140px] transition-all hover:border-indigo-300"
+                    <div className="flex flex-row overflow-x-auto pb-2 md:pb-0 gap-3 no-scrollbar mask-gradient-right">
+                        {/* Date Filter */}
+                        <div className="relative shrink-0">
+                            <select
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                                className="appearance-none bg-white dark:bg-slate-900 pl-10 pr-10 py-2.5 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm min-w-[150px] transition-all hover:border-indigo-300"
+                            >
+                                <option value="this-month">This Month</option>
+                                <option value="last-month">Last Month</option>
+                                <option value="all">All Time</option>
+                            </select>
+                            <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        {/* Account Filter */}
+                        <div className="relative shrink-0">
+                            <select
+                                value={accountFilter}
+                                onChange={(e) => setAccountFilter(e.target.value)}
+                                className="appearance-none bg-white dark:bg-slate-900 pl-4 pr-10 py-2.5 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm min-w-[130px] transition-all hover:border-indigo-300"
+                            >
+                                <option value="all">All Wallets</option>
+                                {accounts.map(acc => (
+                                    <option key={acc._id} value={acc._id}>{acc.name}</option>
+                                ))}
+                            </select>
+                            <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        {/* Category Filter */}
+                        <div className="relative shrink-0">
+                            <select
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                className="appearance-none bg-white dark:bg-slate-900 pl-4 pr-10 py-2.5 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white border border-gray-200 dark:border-slate-700 shadow-sm min-w-[140px] transition-all hover:border-indigo-300"
+                            >
+                                <option value="all">All Categories</option>
+                                <option value="food">Food</option>
+                                <option value="travel">Travel</option>
+                                <option value="study">Study</option>
+                                <option value="fun">Fun</option>
+                                <option value="rent">Rent</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        {/* Info Button */}
+                        <button
+                            onClick={() => setIsInfoOpen(true)}
+                            className="bg-white dark:bg-slate-900 p-2.5 rounded-2xl border border-gray-200 dark:border-slate-700 text-indigo-500 shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                         >
-                            <option value="all">Categories</option>
-                            <option value="food">Food</option>
-                            <option value="travel">Travel</option>
-                            <option value="study">Study</option>
-                            <option value="fun">Fun</option>
-                            <option value="rent">Rent</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            <Info size={20} />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -136,7 +221,12 @@ const ExpensesPage = () => {
                                             </h3>
                                             <div className="space-y-3">
                                                 {expenses.map(expense => (
-                                                    <ExpenseItem key={expense._id} expense={expense} onEdit={() => handleEdit(expense)} />
+                                                    <ExpenseItem
+                                                        key={expense._id}
+                                                        expense={expense}
+                                                        onEdit={() => handleEdit(expense)}
+                                                        onDuplicate={() => handleDuplicate(expense)}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
@@ -214,8 +304,8 @@ const ExpensesPage = () => {
                                                     {/* Amount */}
                                                     <td className="p-3 lg:p-6 text-right">
                                                         <span className={`inline-flex items-center px-2.5 py-1 lg:px-3 rounded-lg text-sm font-black tracking-tight whitespace-nowrap ${isIncome
-                                                                ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                                                : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                                                            ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
+                                                            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
                                                             }`}>
                                                             {isIncome ? '+' : '-'} ₹{expense.amount}
                                                         </span>
@@ -230,6 +320,13 @@ const ExpensesPage = () => {
                                                                 title="Edit"
                                                             >
                                                                 <Pencil size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDuplicate(expense)}
+                                                                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+                                                                title="Duplicate"
+                                                            >
+                                                                <Copy size={16} />
                                                             </button>
                                                             <button
                                                                 onClick={() => handleDelete(expense._id)}
@@ -251,7 +348,13 @@ const ExpensesPage = () => {
                 </motion.div>
             )}
 
-            <AddExpenseSheet isOpen={isSheetOpen} onClose={handleCloseSheet} expenseToEdit={expenseToEdit} />
+            <AddExpenseSheet
+                isOpen={isSheetOpen}
+                onClose={handleCloseSheet}
+                expenseToEdit={expenseToEdit}
+                initialData={initialData}
+            />
+            <InfoDialog isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
         </div>
     );
 };

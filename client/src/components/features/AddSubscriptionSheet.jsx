@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addSubscription } from '../../store/slices/subscriptionSlice';
+import { addSubscription, updateSubscription } from '../../store/slices/subscriptionSlice';
 import { X, Bell, Calendar, Repeat } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
@@ -10,7 +10,7 @@ const CYCLES = [
     { id: 'yearly', label: 'Yearly' },
 ];
 
-const AddSubscriptionSheet = ({ isOpen, onClose }) => {
+const AddSubscriptionSheet = ({ isOpen, onClose, editingSubscription }) => {
     const dispatch = useDispatch();
     const [name, setName] = useState('');
     const [amount, setAmount] = useState('');
@@ -27,6 +27,23 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
         { name: 'Prime', color: '#00A8E1', icon: '📦' },
     ];
 
+    // Effect to pre-fill data when editing
+    useEffect(() => {
+        if (editingSubscription) {
+            setName(editingSubscription.name);
+            setAmount(editingSubscription.amount);
+            setCycle(editingSubscription.cycle);
+            setRenewalDate(editingSubscription.renewalDate.split('T')[0]);
+            // icon logic could be better if we stored it, for now default
+        } else {
+            // Reset form
+            setName('');
+            setAmount('');
+            setCycle('monthly');
+            setRenewalDate(new Date().toISOString().split('T')[0]);
+        }
+    }, [editingSubscription, isOpen]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name || !amount) {
@@ -36,20 +53,32 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
 
         setSubmitting(true);
         try {
-            await dispatch(addSubscription({
-                name,
-                amount: parseFloat(amount),
-                cycle,
-                renewalDate,
-                autoRenew: true
-            })).unwrap();
+            if (editingSubscription) {
+                await dispatch(updateSubscription({
+                    id: editingSubscription._id,
+                    data: {
+                        name,
+                        amount: parseFloat(amount),
+                        cycle,
+                        renewalDate,
+                        autoRenew: true
+                    }
+                })).unwrap();
+                toast.success('Subscription updated!');
+            } else {
+                await dispatch(addSubscription({
+                    name,
+                    amount: parseFloat(amount),
+                    cycle,
+                    renewalDate,
+                    autoRenew: true
+                })).unwrap();
+                toast.success('Subscription tracked successfully!');
+            }
 
-            toast.success('Subscription tracked successfully!');
             onClose();
-            setName('');
-            setAmount('');
         } catch (err) {
-            toast.error('Failed to add subscription.');
+            toast.error(editingSubscription ? 'Failed to update.' : 'Failed to add subscription.');
         } finally {
             setSubmitting(false);
         }
@@ -63,7 +92,7 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
             {/* Sheet */}
             <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold dark:text-white">New Subscription</h2>
+                    <h2 className="text-xl font-bold dark:text-white">{editingSubscription ? 'Edit Subscription' : 'New Subscription'}</h2>
                     <button onClick={onClose} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} />
                     </button>
@@ -149,7 +178,7 @@ const AddSubscriptionSheet = ({ isOpen, onClose }) => {
                         disabled={submitting}
                         className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 active:scale-95 transition-all"
                     >
-                        {submitting ? 'Adding...' : 'Track Subscription'}
+                        {submitting ? 'Saving...' : (editingSubscription ? 'Update Subscription' : 'Track Subscription')}
                     </button>
                 </form>
             </div>

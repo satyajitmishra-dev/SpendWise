@@ -83,7 +83,11 @@ api.interceptors.response.use(
             }
         } else {
             // Generic error
-            toast.error('An unexpected error occurred', { duration: 4000 });
+            let msg = 'An unexpected error occurred';
+            if (error.response && typeof error.response.data === 'string' && error.response.data.includes('<html')) {
+                msg = `Server Error (${error.response.status})`;
+            }
+            toast.error(msg, { duration: 4000 });
         }
 
         return Promise.reject(error);

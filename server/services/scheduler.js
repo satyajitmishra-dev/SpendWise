@@ -1,12 +1,11 @@
 const cron = require('node-cron');
-// const nodemailer = require('nodemailer'); // Removed
+
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
 const Loan = require('../models/Loan');
 const { sendEmail } = require('./emailService');
 
-// Email Transporter (Moved to emailService.js)
-// ...
+
 
 const triggerEmail = async (to, subject, html) => {
     try {
@@ -86,8 +85,8 @@ exports.triggerReminders = async (req, res) => {
 exports.initScheduler = () => {
     // Run every day at 09:00 AM
     cron.schedule('0 9 * * *', () => {
-        console.log('Running Daily Cron Job...');
+
         checkSubscriptions();
     });
-    console.log('Scheduler Initialized: Jobs scheduled for 09:00 AM');
+
 };

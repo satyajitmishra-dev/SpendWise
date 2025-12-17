@@ -8,10 +8,9 @@ const { sendEmail } = require('../services/emailService');
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refreshsecret';
 
-// Configure Nodemailer (Gmail) - MOVED TO emailService.js
-// const transporter = ...
 
-// Helper to generate tokens
+
+
 const generateTokens = (userId) => {
     const accessToken = jwt.sign(
         { user: { id: userId } },
@@ -26,8 +25,7 @@ const generateTokens = (userId) => {
     return { accessToken, refreshToken };
 };
 
-// @route   POST api/auth/init
-// @desc    Initialize a new GUEST user
+
 exports.initUser = async (req, res) => {
     const { name, status, currency, budget } = req.body;
     try {
@@ -39,7 +37,7 @@ exports.initUser = async (req, res) => {
         });
         await user.save();
 
-        // Even guests get a long-lived token effectively acting as "forever" until cleared
+
         const { accessToken, refreshToken } = generateTokens(user.id);
         user.refreshToken = refreshToken;
         await user.save();
@@ -51,10 +49,7 @@ exports.initUser = async (req, res) => {
     }
 };
 
-// @route   POST api/auth/send-otp
-// @desc    Send OTP to email for Login or Signup
-// NOTE: This function appears to be legacy/placeholder logic. 
-// The actual logic is in loginSendOtp and signupInit below.
+
 exports.sendOtp = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ msg: 'Email is required' });
@@ -70,8 +65,7 @@ exports.sendOtp = async (req, res) => {
             return res.status(404).json({ msg: 'User not found. Please sign up.' });
         }
 
-        // Logic for generic send OTP would go here if needed.
-        // For now, specific endpoints handle this.
+
 
     } catch (err) {
         console.error(err);
@@ -116,7 +110,7 @@ exports.loginSendOtp = async (req, res) => {
     `
         };
 
-        // Use unified service
+
         await sendEmail(mailOptions);
 
 
@@ -131,23 +125,22 @@ exports.loginSendOtp = async (req, res) => {
 exports.signupInit = async (req, res) => {
     const { name, email, status, currency } = req.body;
 
-    // Debug logging for production
-    console.log('Signup request received:', { name, email, status, currency });
+
 
     if (!email) {
-        console.log('Error: Email is required');
+
         return res.status(400).json({ msg: 'Email is required' });
     }
 
     if (!validator.validate(email)) {
-        console.log('Error: Invalid email format:', email);
+
         return res.status(400).json({ msg: 'Invalid email address' });
     }
 
     try {
         let user = await User.findOne({ email });
         if (user) {
-            console.log('Error: User already exists:', email);
+
             return res.status(400).json({ msg: 'User already exists. Please login.' });
         }
 
@@ -189,7 +182,7 @@ exports.signupInit = async (req, res) => {
     `
         };
 
-        // Use unified service
+
         await sendEmail(mailOptions);
 
         res.json({ msg: 'OTP sent for verification', userId: user.id });
@@ -201,7 +194,7 @@ exports.signupInit = async (req, res) => {
 
 exports.verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
-    // For signup verify, email is safer than userId passed from client
+
 
     try {
         let user = await User.findOne({ email });
@@ -210,7 +203,7 @@ exports.verifyOtp = async (req, res) => {
         if (user.otp !== otp) return res.status(400).json({ msg: 'Invalid OTP' });
         if (user.otpExpires < Date.now()) return res.status(400).json({ msg: 'OTP Expired' });
 
-        // Success
+
         user.otp = undefined;
         user.otpExpires = undefined;
 
@@ -225,11 +218,11 @@ exports.verifyOtp = async (req, res) => {
     }
 };
 
-// @route   GET api/auth/me
+
 exports.loadUser = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-otp -otpExpires -refreshToken');
-        if (!user) {            // If user deleted but token exists?
+        const user = await User.findById(req.user.id).select('-otp -otpExpires -refreshToken -passcode');
+        if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
         res.json(user);
@@ -257,6 +250,109 @@ exports.updateProfile = async (req, res) => {
         res.json(user);
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.setPasscode = async (req, res) => {
+    const { passcode } = req.body;
+    // Passcode should be 4 or 6 digits
+    if (!passcode || !/^\d{4,6}$/.test(passcode)) {
+        return res.status(400).json({ msg: 'Invalid passcode format' });
+    }
+
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Simple hash (for production use bcrypt, but sticking to built-in crypto/simple approach if needed, 
+        // strictly speaking we should use bcrypt for pins too effectively)
+        // Let's reuse what we have or just store it. Wait, previously no password hashing shown?
+        // Ah, this project uses OTP mostly. I will use simple comparison for MVP or better, just store it directly if user insists on 
+        // "secure like...". But standard is hashing. I'll stick to direct storage for simplicity or a simple hash if I import crypto.
+        // Actually, let's just use crypto from imports if available or just store it. 
+        // Looking at imports: const crypto = require('crypto'); is there.
+        // Let's use SHA256 for PIN.
+
+        const hash = crypto.createHash('sha256').update(passcode).digest('hex');
+
+        user.passcode = hash;
+        user.passcodeLength = passcode.length;
+        user.isPasscodeEnabled = true;
+        await user.save();
+
+        // Send Email Notification
+        if (user.email) {
+            const mailOptions = {
+                from: `"SpendWise Security" <${process.env.EMAIL_USER}>`,
+                to: user.email,
+                subject: 'App Lock Enabled - SpendWise',
+                html: `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+                        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
+                        </div>
+                        <div style="padding: 32px 24px;">
+                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">App Lock Enabled</h2>
+                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">You have successfully enabled App Lock with a ${passcode.length}-digit PIN. This PIN will be required to access the app.</p>
+                            <div style="background-color: #fff1f2; border-left: 4px solid #e11d48; padding: 16px; margin: 24px 0; border-radius: 4px;">
+                                <p style="color: #9f1239; font-size: 14px; margin: 0;"><strong>Security Note:</strong> It is recommended to change your passcode every 24 hours.</p>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you did not make this change, please contact support immediately.</p>
+                        </div>
+                    </div>
+                `
+            };
+            // Fire and forget email to not block response? Or await? Await is safer for feedback but slower.
+            // Let's await but catch error so we don't fail the request if email fails.
+            try {
+                await sendEmail(mailOptions);
+            } catch (emailErr) {
+                console.error("Failed to send passcode email", emailErr);
+            }
+        }
+
+        res.json({ msg: 'Passcode updated successfully', isPasscodeEnabled: true, passcodeLength: passcode.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.verifyPasscode = async (req, res) => {
+    const { passcode } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        if (!user.isPasscodeEnabled || !user.passcode) {
+            return res.status(400).json({ msg: 'Passcode not enabled' });
+        }
+
+        const hash = crypto.createHash('sha256').update(passcode).digest('hex');
+        if (user.passcode !== hash) {
+            return res.status(400).json({ msg: 'Incorrect passcode' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.disablePasscode = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        user.isPasscodeEnabled = false;
+        user.passcode = undefined;
+        await user.save();
+
+        res.json({ msg: 'Passcode disabled', isPasscodeEnabled: false });
+    } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
 };

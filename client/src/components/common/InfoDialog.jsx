@@ -1,4 +1,4 @@
-import { X, Info, WifiOff, ShieldCheck, Smartphone, Database, ArrowRight } from 'lucide-react';
+import { X, Info, WifiOff, ShieldCheck, Smartphone, Database, ArrowRight, Search, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -37,23 +37,23 @@ const InfoDialog = ({ isOpen, onClose }) => {
         }
     ] : [
         {
-            icon: Database,
-            title: "Data Saved",
-            desc: "Your data is saved securely in the database.",
+            icon: Search,
+            title: "Smart Search",
+            desc: "Find expenses instantly with the new Search & Date Filters.",
             color: "text-blue-400",
             bg: "bg-blue-500/10",
         },
         {
-            icon: ShieldCheck,
-            title: "Secure Account",
-            desc: `Logged in as ${user?.name || 'User'}. Your privacy is our priority.`,
+            icon: Copy,
+            title: "Quick Duplicate",
+            desc: "Swipe or click to duplicate recurring expenses in seconds.",
             color: "text-green-400",
             bg: "bg-green-500/10",
         },
         {
             icon: Smartphone,
             title: "Cross Platform",
-            desc: "Access your finances from any device, anywhere.",
+            desc: "Access your finances from any device, anywhere. Now v2.1.0!",
             color: "text-purple-400",
             bg: "bg-purple-500/10",
         }
@@ -109,7 +109,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
                             Student Edition
                         </span>
                         <span className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-[10px] font-bold tracking-widest uppercase">
-                            V2.0.0
+                            V2.1.0
                         </span>
                     </div>
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { deleteExpense } from '../../store/slices/expenseSlice';
 import { format } from 'date-fns';
-import { Trash2, Pencil, MoreVertical } from 'lucide-react';
+import { Trash2, Pencil, MoreVertical, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const CATEGORY_ICONS = {
@@ -14,7 +14,7 @@ const CATEGORY_ICONS = {
     other: '🔹'
 };
 
-const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
+const ExpenseItem = ({ expense, onEdit, onDuplicate, readOnly = false }) => {
     const dispatch = useDispatch();
 
     const handleDelete = async () => {
@@ -64,6 +64,7 @@ const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
                     </span>
 
                     {/* 3-Dot Menu */}
+                    {/* 3-Dot Menu */}
                     {!readOnly && (
                         <div className="relative">
                             <button
@@ -76,7 +77,22 @@ const ExpenseItem = ({ expense, onEdit, readOnly = false }) => {
                                 <MoreVertical size={18} />
                             </button>
                             {showOptions && (
-                                <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden z-20">
+                                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 overflow-hidden z-20">
+                                    {onDuplicate && (
+                                        <>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDuplicate();
+                                                    setShowOptions(false);
+                                                }}
+                                                className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                                            >
+                                                <Copy size={16} className="mr-3 text-indigo-500" /> Duplicate
+                                            </button>
+                                            <div className="border-t border-gray-100 dark:border-slate-700"></div>
+                                        </>
+                                    )}
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

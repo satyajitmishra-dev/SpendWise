@@ -21,8 +21,11 @@ import WelcomeScreen from './pages/WelcomeScreen';
 import NotFoundPage from './pages/NotFoundPage';
 
 
-// Protected Route Component
+
 import LoadingScreen from './components/common/LoadingScreen';
+import LockScreen from './components/common/LockScreen';
+import IdleTimer from './components/common/IdleTimer';
+import SecurityPage from './pages/SecurityPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -112,6 +115,8 @@ function App() {
   return (
     <Router>
       <PageTitleUpdater />
+      <IdleTimer />
+      <LockScreen />
       <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
       <Routes>
         <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
@@ -131,7 +136,9 @@ function App() {
           <Route path="budgets" element={<BudgetPage />} />
           <Route path="loans" element={<LoansPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="security" element={<SecurityPage />} />
         </Route>
 
         {/* 404 Catch-All */}

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Async Thunks
+
 export const fetchExpenses = createAsyncThunk(
     'expenses/fetchExpenses',
     async (_, { rejectWithValue, getState }) => {
@@ -121,7 +121,7 @@ export const fetchExpenseStats = createAsyncThunk(
 const initialState = {
     items: [],
     loading: false,
-    stats: null, // New field for stats
+    stats: null,
     statsLoading: false,
     error: null,
 };
@@ -132,7 +132,7 @@ const expenseSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // Fetch
+
             .addCase(fetchExpenses.pending, (state) => {
                 state.loading = true;
             })
@@ -144,7 +144,7 @@ const expenseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // Fetch Stats
+
             .addCase(fetchExpenseStats.pending, (state) => {
                 state.statsLoading = true;
             })
@@ -154,13 +154,13 @@ const expenseSlice = createSlice({
             })
             .addCase(fetchExpenseStats.rejected, (state, action) => {
                 state.statsLoading = false;
-                // state.error = action.payload; // Optional: don't block main UI on stats fail
+
             })
-            // Add
+
             .addCase(addExpense.fulfilled, (state, action) => {
-                state.items.unshift(action.payload); // Add to top
+                state.items.unshift(action.payload);
             })
-            // Delete
+
             .addCase(deleteExpense.fulfilled, (state, action) => {
                 state.items = state.items.filter(item => item._id !== action.payload);
             })

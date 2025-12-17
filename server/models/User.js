@@ -6,6 +6,9 @@ const UserSchema = new mongoose.Schema({
     otp: { type: String },
     otpExpires: { type: Date },
     refreshToken: { type: String },
+    passcode: { type: String }, // Hashed passcode
+    passcodeLength: { type: Number, default: 4 }, // 4 or 6
+    isPasscodeEnabled: { type: Boolean, default: false },
 
     // Legacy/Context fields
     status: { type: String, enum: ['student', 'intern', 'professional', 'other'], default: 'student' },

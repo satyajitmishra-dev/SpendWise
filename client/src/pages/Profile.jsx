@@ -70,7 +70,7 @@ const Profile = () => {
                 Log Out
             </button>
 
-            <p className="text-center text-gray-300 dark:text-slate-600 text-xs mt-8">v1.1.0 ⭐ SpendWise Student</p>
+            <p className="text-center text-gray-300 dark:text-slate-600 text-xs mt-8">SpendWise ✨ v2.2.0</p>
         </div>
     );
 };

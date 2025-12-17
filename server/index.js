@@ -8,14 +8,14 @@ const compression = require('compression');
 
 const app = express();
 
-// CORS Configuration - Allow custom domain and localhost
+
 const allowedOrigins = [
     'http://localhost:5173',           // Local development (Vite)
     'http://localhost:3000',           // Alternative local port
     'https://spendwise.satyajitmishra.me',  // Production domain
 ];
 
-// Add additional origins from environment variable if present
+
 if (process.env.ALLOWED_ORIGINS) {
     const additionalOrigins = process.env.ALLOWED_ORIGINS.split(',');
     allowedOrigins.push(...additionalOrigins);
@@ -23,7 +23,7 @@ if (process.env.ALLOWED_ORIGINS) {
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, Postman, or curl)
+
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.indexOf(origin) !== -1) {
@@ -64,7 +64,7 @@ mongoose.connect(MONGO_URI)
 const { initScheduler } = require('./services/scheduler');
 initScheduler();
 
-// app.get('/', (req, res) => res.send('API Running'));
+
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/expenses', require('./routes/expenses'));
@@ -74,11 +74,11 @@ app.use('/api/loans', require('./routes/loans'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/cron', require('./routes/cron'));
 
-// Serve Static Assets in Production
+
 const path = require('path');
 const distPath = path.join(__dirname, '../client/dist');
 
-// Serve static files with proper MIME types
+
 app.use(express.static(distPath, {
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.css')) {
@@ -89,10 +89,9 @@ app.use(express.static(distPath, {
     }
 }));
 
-// The "catchall" handler: for any request that doesn't match API or static files
-// Only serve index.html for non-file requests (no extension)
+
 app.get(/^\/(?!api).*/, (req, res, next) => {
-    // If the request has a file extension, it's likely a static asset that wasn't found
+
     if (path.extname(req.path)) {
         return next();
     }

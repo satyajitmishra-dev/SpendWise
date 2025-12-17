@@ -18,7 +18,7 @@ router.get('/reminders', async (req, res) => {
     }
 
     try {
-        console.log('Triggering reminders via API...');
+
         await triggerReminders(req, res);
     } catch (error) {
         console.error('Cron Error:', error);

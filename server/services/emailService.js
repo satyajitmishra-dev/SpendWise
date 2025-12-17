@@ -1,15 +1,15 @@
 const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
 
-// Determine which email service to use based on environment
+
 const USE_SENDGRID = process.env.NODE_ENV === 'production' && process.env.SENDGRID_API_KEY;
 
-// Configure SendGrid if in production
+
 if (USE_SENDGRID) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-// Configure Nodemailer for development (Gmail)
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -28,7 +28,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendEmail(mailOptions) {
     if (USE_SENDGRID) {
-        // SendGrid format
+
         const msg = {
             to: mailOptions.to,
             from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
@@ -37,7 +37,7 @@ async function sendEmail(mailOptions) {
         };
         return await sgMail.send(msg);
     } else {
-        // Nodemailer format (development)
+
         return await transporter.sendMail(mailOptions);
     }
 }

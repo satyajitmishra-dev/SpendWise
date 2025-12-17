@@ -9,6 +9,7 @@ import { Plus, Bell, BarChart3 } from 'lucide-react';
 const SubscriptionsPage = () => {
     const dispatch = useDispatch();
     const { items, loading } = useSelector((state) => state.subscriptions);
+    const [editingSubscription, setEditingSubscription] = useState(null);
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     useEffect(() => {
@@ -19,13 +20,23 @@ const SubscriptionsPage = () => {
         return sum + (sub.cycle === 'monthly' ? sub.amount : sub.amount / 12);
     }, 0);
 
+    const handleEdit = (subscription) => {
+        setEditingSubscription(subscription);
+        setIsAddOpen(true);
+    };
+
+    const handleClose = () => {
+        setIsAddOpen(false);
+        setEditingSubscription(null);
+    };
+
     return (
         <div className="p-6 pb-24 space-y-6">
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold dark:text-white">Subscriptions</h1>
                 <button
-                    onClick={() => setIsAddOpen(true)}
+                    onClick={() => { setEditingSubscription(null); setIsAddOpen(true); }}
                     className="p-2 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-100 dark:hover:bg-slate-700 transition-colors"
                 >
                     <Plus size={24} />
@@ -71,14 +82,14 @@ const SubscriptionsPage = () => {
                             </div>
                         ) : (
                             items.map(sub => (
-                                <SubscriptionItem key={sub._id} subscription={sub} />
+                                <SubscriptionItem key={sub._id} subscription={sub} onEdit={handleEdit} />
                             ))
                         )}
                     </div>
                 )}
             </div>
 
-            <AddSubscriptionSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+            <AddSubscriptionSheet isOpen={isAddOpen} onClose={handleClose} editingSubscription={editingSubscription} />
         </div>
     );
 };

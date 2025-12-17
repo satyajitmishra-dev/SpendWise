@@ -1,28 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
-// Guest Login
+
 export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestData, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/init', guestData);
         localStorage.setItem('token', res.data.token);
-        return res.data; // { token, user }
+        return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
     }
 });
 
-// Signup 
+
 export const signupInit = createAsyncThunk('auth/signupInit', async (userData, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/signup-init', userData);
-        return res.data; // { msg: 'OTP sent' }
+        return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
     }
 });
 
-// Login OTP Send
+
 export const loginSendOtp = createAsyncThunk('auth/loginSendOtp', async (email, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/login-otp', { email });
@@ -32,24 +32,51 @@ export const loginSendOtp = createAsyncThunk('auth/loginSendOtp', async (email, 
     }
 });
 
-// Verify OTP (Works for both)
+
 export const verifyOtp = createAsyncThunk('auth/verifyOtp', async ({ email, otp }, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/verify-otp', { email, otp });
         localStorage.setItem('token', res.data.token);
-        return res.data; // { token, user }
+        return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
     }
 });
 
-// Connect Guest Data to Account
+export const setPasscode = createAsyncThunk('auth/setPasscode', async (passcode, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/passcode/set', { passcode });
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+export const verifyPasscode = createAsyncThunk('auth/verifyPasscode', async (passcode, { rejectWithValue }) => {
+    try {
+        const response = await api.post('/auth/passcode/verify', { passcode });
+        return response.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+export const disablePasscode = createAsyncThunk('auth/disablePasscode', async (_, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/passcode/disable');
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+
 export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { getState, dispatch, rejectWithValue }) => {
     try {
         const state = getState();
         const expenses = JSON.parse(localStorage.getItem('guest_expenses') || '[]');
 
-        // Sync Expenses
+
         if (expenses.length > 0) {
             await api.post('/expenses/sync', { expenses });
         }
@@ -68,7 +95,7 @@ export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { 
             }
         }
 
-        // Clear Local Guest Data
+
         localStorage.removeItem('guest_expenses');
         localStorage.removeItem('guestUser');
         // Do NOT remove token yet, we are logged in
@@ -95,7 +122,9 @@ const initialState = {
     loading: true, // Start true to check auth status
     error: null,
     otpSent: false,
-    isAuthenticated: false
+    otpSent: false,
+    isAuthenticated: false,
+    isAppLocked: false
 };
 
 const authSlice = createSlice({
@@ -107,17 +136,23 @@ const authSlice = createSlice({
             state.user = null;
             state.isAuthenticated = false;
             state.loading = false;
+            state.isAppLocked = false;
         },
         updateUser: (state, action) => {
             state.user = { ...state.user, ...action.payload };
         },
         clearError: (state) => {
             state.error = null;
+        },
+        lockApp: (state) => {
+            if (state.isAuthenticated && state.user?.isPasscodeEnabled) {
+                state.isAppLocked = true;
+            }
         }
     },
     extraReducers: (builder) => {
         builder
-            // Load User
+
             .addCase(loadUser.pending, (state) => {
                 state.loading = true;
             })
@@ -125,6 +160,9 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload;
+                if (action.payload.isPasscodeEnabled) {
+                    state.isAppLocked = true;
+                }
             })
             .addCase(loadUser.rejected, (state) => {
                 state.loading = false;
@@ -132,7 +170,7 @@ const authSlice = createSlice({
                 state.user = null;
             })
 
-            // Login Send OTP
+
             .addCase(loginSendOtp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -147,7 +185,7 @@ const authSlice = createSlice({
                 state.error = action.payload?.msg || 'Failed to send OTP';
             })
 
-            // Signup Init
+
             .addCase(signupInit.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -162,7 +200,7 @@ const authSlice = createSlice({
                 state.error = action.payload?.msg || 'Failed to send OTP';
             })
 
-            // Guest Login
+
             .addCase(loginAsGuest.pending, (state) => {
                 state.loading = true;
             })
@@ -177,7 +215,7 @@ const authSlice = createSlice({
                 state.error = action.payload?.error || 'Guest login failed';
             })
 
-            // Verify OTP
+
             .addCase(verifyOtp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -192,9 +230,29 @@ const authSlice = createSlice({
             .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.msg || 'Verification failed';
+            })
+            // Passcode Thunks
+            .addCase(setPasscode.fulfilled, (state) => {
+                if (state.user) state.user.isPasscodeEnabled = true;
+            })
+            .addCase(disablePasscode.fulfilled, (state) => {
+                if (state.user) state.user.isPasscodeEnabled = false;
+                state.isAppLocked = false;
+            })
+            .addCase(verifyPasscode.fulfilled, (state) => {
+                state.isAppLocked = false;
+            })
+            .addCase(setPasscode.rejected, (state, action) => {
+                let msg = action.payload?.msg || 'Failed to set passcode';
+                if (typeof msg === 'string' && msg.includes('<')) msg = 'Server Error: Invalid Response';
+                toast.error(msg);
+            }) // Added error handling for setPasscode
+            .addCase(verifyPasscode.rejected, (state, action) => {
+                state.isAppLocked = true; // Keep locked?
+                // Error handled in component usually
             });
     },
 });
 
-export const { logout, clearError, updateUser } = authSlice.actions;
+export const { logout, clearError, updateUser, lockApp } = authSlice.actions;
 export default authSlice.reducer;

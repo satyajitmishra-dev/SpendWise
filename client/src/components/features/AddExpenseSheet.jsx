@@ -26,7 +26,7 @@ const INCOME_CATEGORIES = [
     { id: 'other', label: 'Other', color: 'bg-gray-100 text-gray-600' },
 ];
 
-const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onExpenseAdded }) => {
+const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialAccountId, onExpenseAdded }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -66,6 +66,16 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onE
                 setNote(expenseToEdit.note || '');
                 setDate(new Date(expenseToEdit.date).toISOString().split('T')[0]);
                 setSelectedAccount(expenseToEdit.accountId || '');
+            } else if (initialData) {
+                // Pre-fill from initialData (Duplication) but don't set expenseToEdit
+                setAmount(initialData.amount.toString());
+                setType(initialData.type || 'expense');
+                setCategory(initialData.category);
+                setNote(initialData.note || '');
+                // Use today's date for duplicate, or preserve original? Usually today is better for "Repeat".
+                // But let's default to today's date for "New Entry based on Old".
+                setDate(getLocalDate());
+                setSelectedAccount(initialData.accountId || '');
             } else {
                 // Reset to defaults for Add mode
                 setAmount('');
@@ -76,7 +86,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialAccountId, onE
                 setSelectedAccount(initialAccountId || '');
             }
         }
-    }, [isOpen, expenseToEdit, initialAccountId, dispatch]);
+    }, [isOpen, expenseToEdit, initialData, initialAccountId, dispatch]);
 
     // Switch categories when type changes
     useEffect(() => {
