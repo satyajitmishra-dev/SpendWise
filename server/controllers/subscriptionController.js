@@ -1,4 +1,5 @@
 const Subscription = require('../models/Subscription');
+const { createNotification } = require('./notificationController');
 
 exports.getSubscriptions = async (req, res) => {
     try {
@@ -13,6 +14,9 @@ exports.addSubscription = async (req, res) => {
     try {
         const newSub = new Subscription({ ...req.body, userId: req.user.id });
         const sub = await newSub.save();
+
+        await createNotification(req.user.id, 'New Subscription', `Tracking started for ${req.body.name}`, 'success');
+
         res.json(sub);
     } catch (err) {
         res.status(500).send('Server Error');

@@ -1,4 +1,5 @@
 const Account = require('../models/Account');
+const { createNotification } = require('./notificationController');
 
 exports.getAccounts = async (req, res) => {
     try {
@@ -13,6 +14,9 @@ exports.addAccount = async (req, res) => {
     try {
         const newAccount = new Account({ ...req.body, userId: req.user.id });
         const account = await newAccount.save();
+
+        await createNotification(req.user.id, 'New Account', `You added a new ${req.body.type} account: ${req.body.name}`, 'success');
+
         res.json(account);
     } catch (err) {
         res.status(500).send('Server Error');

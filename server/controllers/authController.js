@@ -233,7 +233,7 @@ exports.loadUser = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    const { userId, name, college, status, currency, budget, onboardingComplete } = req.body;
+    const { userId, name, college, status, currency, budget, onboardingComplete, avatar } = req.body;
 
     try {
         let user = await User.findById(userId);
@@ -245,11 +245,51 @@ exports.updateProfile = async (req, res) => {
         user.currency = currency || user.currency;
         user.budget = budget || user.budget;
         if (onboardingComplete !== undefined) user.onboardingComplete = onboardingComplete;
+        if (avatar !== undefined) user.avatar = avatar;
 
         await user.save();
         res.json(user);
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.uploadAvatar = async (req, res) => {
+    try {
+        // req.file is available due to multer
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        // The URL is provided by cloudinary storage
+        const avatarUrl = req.file.path;
+
+        // Update user
+        let user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        user.avatar = avatarUrl;
+        await user.save();
+
+        res.json({ avatar: avatarUrl, user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.deleteAvatar = async (req, res) => {
+    try {
+        let user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        user.avatar = ''; // Clear avatar
+        await user.save();
+
+        res.json({ avatar: '', user });
+    } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
 };

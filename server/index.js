@@ -73,6 +73,7 @@ app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/loans', require('./routes/loans'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/cron', require('./routes/cron'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 
 const path = require('path');

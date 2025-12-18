@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
     passcode: { type: String }, // Hashed passcode
     passcodeLength: { type: Number, default: 4 }, // 4 or 6
     isPasscodeEnabled: { type: Boolean, default: false },
+    avatar: { type: String },
 
     // Legacy/Context fields
     status: { type: String, enum: ['student', 'intern', 'professional', 'other'], default: 'student' },

@@ -48,6 +48,22 @@ const LockScreen = () => {
         }
     }, [passcode, expectedLength]);
 
+    // Keyboard Support
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (loading) return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                handleNumberClick(parseInt(e.key));
+            } else if (e.key === 'Backspace') {
+                handleDelete();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [loading, passcode.length, expectedLength]);
+
     if (!isAppLocked) return null;
 
     return (

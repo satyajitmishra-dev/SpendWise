@@ -17,6 +17,8 @@ import ReportsPage from './pages/ReportsPage';
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import ProfileSetup from './pages/ProfileSetup';
+import EditProfile from './pages/EditProfile';
+import Notifications from './pages/Notifications';
 import WelcomeScreen from './pages/WelcomeScreen';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -138,6 +140,8 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="edit-profile" element={<EditProfile />} />
+          <Route path="notifications" element={<Notifications />} />
           <Route path="security" element={<SecurityPage />} />
         </Route>
 

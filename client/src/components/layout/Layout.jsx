@@ -1,23 +1,44 @@
-import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X, Info } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
-import InfoDialog from '../common/InfoDialog'; // Import InfoDialog
+import InfoDialog from '../common/InfoDialog';
 import InstallPrompt from '../common/InstallPrompt';
 import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
 import ThemeToggler from './ThemeToggler';
 import { useSelector } from 'react-redux';
+import api from '../../services/api';
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isInfoOpen, setIsInfoOpen] = useState(false); // Add Info State
+    const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isInstallPromptOpen, setIsInstallPromptOpen] = useState(false);
     const { user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Notification State
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchUnreadCount = async () => {
+        try {
+            const res = await api.get('/notifications/unread-count');
+            setUnreadCount(res.data.count);
+        } catch (error) {
+            console.error('Failed to fetch unread notifications');
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCount();
+        // Poll every 30 seconds
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [location.pathname]); // Also refresh on route change
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-slate-100 transition-colors duration-300 relative selection:bg-indigo-500/30">
@@ -88,9 +109,18 @@ const Layout = () => {
                                 </button>
                                 <button
                                     onClick={() => navigate('/profile')}
-                                    className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20"
+                                    className="relative w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20 overflow-hidden"
                                 >
-                                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                                    {user?.avatar ? (
+                                        <img src={user.avatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                    ) : (
+                                        user?.name?.[0]?.toUpperCase() || 'U'
+                                    )}
+
+                                    {/* Notification Dot */}
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse shadow-md"></span>
+                                    )}
                                 </button>
                             </div>
                         </div>

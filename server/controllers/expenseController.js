@@ -1,5 +1,6 @@
 const Expense = require('../models/Expense');
 const mongoose = require('mongoose');
+const { createNotification } = require('./notificationController');
 
 exports.getExpenses = async (req, res) => {
     try {
@@ -52,6 +53,14 @@ exports.addExpense = async (req, res) => {
 
         const expense = await newExpense.save();
 
+        // Trigger Notification
+        await createNotification(
+            req.user.id,
+            'Transaction Added',
+            `You added a ${type} of ${amount} for ${category}.`,
+            'success'
+        );
+
         res.json(expense);
     } catch (err) {
         console.error(err.message);
@@ -89,6 +98,14 @@ exports.deleteExpense = async (req, res) => {
         }
 
         await expense.deleteOne();
+
+        await createNotification(
+            req.user.id,
+            'Transaction Removed',
+            'You removed a transaction record.',
+            'info'
+        );
+
         res.json({ msg: 'Expense removed' });
     } catch (err) {
         console.error(err.message);
