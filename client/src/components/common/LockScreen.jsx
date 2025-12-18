@@ -33,6 +33,7 @@ const LockScreen = () => {
             // App will unlock via state change
         } catch (err) {
             // toast handled by api interceptor
+            if (navigator.vibrate) navigator.vibrate(200); // Vibrate for 200ms
             setPasscode('');
             setErrorShake(prev => prev + 1); // Trigger shake
         } finally {

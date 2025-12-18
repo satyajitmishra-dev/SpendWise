@@ -13,6 +13,7 @@ const SecurityPage = () => {
     const [pinLength, setPinLength] = useState(4);
     const [pin, setPin] = useState('');
     const [confirmPin, setConfirmPin] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSetPin = async () => {
         if (pin.length !== pinLength) {
@@ -24,6 +25,8 @@ const SecurityPage = () => {
             return;
         }
 
+
+        setLoading(true);
         try {
             await dispatch(setPasscode(pin)).unwrap();
             toast.success('App Lock Enabled. Check your email for confirmation.');
@@ -32,6 +35,8 @@ const SecurityPage = () => {
             setConfirmPin('');
         } catch (err) {
             toast.error(typeof err === 'string' ? err : 'Failed to set PIN');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -131,15 +136,24 @@ const SecurityPage = () => {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => setIsSetting(false)}
-                                        className="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                        disabled={loading}
+                                        className="flex-1 py-3 text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors disabled:opacity-50"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={handleSetPin}
-                                        className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors"
+                                        disabled={loading}
+                                        className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
-                                        Save PIN
+                                        {loading ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Save PIN'
+                                        )}
                                     </button>
                                 </div>
                             </div>
