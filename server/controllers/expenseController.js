@@ -77,6 +77,34 @@ exports.updateExpense = async (req, res) => {
             return res.status(401).json({ msg: 'Not authorized' });
         }
 
+        const Account = require('../models/Account');
+
+        // 1. Revert Old Balance Impact
+        if (expense.accountId) {
+            const oldAccount = await Account.findById(expense.accountId);
+            if (oldAccount) {
+                if (expense.type === 'income') oldAccount.balance -= expense.amount;
+                else oldAccount.balance += expense.amount;
+                await oldAccount.save();
+            }
+        }
+
+        // 2. Prepare New Values
+        const { amount, accountId, type } = req.body;
+        const newAmount = amount !== undefined ? Number(amount) : expense.amount;
+        const newAccountId = accountId !== undefined ? accountId : expense.accountId;
+        const newType = type !== undefined ? type : expense.type;
+
+        // 3. Apply New Balance Impact
+        if (newAccountId) {
+            const newAccount = await Account.findById(newAccountId);
+            if (newAccount) {
+                if (newType === 'income') newAccount.balance += newAmount;
+                else newAccount.balance -= newAmount;
+                await newAccount.save();
+            }
+        }
+
         expense = await Expense.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
         res.json(expense);
     } catch (err) {
@@ -95,6 +123,21 @@ exports.deleteExpense = async (req, res) => {
 
         if (expense.userId.toString() !== req.user.id.toString()) {
             return res.status(401).json({ msg: 'User not authorized' });
+        }
+
+        // Revert Account Balance
+        if (expense.accountId) {
+            const Account = require('../models/Account');
+            const account = await Account.findById(expense.accountId);
+
+            if (account) {
+                if (expense.type === 'income') {
+                    account.balance -= expense.amount;
+                } else {
+                    account.balance += expense.amount;
+                }
+                await account.save();
+            }
         }
 
         await expense.deleteOne();

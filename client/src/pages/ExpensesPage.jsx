@@ -39,8 +39,21 @@ const ExpensesPage = () => {
 
     const handleDelete = async (id) => {
         if (window.confirm('Delete this expense?')) {
+            const expense = items.find(e => e._id === id);
             try {
                 await dispatch(deleteExpense(id)).unwrap();
+
+                // Optimistic Balance Update
+                if (expense && expense.accountId) {
+                    const amount = parseFloat(expense.amount);
+                    // Deleting expense = add money back. Deleting income = remove money.
+                    const balanceChange = expense.type === 'income' ? -amount : amount;
+                    dispatch(updateAccountBalance({
+                        accountId: expense.accountId,
+                        amount: balanceChange
+                    })); // No fetchAccounts needed
+                }
+
                 toast.success('Expense deleted');
             } catch (error) {
                 toast.error('Failed to delete expense');

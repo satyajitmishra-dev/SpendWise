@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X, Info } from 'lucide-react';
+import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X, Info, Bell } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import AddExpenseSheet from '../features/AddExpenseSheet';
 import InfoDialog from '../common/InfoDialog';
@@ -25,6 +25,7 @@ const Layout = () => {
     const [unreadCount, setUnreadCount] = useState(0);
 
     const fetchUnreadCount = async () => {
+        if (!user || user.isGuest) return;
         try {
             const res = await api.get('/notifications/unread-count');
             setUnreadCount(res.data.count);
@@ -101,6 +102,24 @@ const Layout = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
+                                {user && !user.isGuest && (
+                                    <button
+                                        onClick={() => navigate('/notifications')}
+                                        className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm active:scale-95 transition-all relative"
+                                    >
+                                        <div className="relative">
+                                            <Bell size={20} className="fill-indigo-100 dark:fill-indigo-900/40" />
+                                            {/* Notification Dot */}
+                                            {unreadCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-ping"></span>
+                                            )}
+                                            {unreadCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                                            )}
+                                        </div>
+                                    </button>
+                                )}
+
                                 <button
                                     onClick={() => setIsInfoOpen(true)}
                                     className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm active:scale-95 transition-all"
@@ -115,11 +134,6 @@ const Layout = () => {
                                         <img src={user.avatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
                                     ) : (
                                         user?.name?.[0]?.toUpperCase() || 'U'
-                                    )}
-
-                                    {/* Notification Dot */}
-                                    {unreadCount > 0 && (
-                                        <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse shadow-md"></span>
                                     )}
                                 </button>
                             </div>

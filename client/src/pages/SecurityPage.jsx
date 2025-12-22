@@ -15,6 +15,19 @@ const SecurityPage = () => {
     const [confirmPin, setConfirmPin] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const [pageLoading, setPageLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user?.email) {
+            toast.error("Please login to access security settings");
+            navigate('/profile');
+        } else {
+            setPageLoading(false);
+        }
+    }, [user, navigate]);
+
+    if (pageLoading) return null; // Prevent flash
+
     const handleSetPin = async () => {
         if (pin.length !== pinLength) {
             toast.error(`PIN must be ${pinLength} digits`);

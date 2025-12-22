@@ -23,6 +23,12 @@ const Notifications = () => {
     };
 
     useEffect(() => {
+        // If guest, maybe show static data or nothing. For now, just skip fetch.
+        const user = JSON.parse(localStorage.getItem('user') || '{}'); // Or get from redux if possible, but local storage is quicker for this snippet
+        if (user?.isGuest) {
+            setIsLoading(false);
+            return;
+        }
         fetchNotifications();
     }, []);
 
@@ -96,8 +102,8 @@ const Notifications = () => {
                                 exit={{ opacity: 0, height: 0 }}
                                 transition={{ delay: index * 0.05 }}
                                 className={`relative p-4 rounded-2xl border transition-all ${notification.isRead
-                                        ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 opacity-70'
-                                        : 'bg-white/80 dark:bg-slate-900/90 backdrop-blur-sm border-indigo-100 dark:border-indigo-900/30 shadow-sm'
+                                    ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 opacity-70'
+                                    : 'bg-white/80 dark:bg-slate-900/90 backdrop-blur-sm border-indigo-100 dark:border-indigo-900/30 shadow-sm'
                                     }`}
                                 onClick={() => !notification.isRead && markAsRead(notification._id)}
                             >

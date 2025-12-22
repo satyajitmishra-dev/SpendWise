@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { initUser, loginSendOtp, signupInit, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, uploadAvatar, deleteAvatar } = require('../controllers/authController');
+const { initUser, loginSendOtp, signupInit, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, forgotPasscode, resetPasscode, uploadAvatar, deleteAvatar } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -17,6 +17,8 @@ router.post('/delete-avatar', auth, deleteAvatar);
 router.post('/passcode/set', auth, setPasscode);
 router.post('/passcode/verify', auth, verifyPasscode);
 router.post('/passcode/disable', auth, disablePasscode);
+router.post('/passcode/forgot', auth, forgotPasscode);
+router.post('/passcode/reset', auth, resetPasscode);
 router.get('/test-reminders', triggerReminders);
 
 module.exports = router;

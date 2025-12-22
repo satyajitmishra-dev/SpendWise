@@ -137,6 +137,21 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     id: expenseToEdit._id,
                     data: { amount: parsedAmount, category, note, date, accountId: selectedAccount || null, type }
                 })).unwrap();
+
+                // Optimistic Balance Update for Edit
+                // 1. Revert Old
+                if (expenseToEdit.accountId) {
+                    const oldAmt = parseFloat(expenseToEdit.amount);
+                    const oldImpact = expenseToEdit.type === 'income' ? -oldAmt : oldAmt;
+                    dispatch(updateAccountBalance({ accountId: expenseToEdit.accountId, amount: oldImpact }));
+                }
+
+                // 2. Apply New
+                if (selectedAccount) {
+                    const newImpact = type === 'income' ? parsedAmount : -parsedAmount;
+                    dispatch(updateAccountBalance({ accountId: selectedAccount, amount: newImpact }));
+                }
+
                 toast.success('Transaction updated!');
             } else {
                 // Add Logic

@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import ThemeToggler from '../components/layout/ThemeToggler';
 import { motion } from 'framer-motion';
 
@@ -140,7 +141,23 @@ const Profile = () => {
                 <motion.div variants={item} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl shadow-sm border border-white/20 dark:border-slate-800 overflow-hidden">
                     <MenuItem icon={Settings} label="Preferences" color="text-gray-600" onClick={() => navigate('/preferences')} />
                     <MenuItem icon={Bell} label="Notifications" color="text-yellow-600" onClick={() => navigate('/notifications')} />
-                    <MenuItem icon={Shield} label="Security & Passcode" color="text-green-600" onClick={() => navigate('/security')} />
+                    <MenuItem
+                        icon={Shield}
+                        label="Security & Passcode"
+                        color="text-green-600"
+                        onClick={() => {
+                            if (!user?.email) {
+                                toast.error("Please login/signup to enable security features", {
+                                    action: {
+                                        label: 'Login',
+                                        onClick: () => navigate('/login')
+                                    }
+                                });
+                            } else {
+                                navigate('/security');
+                            }
+                        }}
+                    />
                     <MenuItem icon={HelpCircle} label="Help & Support" color="text-blue-600" onClick={() => navigate('/help')} />
                 </motion.div>
 

@@ -1,9 +1,10 @@
+
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { loginAsGuest } from '../store/slices/authSlice';
-import { ArrowRight, LogIn, UserCircle } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { ArrowRight, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 const WelcomeScreen = () => {
     const dispatch = useDispatch();
@@ -26,76 +27,90 @@ const WelcomeScreen = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-indigo-600 text-white relative overflow-hidden">
-            {/* Animated Background Shapes */}
-            <div className="absolute top-[-20%] left-[-20%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-            <div className="absolute bottom-[-20%] right-[-20%] w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
-            <div className="absolute top-[40%] left-[20%] w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="relative h-screen w-full overflow-hidden bg-slate-950 flex flex-col items-center justify-between py-12 px-6">
 
-            <div className="flex-1 flex flex-col justify-center items-center px-6 z-10 w-full max-w-lg mx-auto">
-                {/* Logo / Band */}
-                <div className="mb-12 text-center animate-in fade-in zoom-in duration-700">
-                    <Link to="/welcome" className="relative inline-flex mb-2 animate-in zoom-in duration-500">
-                        <img src="/logo1.svg" alt="SpendWise Logo" className="relative w-48 h-48 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500 ease-out cursor-pointer" />
-                    </Link>
-                    <h1 className="text-5xl font-black tracking-tight mb-2 drop-shadow-md">
+            {/* Ambient Lighting - Even subtler for 'Clean' look */}
+            <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px]"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-blue-900/5 rounded-full blur-[100px]"></div>
+
+            {/* Micro-Noise Texture (Reduced opacity) */}
+            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] pointer-events-none"></div>
+
+            {/* Top Section */}
+            <div className="relative z-10 flex flex-col items-center text-center mt-16 space-y-10">
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0, blur: 10 }}
+                    animate={{ scale: 1, opacity: 1, blur: 0 }}
+                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative"
+                >
+                    {/* Refined Glow */}
+                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-3xl transform scale-150"></div>
+                    <img src="/logo1.svg" alt="SpendWise" className="relative w-40 h-40 object-contain drop-shadow-2xl" />
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.8 }}
+                    className="space-y-3"
+                >
+                    <h1 className="text-5xl font-medium text-white tracking-tight">
                         SpendWise
                     </h1>
-                    <p className="text-xl text-indigo-100 font-medium opacity-90 tracking-wide">
+                    <p className="text-slate-400 font-light text-sm tracking-[0.3em] uppercase">
                         Student Edition
                     </p>
-                </div>
-
-                {/* Main Card */}
-                <div className="w-full bg-white/10 backdrop-blur-xl rounded-3xl p-8 ring-1 ring-white/20 shadow-2xl animate-in slide-in-from-bottom-10 duration-700 delay-200">
-                    <div className="space-y-4">
-                        {/* Option 1: Login / Cloud */}
-                        <button
-                            onClick={() => navigate('/login')}
-                            className="group w-full bg-white hover:bg-indigo-50 text-indigo-600 p-4 rounded-2xl font-bold text-lg shadow-lg transition-all flex items-center justify-between active:scale-[0.98]"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-100 rounded-full text-indigo-600 group-hover:bg-indigo-200 transition-colors">
-                                    <LogIn size={20} />
-                                </div>
-                                <div className="text-left">
-                                    <span className="block text-sm text-gray-500 font-normal">Sync across devices</span>
-                                    <span>Login / Signup</span>
-                                </div>
-                            </div>
-                            <ArrowRight size={20} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
-                        </button>
-
-                        <div className="flex items-center gap-4 py-2">
-                            <div className="h-px bg-white/20 flex-1"></div>
-                            <span className="text-indigo-200 text-sm font-medium">OR</span>
-                            <div className="h-px bg-white/20 flex-1"></div>
-                        </div>
-
-                        {/* Option 2: Guest */}
-                        <button
-                            onClick={handleGuestLogin}
-                            disabled={loading}
-                            className="group w-full bg-indigo-900/40 hover:bg-indigo-900/60 text-white p-4 rounded-2xl font-bold text-lg ring-1 ring-white/10 hover:ring-white/30 transition-all flex items-center justify-between active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-white/10 rounded-full text-indigo-300 group-hover:bg-white/20 transition-colors">
-                                    <UserCircle size={20} />
-                                </div>
-                                <div className="text-left">
-                                    <span className="block text-sm text-indigo-300 font-normal">Local Only</span>
-                                    <span>{loading ? 'Setting up...' : 'Continue as Guest'}</span>
-                                </div>
-                            </div>
-                            {!loading && <ArrowRight size={20} className="text-indigo-400 group-hover:text-white transition-colors" />}
-                        </button>
-                    </div>
-                </div>
-
-                <p className="mt-8 text-center text-sm text-indigo-200/80 max-w-xs leading-relaxed">
-                    Track your expenses, manage subscriptions, and stay debt-free.
-                </p>
+                </motion.div>
             </div>
+
+            {/* Middle Section: Typewriter Tagline */}
+            <div className="flex-1 flex flex-col items-center justify-center z-10">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1, duration: 1 }}
+                    className="text-center space-y-4"
+                >
+                    <p className="text-2xl font-light text-white/90 leading-relaxed tracking-wide">
+                        "Stop wondering where your <br /> <span className="text-indigo-400 font-normal">money went.</span>"
+                    </p>
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "100%" }}
+                        transition={{ delay: 2, duration: 1.5, ease: "easeInOut" }}
+                        className="h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent mx-auto max-w-[100px]"
+                    ></motion.div>
+                </motion.div>
+            </div>
+
+            {/* Bottom Actions */}
+            <motion.div
+                className="relative z-10 w-full max-w-sm space-y-5 mb-safe"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+            >
+                {/* Minimal Primary Button */}
+                <button
+                    onClick={() => navigate('/login')}
+                    className="group w-full bg-white text-slate-950 h-14 rounded-full font-semibold text-lg hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/10"
+                >
+                    Get Started
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300 opacity-60" />
+                </button>
+
+                {/* Minimal Secondary Link */}
+                <button
+                    onClick={handleGuestLogin}
+                    disabled={loading}
+                    className="w-full h-12 text-slate-400 hover:text-white font-medium text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                    <UserCircle size={16} />
+                    {loading ? 'Entering...' : 'Continue as Guest'}
+                </button>
+            </motion.div>
+
         </div>
     );
 };

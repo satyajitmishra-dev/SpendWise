@@ -396,3 +396,73 @@ exports.disablePasscode = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+exports.forgotPasscode = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 600000; // 10 mins
+        await user.save();
+
+        // Send Email
+        if (user.email) {
+            const mailOptions = {
+                from: `"SpendWise Security" <${process.env.EMAIL_USER}>`,
+                to: user.email,
+                subject: 'Reset App Lock - SpendWise',
+                html: `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+                        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
+                        </div>
+                        <div style="padding: 32px 24px;">
+                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Reset App Lock</h2>
+                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">Use the following OTP to reset your App Lock PIN:</p>
+                            <div style="background-color: #f1f5f9; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
+                                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #4f46e5; display: block;">${otp}</span>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you didn't request this, you can ignore this email.</p>
+                        </div>
+                    </div>
+                `
+            };
+            await sendEmail(mailOptions);
+            res.json({ msg: 'OTP sent to your email' });
+        } else {
+            // Should not happen for guests as they don't have passcode enabled usually, but safety:
+            res.status(400).json({ msg: 'No email associated with this account' });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.resetPasscode = async (req, res) => {
+    const { otp } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        if (user.otp !== otp) return res.status(400).json({ msg: 'Invalid OTP' });
+        if (user.otpExpires < Date.now()) return res.status(400).json({ msg: 'OTP Expired' });
+
+        // Reset Logic: Disable passcode
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        user.isPasscodeEnabled = false;
+        user.passcode = undefined;
+        await user.save();
+
+        res.json({ msg: 'App Lock disabled successfully. You can set a new PIN in settings.', isPasscodeEnabled: false });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};

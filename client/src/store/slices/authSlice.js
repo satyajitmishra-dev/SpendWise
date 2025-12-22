@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
+import { toast } from 'sonner';
 
 
 export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestData, { rejectWithValue }) => {
@@ -64,6 +65,24 @@ export const verifyPasscode = createAsyncThunk('auth/verifyPasscode', async (pas
 export const disablePasscode = createAsyncThunk('auth/disablePasscode', async (_, { rejectWithValue }) => {
     try {
         const res = await api.post('/auth/passcode/disable');
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+export const forgotPasscode = createAsyncThunk('auth/forgotPasscode', async (_, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/passcode/forgot');
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+export const resetPasscode = createAsyncThunk('auth/resetPasscode', async (otp, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/passcode/reset', { otp });
         return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
@@ -145,7 +164,7 @@ const authSlice = createSlice({
             state.error = null;
         },
         lockApp: (state) => {
-            if (state.isAuthenticated && state.user?.isPasscodeEnabled) {
+            if (state.isAuthenticated && state.user?.isPasscodeEnabled === true) {
                 state.isAppLocked = true;
             }
         }
@@ -160,14 +179,13 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload;
-                if (action.payload.isPasscodeEnabled) {
-                    state.isAppLocked = true;
-                }
+                state.isAppLocked = action.payload.isPasscodeEnabled === true;
             })
             .addCase(loadUser.rejected, (state) => {
                 state.loading = false;
                 state.isAuthenticated = false;
                 state.user = null;
+                state.isAppLocked = false;
             })
 
 
@@ -226,6 +244,9 @@ const authSlice = createSlice({
                 state.otpSent = false;
                 state.error = null;
                 state.loading = false;
+                // Enforce lock immediately if passcode is enabled
+                // Enforce lock immediately if passcode is enabled
+                state.isAppLocked = action.payload.user?.isPasscodeEnabled === true;
             })
             .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;
@@ -250,6 +271,23 @@ const authSlice = createSlice({
             .addCase(verifyPasscode.rejected, (state, action) => {
                 state.isAppLocked = true; // Keep locked?
                 // Error handled in component usually
+            })
+            // Passcode Reset
+            .addCase(resetPasscode.fulfilled, (state) => {
+                if (state.user) {
+                    state.user.isPasscodeEnabled = false;
+                }
+                state.isAppLocked = false;
+                toast.success('App Lock Disabled Successfully');
+            })
+            .addCase(resetPasscode.rejected, (state, action) => {
+                toast.error(action.payload?.msg || "Failed to reset passcode");
+            })
+            .addCase(forgotPasscode.fulfilled, () => {
+                toast.success("OTP Sent to email");
+            })
+            .addCase(forgotPasscode.rejected, (state, action) => {
+                toast.error(action.payload?.msg || "Failed to send OTP");
             });
     },
 });
