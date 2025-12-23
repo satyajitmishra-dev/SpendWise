@@ -8,7 +8,7 @@ import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight,
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
-// import { Skeleton } from '../components/ui/Skeleton'; // Assuming this exists or using simple div
+import HomeSkeleton from '../components/common/HomeSkeleton';
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -70,7 +70,7 @@ const Home = () => {
     const { openInfo } = useOutletContext() || {};
 
     if (isLoading) {
-        return <DashboardSkeleton />;
+        return <HomeSkeleton />;
     }
 
     return (
@@ -93,83 +93,137 @@ const Home = () => {
                 </button>
             </div>
 
-            {/* Balance Card - Premium Gradient Mesh */}
-            <div className="relative overflow-hidden rounded-[2rem] p-8 shadow-2xl shadow-indigo-500/20 group cursor-pointer active:scale-[0.98] transition-all duration-500">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 animate-gradient-xy"></div>
-                <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-white/20 rounded-full blur-3xl mix-blend-overlay animate-blob"></div>
-                <div className="absolute bottom-[-50%] left-[-10%] w-64 h-64 bg-yellow-300/20 rounded-full blur-3xl mix-blend-overlay animate-blob animation-delay-2000"></div>
+            {/* NEW: Student-Centric Status Card */}
+            {(() => {
+                const budgetLimit = user?.budget || 0;
+                // If budget is set, "Available" is Budget - Spent. If not, use Total Balance.
+                const hasBudget = budgetLimit > 0;
+                const available = hasBudget ? (budgetLimit - monthlySpending) : totalBalance;
+                const spentPercentage = hasBudget ? (monthlySpending / budgetLimit) * 100 : 0;
 
-                <div className="relative z-10 text-white">
-                    <div className="flex justify-between items-start mb-2">
-                        <p className="text-indigo-100 font-medium text-sm tracking-wider uppercase opacity-80">Total Balance</p>
-                        <div className="p-2 bg-white/10 rounded-full backdrop-blur-md border border-white/20">
-                            <Wallet size={16} />
-                        </div>
-                    </div>
-                    <h2 className="text-5xl font-black mb-8 tracking-tight drop-shadow-lg">
-                        ₹{totalBalance.toLocaleString()}
-                    </h2>
+                let statusColor = "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800";
+                let statusText = "🟢 You're on track";
+                let statusEmoji = "😎";
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-black/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-black/30 transition-colors">
-                            <div className="flex items-center gap-2 mb-1">
-                                <TrendingDown size={14} className="text-red-300" />
-                                <span className="text-xs text-indigo-100/80 font-medium">Spent (Month)</span>
+                if (hasBudget) {
+                    if (spentPercentage >= 90) {
+                        statusColor = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800";
+                        statusText = "🔴 Overspending alert";
+                        statusEmoji = "😱";
+                    } else if (spentPercentage >= 60) {
+                        statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800";
+                        statusText = "🟡 Careful, budget tight";
+                        statusEmoji = "😬";
+                    }
+                } else {
+                    statusText = "🔵 Set a budget to track health";
+                    statusColor = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800";
+                    statusEmoji = "🤔";
+                }
+
+                return (
+                    <div className="space-y-6">
+                        {/* 1. Today's Status (Safe or Broke) */}
+                        <Link to="/budgets" className="relative overflow-hidden rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-500/10 group active:scale-[0.98] transition-all duration-500 bg-white dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 block hover:shadow-indigo-500/20 cursor-pointer">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
+
+                            <div className="flex flex-col items-center justify-center text-center">
+                                <p className="text-gray-500 dark:text-gray-400 font-medium text-sm tracking-widest uppercase mb-4">Available this month</p>
+                                <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
+                                    <span className="text-3xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
+                                    {available.toLocaleString()}
+                                </h2>
+
+                                <div className={`px-6 py-3 rounded-2xl border ${statusColor} font-bold text-sm md:text-base flex items-center gap-2 shadow-sm uppercase tracking-wide`}>
+                                    {statusText}
+                                </div>
                             </div>
-                            <p className="font-bold text-xl">₹{monthlySpending.toLocaleString()}</p>
-                        </div>
-                        <div className="bg-black/20 p-4 rounded-2xl backdrop-blur-md border border-white/10 hover:bg-black/30 transition-colors">
-                            <div className="flex items-center gap-2 mb-1">
-                                <CreditCard size={14} className="text-yellow-300" />
-                                <span className="text-xs text-indigo-100/80 font-medium">Fixed Subs</span>
+                        </Link>
+
+                        {/* 2. This month's spending direction */}
+                        <Link to="/expenses" className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md transition-all cursor-pointer group">
+                            <div className="flex justify-between items-end mb-4">
+                                <div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                                        Spending Direction <TrendingUp size={18} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                    </h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                        {hasBudget
+                                            ? `Spent ₹${monthlySpending.toLocaleString()} of ₹${budgetLimit.toLocaleString()} limit`
+                                            : `Total Spent: ₹${monthlySpending.toLocaleString()}`}
+                                    </p>
+                                </div>
+                                {hasBudget && (
+                                    <span className={`text-xl font-black ${spentPercentage > 100 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                                        {spentPercentage.toFixed(0)}%
+                                    </span>
+                                )}
                             </div>
-                            <p className="font-bold text-xl">₹{activeSubscriptionsCost.toLocaleString()}</p>
+
+                            {/* Progress Bar */}
+                            <div className="h-4 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    className={`h-full ${!hasBudget ? 'bg-blue-500' :
+                                        spentPercentage > 90 ? 'bg-red-500' :
+                                            spentPercentage > 60 ? 'bg-yellow-400' : 'bg-green-500'
+                                        }`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${Math.min(spentPercentage, 100)}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                />
+                            </div>
+                        </Link>
+
+                        {/* 2.5. Micro Context Stats */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Link to="/expenses" className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer active:scale-95">
+                                <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Spent (Month)</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">₹{monthlySpending.toLocaleString()}</p>
+                                <p className="text-[10px] text-gray-400 font-medium mt-1">
+                                    {hasBudget ? `/ ₹${budgetLimit.toLocaleString()} budget` : 'No budget set'}
+                                </p>
+                            </Link>
+                            <Link to="/subscriptions" className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer active:scale-95">
+                                <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Fixed Subs</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">{subscriptions.filter(s => s.status !== 'cancelled').length} <span className="text-sm font-medium text-gray-400">active</span></p>
+                                <p className="text-[10px] text-gray-400 font-medium mt-1">
+                                    ₹{activeSubscriptionsCost.toLocaleString()} / month
+                                </p>
+                            </Link>
+                        </div>
+
+                        {/* 3. Quick Actions */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Link to="/expenses" state={{ openAdd: true }} className="bg-black dark:bg-white text-white dark:text-black p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
+                                <div className="p-2 bg-white/20 dark:bg-black/10 rounded-full">
+                                    <TrendingDown size={24} />
+                                </div>
+                                <span className="font-bold">View Expenses</span>
+                            </Link>
+                            <Link to="/accounts" state={{ openAdd: true }} className="bg-indigo-600 text-white p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl shadow-indigo-200 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
+                                <div className="p-2 bg-white/20 rounded-full">
+                                    <Wallet size={24} />
+                                </div>
+                                <span className="font-bold">Add Income</span>
+                            </Link>
                         </div>
                     </div>
-                </div>
-            </div>
+                );
+            })()}
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Link to="/accounts" className="group relative bg-white dark:bg-slate-900/60 p-5 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-xl hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
-                    <div className="absolute top-4 right-4 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 transition-colors">
-                        <ArrowUpRight size={20} />
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Wallet size={24} />
-                    </div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">Accounts</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{accounts.length}</p>
-                </Link>
-
-                <Link to="/loans" className="group relative bg-white dark:bg-slate-900/60 p-5 rounded-[2rem] border border-white/20 dark:border-slate-800 shadow-xl shadow-gray-200/50 dark:shadow-none backdrop-blur-xl hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
-                    <div className="absolute top-4 right-4 text-gray-300 dark:text-gray-600 group-hover:text-orange-500 transition-colors">
-                        <ArrowUpRight size={20} />
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <span className="text-xl font-bold">₹</span>
-                    </div>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide mb-1">Pending Loans</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{loans.filter(l => l.status === 'pending').length}</p>
-                </Link>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="space-y-4">
+            {/* Details Later (Recent Activity) - Less Prominent */}
+            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-slate-800/50">
                 <div className="flex justify-between items-end px-1">
-                    <h3 className="font-bold text-xl text-gray-800 dark:text-white">Recent Activity</h3>
-                    <Link to="/expenses" className="text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:text-indigo-700 flex items-center gap-1 transition-colors">
-                        See All <ArrowRight size={16} />
+                    <h3 className="font-bold text-lg text-gray-500 dark:text-gray-400">Activity Log</h3>
+                    <Link to="/expenses" className="text-gray-400 dark:text-slate-500 text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        View All
                     </Link>
                 </div>
 
-                <div className="space-y-3">
-                    {/* DEBUG LOG */}
-
-
+                <div className="space-y-3 opacity-90 hover:opacity-100 transition-opacity">
                     {recentExpenses.length === 0 ? (
-                        <div className="text-center py-12 bg-white/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-800">
-                            <p className="text-gray-400 dark:text-slate-500 font-medium">No expenses recorded yet</p>
+                        <div className="text-center py-8">
+                            <p className="text-xs text-gray-400 dark:text-slate-600 uppercase tracking-widest">No recent transactions</p>
                         </div>
                     ) : (
                         recentExpenses.map((exp, i) => {
@@ -178,18 +232,18 @@ const Home = () => {
                                 <Link
                                     to="/expenses"
                                     key={exp._id}
-                                    className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800/50 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-[0.99]"
+                                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900/40 rounded-2xl border border-transparent hover:border-gray-200 dark:hover:border-slate-700 transition-all"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-xl text-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${isIncome ? 'bg-green-100 text-green-600' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center ${isIncome ? 'bg-green-100/50 text-green-600' : 'bg-white dark:bg-slate-800 text-gray-500'}`}>
                                             {getCategoryEmoji(exp.category)}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-gray-900 dark:text-white mb-0.5">{exp.note || capitalize(exp.category)}</p>
-                                            <p className="text-xs font-medium text-gray-400 dark:text-slate-500">{new Date(exp.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                                            <p className="font-bold text-gray-700 dark:text-gray-200 text-sm">{exp.note || capitalize(exp.category)}</p>
+                                            <p className="text-[10px] uppercase tracking-wider font-bold text-gray-400">{new Date(exp.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</p>
                                         </div>
                                     </div>
-                                    <span className={`font-bold px-3 py-1 rounded-lg text-sm ${isIncome ? 'text-green-600 bg-green-100 dark:bg-green-900/20' : 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20'}`}>
+                                    <span className={`font-bold text-sm ${isIncome ? 'text-green-600' : 'text-gray-800 dark:text-gray-300'}`}>
                                         {isIncome ? '+' : '-'}₹{exp.amount}
                                     </span>
                                 </Link>
@@ -199,53 +253,10 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Footer - Premium Animated */}
-            <motion.div
-                className="mt-20 mb-8 flex flex-col items-center text-center space-y-6"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-                {/* Main Tagline - with gradient animation */}
-                <motion.div
-                    className="space-y-1"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                >
-                    <h2 className="text-3xl md:text-4xl font-black tracking-tight leading-tight bg-gradient-to-r from-gray-400 via-gray-500 to-gray-400 dark:from-gray-600 dark:via-gray-500 dark:to-gray-600 bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient-x">
-                        SURVIVE EVERY<br />MONTH
-                    </h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-600 font-medium tracking-[0.3em] uppercase transition-all duration-300 hover:tracking-[0.4em] hover:text-indigo-500 dark:hover:text-indigo-400">
-                        Like a Pro
-                    </p>
-                </motion.div>
-
-                {/* Attribution - staggered reveal */}
-                <motion.p
-                    className="text-xs text-gray-500 dark:text-gray-600 group cursor-default"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                >
-                    Crafted with <span className="text-red-500 inline-block animate-pulse">❤️</span> in <span className="font-semibold text-gray-700 dark:text-gray-400 transition-colors duration-300 hover:text-orange-500">India</span> by <span className="font-semibold text-indigo-600 dark:text-indigo-400 transition-all duration-300 hover:text-indigo-500 hover:scale-110 inline-block hover:drop-shadow-lg">Satyajit</span>
-                </motion.p>
-
-                {/* Copyright - delayed reveal */}
-                <motion.div
-                    className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-700 uppercase tracking-wider group cursor-default"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.6, duration: 0.6 }}
-                >
-                    <Wallet size={12} className="opacity-50 group-hover:opacity-100 group-hover:text-indigo-500 transition-all duration-300" />
-                    <span className="group-hover:text-gray-600 dark:group-hover:text-gray-500 transition-colors duration-300">© {new Date().getFullYear()} SpendWise</span>
-                </motion.div>
-            </motion.div>
+            {/* Footer - Simplified */}
+            <div className="mt-12 text-center">
+                <p className="text-[10px] text-gray-300 dark:text-slate-700 uppercase tracking-[0.2em] font-bold">SpendWise Student Edition</p>
+            </div>
         </div>
     );
 };

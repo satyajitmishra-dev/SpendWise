@@ -5,16 +5,23 @@ import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import SubscriptionItem from '../components/features/SubscriptionItem';
 import AddSubscriptionSheet from '../components/features/AddSubscriptionSheet';
 import { Plus, Bell, BarChart3 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const SubscriptionsPage = () => {
     const dispatch = useDispatch();
+    const location = useLocation();
     const { items, loading } = useSelector((state) => state.subscriptions);
     const [editingSubscription, setEditingSubscription] = useState(null);
     const [isAddOpen, setIsAddOpen] = useState(false);
 
     useEffect(() => {
         dispatch(fetchSubscriptions());
-    }, [dispatch]);
+        if (location.state?.openAdd) {
+            setIsAddOpen(true);
+            // Optional: clear state
+            window.history.replaceState({}, document.title);
+        }
+    }, [dispatch, location]);
 
     const monthlyTotal = items.reduce((sum, sub) => {
         return sum + (sub.cycle === 'monthly' ? sub.amount : sub.amount / 12);

@@ -68,9 +68,9 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                 setSelectedAccount(expenseToEdit.accountId || '');
             } else if (initialData) {
                 // Pre-fill from initialData (Duplication) but don't set expenseToEdit
-                setAmount(initialData.amount.toString());
+                setAmount(initialData.amount ? initialData.amount.toString() : '');
                 setType(initialData.type || 'expense');
-                setCategory(initialData.category);
+                setCategory(initialData.category || (initialData.type === 'income' ? INCOME_CATEGORIES[0].id : CATEGORIES[0].id));
                 setNote(initialData.note || '');
                 // Use today's date for duplicate, or preserve original? Usually today is better for "Repeat".
                 // But let's default to today's date for "New Entry based on Old".

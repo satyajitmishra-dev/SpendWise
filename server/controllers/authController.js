@@ -4,6 +4,12 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const validator = require('email-validator');
 const { sendEmail } = require('../services/emailService');
+const Account = require('../models/Account');
+const Expense = require('../models/Expense');
+const Budget = require('../models/Budget');
+const Loan = require('../models/Loan');
+const Subscription = require('../models/Subscription');
+const Notification = require('../models/Notification');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refreshsecret';
@@ -460,6 +466,83 @@ exports.resetPasscode = async (req, res) => {
         await user.save();
 
         res.json({ msg: 'App Lock disabled successfully. You can set a new PIN in settings.', isPasscodeEnabled: false });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.resetDataInit = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 600000; // 10 mins
+        await user.save();
+
+        if (user.email) {
+            const mailOptions = {
+                from: `"SpendWise Security" <${process.env.EMAIL_USER}>`,
+                to: user.email,
+                subject: 'Confirm Data Reset - SpendWise',
+                html: `
+                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+                        <div style="background-color: #ef4444; padding: 24px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
+                        </div>
+                        <div style="padding: 32px 24px;">
+                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Confirm Data Reset</h2>
+                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">You have requested to reset all your account data. <strong>This action cannot be undone.</strong></p>
+                            <p style="color: #64748b; margin-bottom: 16px; font-size: 16px;">Use the following OTP to confirm:</p>
+                            <div style="background-color: #fee2e2; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
+                                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #ef4444; display: block;">${otp}</span>
+                            </div>
+                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you did not request this, please change your password immediately.</p>
+                        </div>
+                    </div>
+                `
+            };
+            await sendEmail(mailOptions);
+            res.json({ msg: 'Verification code sent to your email' });
+        } else {
+             res.status(400).json({ msg: 'No email associated with this account' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.resetDataConfirm = async (req, res) => {
+    const { otp } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        if (user.otp !== otp) return res.status(400).json({ msg: 'Invalid OTP' });
+        if (user.otpExpires < Date.now()) return res.status(400).json({ msg: 'OTP Expired' });
+
+        // Clear OTP
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        // DELETE ALL DATA
+        const userId = req.user.id;
+        await Promise.all([
+            Expense.deleteMany({ user: userId }),
+            Account.deleteMany({ user: userId }),
+            Budget.deleteMany({ user: userId }),
+            Loan.deleteMany({ user: userId }),
+            Subscription.deleteMany({ user: userId }),
+            Notification.deleteMany({ user: userId })
+        ]);
+
+        res.json({ msg: 'All account data has been reset successfully.' });
 
     } catch (err) {
         console.error(err);

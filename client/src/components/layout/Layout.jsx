@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, ListMinus, Wallet, Zap, User, Repeat, ArrowRightLeft, MoreHorizontal, PieChart, BarChart, X, Info, Bell } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -11,12 +11,72 @@ import ProfileReminder from './ProfileReminder';
 import ThemeToggler from './ThemeToggler';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [addSheetType, setAddSheetType] = useState('expense');
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isInstallPromptOpen, setIsInstallPromptOpen] = useState(false);
+
+    // FAB Long Press Logic
+    const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
+    const [isPressing, setIsPressing] = useState(false);
+    const longPressTimerRef = useRef(null);
+    const isLongPressRef = useRef(false);
+
+    const handleFabStart = (e) => {
+        setIsPressing(true); // Start visual feedback
+        isLongPressRef.current = false;
+        longPressTimerRef.current = setTimeout(() => {
+            isLongPressRef.current = true;
+            setIsFabMenuOpen(true); // Always open menu on long press
+            setIsPressing(false); // Stop pressing visual when menu opens
+            if (window.navigator?.vibrate) window.navigator.vibrate(50);
+        }, 500);
+    };
+
+    const handleFabEnd = (e) => {
+        setIsPressing(false); // Stop visual feedback
+
+        // Clear the timer
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+        }
+
+        // Only trigger short press if it was truly a quick tap
+        if (!isLongPressRef.current) {
+            if (isFabMenuOpen) {
+                setIsFabMenuOpen(false);
+            } else {
+                // Short press - Always open Expense
+                setAddSheetType('expense');
+                setIsAddOpen(true);
+            }
+        }
+
+        // Reset
+        isLongPressRef.current = false;
+    };
+
+    const handleFabCancel = (e) => {
+        setIsPressing(false); // Stop visual feedback
+
+        // Just clear the timer, don't trigger any action
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+        }
+        isLongPressRef.current = false;
+    };
+
+    // We need to handle both mouse and touch to be safe, but Pointer Events are best.
+    // However, sometimes on mobile 'click' fires after pointerup.
+    // Let's use onMouseDown/onTouchStart and onMouseUp/onTouchEnd
+    // To avoid duplication, we use onPointerDown / onPointerUp which covers both.
+    // IMPORTANT: style touch-action: none on button to prevent browser zooming/scrolling interfering.
+
+
     const { user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
     const location = useLocation();
@@ -148,15 +208,82 @@ const Layout = () => {
                     </div>
                 </div>
 
-                {/* FAB - Premium Hover Effect */}
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:bottom-12 md:right-12 z-50">
-                    <button
-                        onClick={() => setIsAddOpen(true)}
-                        className="group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all active:scale-95 ring-4 ring-white/50 dark:ring-slate-900/50 hover:scale-110"
-                    >
-                        <div className="absolute inset-0 rounded-full bg-white/20 animate-ping group-hover:animate-none opacity-0 group-hover:opacity-100 duration-700"></div>
-                        <Zap size={28} fill="currentColor" className="relative z-10" />
-                    </button>
+                {/* FAB - Premium Long Press Menu */}
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:bottom-12 md:right-12 z-50 flex flex-col items-center gap-3">
+
+                    {/* Floating Menu */}
+                    <div className={cn(
+                        "flex flex-col gap-3 transition-all duration-300 origin-bottom",
+                        isFabMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-8 pointer-events-none"
+                    )}>
+                        <button
+                            onClick={() => { setIsFabMenuOpen(false); navigate('/subscriptions', { state: { openAdd: true } }); }}
+                            className="flex items-center gap-3 px-4 py-2 bg-purple-100 text-purple-700 dark:bg-purple-900/80 dark:text-purple-300 rounded-full shadow-lg font-bold text-sm backdrop-blur-md hover:scale-105 transition-transform"
+                        >
+                            <Repeat size={18} /> New Subscription
+                        </button>
+                        <button
+                            onClick={() => { setIsFabMenuOpen(false); setAddSheetType('income'); setIsAddOpen(true); }}
+                            className="flex items-center gap-3 px-4 py-2 bg-green-100 text-green-700 dark:bg-green-900/80 dark:text-green-300 rounded-full shadow-lg font-bold text-sm backdrop-blur-md hover:scale-105 transition-transform"
+                        >
+                            <Wallet size={18} /> New Income
+                        </button>
+                        <button
+                            onClick={() => { setIsFabMenuOpen(false); setAddSheetType('expense'); setIsAddOpen(true); }}
+                            className="flex items-center gap-3 px-4 py-2 bg-red-100 text-red-700 dark:bg-red-900/80 dark:text-red-300 rounded-full shadow-lg font-bold text-sm backdrop-blur-md hover:scale-105 transition-transform"
+                        >
+                            <ListMinus size={18} /> New Expense
+                        </button>
+                    </div>
+
+                    <div className="relative group">
+                        {/* Progress Ring */}
+                        <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] -rotate-90 pointer-events-none z-0" viewBox="0 0 100 100">
+                            <circle
+                                cx="50" cy="50" r="48"
+                                fill="none"
+                                stroke="white"
+                                strokeWidth="4"
+                                className="opacity-30 dark:opacity-20"
+                            />
+                            <circle
+                                cx="50" cy="50" r="48"
+                                fill="none"
+                                stroke="url(#fab-gradient)"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeDasharray="301.59" // 2 * pi * 48
+                                strokeDashoffset={isPressing ? 0 : 301.59}
+                                className={cn(
+                                    "transition-all ease-linear",
+                                    isPressing ? "duration-[500ms]" : "duration-200"
+                                )}
+                            />
+                            <defs>
+                                <linearGradient id="fab-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#6366f1" /> {/* Indigo */}
+                                    <stop offset="100%" stopColor="#a855f7" /> {/* Purple */}
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <button
+                            onPointerDown={handleFabStart}
+                            onPointerUp={handleFabEnd}
+                            onPointerLeave={handleFabCancel}
+                            onTouchStart={handleFabStart}
+                            onTouchEnd={handleFabEnd}
+                            onContextMenu={(e) => e.preventDefault()}
+                            style={{ touchAction: 'none' }}
+                            className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all active:scale-95 ring-4 ring-white/50 dark:ring-slate-900/50 hover:scale-110"
+                        >
+                            {/* Pulse Ring when Menu Open */}
+                            {isFabMenuOpen && <div className="absolute inset-0 rounded-full border-2 border-white animate-ping"></div>}
+
+                            <div className="absolute inset-0 rounded-full bg-white/20 animate-ping group-hover:animate-none opacity-0 group-hover:opacity-100 duration-700"></div>
+                            <Zap size={28} fill="currentColor" className={cn("relative z-10 transition-transform duration-300 pointer-events-none", isFabMenuOpen ? "rotate-45" : "")} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Bottom Navigation - Simplified 5 Items */}
@@ -228,11 +355,14 @@ const Layout = () => {
             </main>
 
             {/* Modals */}
-            <AddExpenseSheet
-                isOpen={isAddOpen}
-                onClose={() => setIsAddOpen(false)}
-                onExpenseAdded={() => setIsInstallPromptOpen(true)}
-            />
+            <ErrorBoundary>
+                <AddExpenseSheet
+                    isOpen={isAddOpen}
+                    onClose={() => setIsAddOpen(false)}
+                    initialData={{ type: addSheetType }}
+                    onExpenseAdded={() => setIsInstallPromptOpen(true)}
+                />
+            </ErrorBoundary>
             <InfoDialog isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} />
             <InstallPrompt isOpen={isInstallPromptOpen} onClose={() => setIsInstallPromptOpen(false)} />
         </div>

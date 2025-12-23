@@ -89,6 +89,24 @@ export const resetPasscode = createAsyncThunk('auth/resetPasscode', async (otp, 
     }
 });
 
+export const resetDataInit = createAsyncThunk('auth/resetDataInit', async (_, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/reset-data/init');
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
+export const resetDataConfirm = createAsyncThunk('auth/resetDataConfirm', async (otp, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/reset-data/confirm', { otp });
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
 
 export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { getState, dispatch, rejectWithValue }) => {
     try {
@@ -288,6 +306,20 @@ const authSlice = createSlice({
             })
             .addCase(forgotPasscode.rejected, (state, action) => {
                 toast.error(action.payload?.msg || "Failed to send OTP");
+            })
+            // Reset Data
+            .addCase(resetDataInit.fulfilled, () => {
+                toast.success("Verification code sent to email");
+            })
+            .addCase(resetDataInit.rejected, (state, action) => {
+                toast.error(action.payload?.msg || "Failed to send verification code");
+            })
+            .addCase(resetDataConfirm.fulfilled, () => {
+                toast.success("All account data has been reset");
+                // Optionally trigger a reload or allow component to handle redirect
+            })
+            .addCase(resetDataConfirm.rejected, (state, action) => {
+                toast.error(action.payload?.msg || "Failed to reset data");
             });
     },
 });
