@@ -69,7 +69,13 @@ const Home = () => {
     // Get openInfo from Layout context (may be null if not provided, handle safely)
     const { openInfo } = useOutletContext() || {};
 
-    if (isLoading) {
+    // Prevent "Blink" / Skeleton Flash on navigation
+    // Only show skeleton if we are loading AND have no data yet.
+    // If we have data, we show it while quietly refreshing in the background.
+    const hasData = expenses.length > 0 || accounts.length > 0;
+    const showSkeleton = isLoading && !hasData;
+
+    if (showSkeleton) {
         return <HomeSkeleton />;
     }
 
@@ -129,8 +135,8 @@ const Home = () => {
 
                             <div className="flex flex-col items-center justify-center text-center">
                                 <p className="text-gray-500 dark:text-gray-400 font-medium text-sm tracking-widest uppercase mb-4">Available this month</p>
-                                <h2 className="text-5xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
-                                    <span className="text-3xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
+                                <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
+                                    <span className="text-2xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
                                     {available.toLocaleString()}
                                 </h2>
 
@@ -175,7 +181,7 @@ const Home = () => {
                         </Link>
 
                         {/* 2.5. Micro Context Stats */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Link to="/expenses" className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer active:scale-95">
                                 <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Spent (Month)</p>
                                 <p className="text-2xl font-black text-gray-900 dark:text-white">₹{monthlySpending.toLocaleString()}</p>
@@ -193,7 +199,7 @@ const Home = () => {
                         </div>
 
                         {/* 3. Quick Actions */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Link to="/expenses" state={{ openAdd: true }} className="bg-black dark:bg-white text-white dark:text-black p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
                                 <div className="p-2 bg-white/20 dark:bg-black/10 rounded-full">
                                     <TrendingDown size={24} />

@@ -90,9 +90,10 @@ const SecurityPage = () => {
         setLoading(true);
         try {
             await dispatch(resetDataConfirm(otp)).unwrap();
-            setShowResetDataSheet(false);
-            setOtp('');
-            setResetStep('confirm');
+            toast.success("All data reset successfully. Application will restart.");
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         } catch (err) {
             // Handled
         } finally {
@@ -102,7 +103,7 @@ const SecurityPage = () => {
 
 
     return (
-        <div className="p-6 pb-32">
+        <div className="p-6 pb-32 md:pb-6 max-w-4xl mx-auto">
             <div className="flex items-center gap-4 mb-8">
                 <button onClick={() => navigate('/profile')} className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
                     <ChevronLeft size={24} className="text-gray-700 dark:text-gray-200" />

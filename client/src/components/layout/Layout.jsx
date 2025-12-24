@@ -26,49 +26,65 @@ const Layout = () => {
     const longPressTimerRef = useRef(null);
     const isLongPressRef = useRef(false);
 
-    const handleFabStart = (e) => {
-        setIsPressing(true); // Start visual feedback
-        isLongPressRef.current = false;
+    // Scroll Direction Logic Removed as per user request
+    // FAB will now remain always visible.
+
+    // FAB Handling - Simplified to ensure Click interacts correctly
+    const handleFabClick = () => {
+        // If menu is open, close it.
+        if (isFabMenuOpen) {
+            setIsFabMenuOpen(false);
+            return;
+        }
+        // Otherwise open Expense Sheet directly
+        setAddSheetType('expense');
+        setIsAddOpen(true);
+    };
+
+    // Long Press Handling
+    const handleFabStart = () => {
+        setIsPressing(true);
         longPressTimerRef.current = setTimeout(() => {
             isLongPressRef.current = true;
-            setIsFabMenuOpen(true); // Always open menu on long press
-            setIsPressing(false); // Stop pressing visual when menu opens
+            setIsFabMenuOpen(true);
+            setIsPressing(false);
             if (window.navigator?.vibrate) window.navigator.vibrate(50);
-        }, 500);
+        }, 600); // Increased to 600ms to prevent accidental triggers
     };
 
     const handleFabEnd = (e) => {
-        setIsPressing(false); // Stop visual feedback
-
-        // Clear the timer
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
+        // Prevent default click if it was a long press
+        if (isLongPressRef.current) {
+            e.preventDefault();
         }
 
-        // Only trigger short press if it was truly a quick tap
-        if (!isLongPressRef.current) {
-            if (isFabMenuOpen) {
-                setIsFabMenuOpen(false);
-            } else {
-                // Short press - Always open Expense
-                setAddSheetType('expense');
-                setIsAddOpen(true);
-            }
-        }
+        clearTimeout(longPressTimerRef.current);
+        setIsPressing(false);
 
-        // Reset
+        // Note: We DO NOT handle click here anymore. 
+        // We let the native onClick fire if isLongPressRef.current is false.
+
+        // Reset check after a small delay to allow onClick to fire/check
+        setTimeout(() => {
+            isLongPressRef.current = false;
+        }, 100);
+    };
+
+    const handleFabCancel = () => {
+        clearTimeout(longPressTimerRef.current);
+        setIsPressing(false);
         isLongPressRef.current = false;
     };
 
-    const handleFabCancel = (e) => {
-        setIsPressing(false); // Stop visual feedback
-
-        // Just clear the timer, don't trigger any action
-        if (longPressTimerRef.current) {
-            clearTimeout(longPressTimerRef.current);
+    // Native Click Handler
+    const onFabClick = (e) => {
+        if (isLongPressRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
         }
-        isLongPressRef.current = false;
-    };
+        handleFabClick();
+    }
 
     // We need to handle both mouse and touch to be safe, but Pointer Events are best.
     // However, sometimes on mobile 'click' fires after pointerup.
@@ -201,19 +217,20 @@ const Layout = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-0 md:pb-6 md:p-6 w-full scroll-smooth">
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-6 md:pb-6 md:px-8 w-full scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {/* Constraints for large screens */}
-                    <div className="max-w-7xl mx-auto w-full h-full p-2 md:p-4">
+                    <div className="max-w-7xl mx-auto w-full h-full p-2 md:p-0">
                         <Outlet context={{ openInfo: () => setIsInfoOpen(true) }} />
                     </div>
                 </div>
 
                 {/* FAB - Premium Long Press Menu */}
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:bottom-12 md:right-12 z-50 flex flex-col items-center gap-3">
+                {/* pointer-events-none on container to let clicks pass through to Nav items behind it */}
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 md:translate-x-0 md:left-auto md:bottom-12 md:right-12 z-50 flex flex-col items-center gap-3 transition-transform duration-300 pointer-events-none">
 
                     {/* Floating Menu */}
                     <div className={cn(
-                        "flex flex-col gap-3 transition-all duration-300 origin-bottom",
+                        "flex flex-col gap-3 transition-all duration-300 origin-bottom pointer-events-auto",
                         isFabMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-8 pointer-events-none"
                     )}>
                         <button
@@ -236,7 +253,7 @@ const Layout = () => {
                         </button>
                     </div>
 
-                    <div className="relative group">
+                    <div className="relative group pointer-events-auto">
                         {/* Progress Ring */}
                         <svg className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] -rotate-90 pointer-events-none z-0" viewBox="0 0 100 100">
                             <circle
@@ -271,8 +288,7 @@ const Layout = () => {
                             onPointerDown={handleFabStart}
                             onPointerUp={handleFabEnd}
                             onPointerLeave={handleFabCancel}
-                            onTouchStart={handleFabStart}
-                            onTouchEnd={handleFabEnd}
+                            onClick={onFabClick}
                             onContextMenu={(e) => e.preventDefault()}
                             style={{ touchAction: 'none' }}
                             className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-full shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all active:scale-95 ring-4 ring-white/50 dark:ring-slate-900/50 hover:scale-110"
