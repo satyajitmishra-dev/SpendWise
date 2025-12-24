@@ -33,8 +33,7 @@ const WelcomeScreen = () => {
             <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] bg-indigo-900/10 rounded-full blur-[120px]"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-blue-900/5 rounded-full blur-[100px]"></div>
 
-            {/* Micro-Noise Texture (Reduced opacity) */}
-            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] pointer-events-none"></div>
+
 
             {/* Top Section */}
             <div className="relative z-10 flex flex-col items-center text-center mt-16 space-y-10">
