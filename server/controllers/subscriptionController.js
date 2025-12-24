@@ -6,7 +6,8 @@ exports.getSubscriptions = async (req, res) => {
         const subs = await Subscription.find({ userId: req.user.id });
         res.json(subs);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 

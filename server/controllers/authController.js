@@ -234,7 +234,7 @@ exports.loadUser = async (req, res) => {
         res.json(user);
     } catch (err) {
         console.error('loadUser Error:', err);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -509,7 +509,7 @@ exports.resetDataInit = async (req, res) => {
             await sendEmail(mailOptions);
             res.json({ msg: 'Verification code sent to your email' });
         } else {
-             res.status(400).json({ msg: 'No email associated with this account' });
+            res.status(400).json({ msg: 'No email associated with this account' });
         }
     } catch (err) {
         console.error(err);

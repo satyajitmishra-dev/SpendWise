@@ -9,7 +9,7 @@ exports.getNotifications = async (req, res) => {
         res.json(notifications);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -20,7 +20,7 @@ exports.getUnreadCount = async (req, res) => {
         res.json({ count });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
