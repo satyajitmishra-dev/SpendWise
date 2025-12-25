@@ -12,14 +12,40 @@ const ForgotPasscodeView = ({ onCancel }) => {
     const [otp, setOtp] = useState('');
     const [isSent, setIsSent] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [resendTimer, setResendTimer] = useState(30);
+
+    useEffect(() => {
+        let interval;
+        if (isSent && resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isSent, resendTimer]);
 
     const handleSend = async () => {
         setLoading(true);
         try {
             await dispatch(forgotPasscode()).unwrap();
             setIsSent(true);
+            setResendTimer(30);
         } catch (err) {
             // Toast handled in thunk
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResend = async () => {
+        if (resendTimer > 0) return;
+        setLoading(true);
+        try {
+            await dispatch(forgotPasscode()).unwrap();
+            toast.success("Code resent successfully");
+            setResendTimer(30);
+        } catch (err) {
+            toast.error("Failed to resend code");
         } finally {
             setLoading(false);
         }
@@ -78,7 +104,14 @@ const ForgotPasscodeView = ({ onCancel }) => {
                     >
                         {loading ? 'Verifying...' : 'Reset Passcode'}
                     </button>
-                    <button type="button" onClick={handleSend} className="w-full text-xs text-center text-white/40 hover:text-white mb-2">Resend Code</button>
+                    <button
+                        type="button"
+                        onClick={handleResend}
+                        disabled={resendTimer > 0 || loading}
+                        className="w-full text-xs text-center text-white/40 hover:text-white mb-2 disabled:text-white/20 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend Verification Code'}
+                    </button>
                 </form>
             )}
 

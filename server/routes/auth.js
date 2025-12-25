@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { initUser, loginSendOtp, signupInit, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, forgotPasscode, resetPasscode, uploadAvatar, deleteAvatar, resetDataInit, resetDataConfirm, refreshToken } = require('../controllers/authController');
+const { initUser, loginSendOtp, signupInit, resendSignupOtp, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, forgotPasscode, resetPasscode, uploadAvatar, deleteAvatar, resetDataInit, resetDataConfirm, refreshToken } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -9,6 +9,7 @@ const { triggerReminders } = require('../services/scheduler');
 router.post('/init', initUser);
 router.post('/login-otp', loginSendOtp);
 router.post('/signup-init', signupInit);
+router.post('/signup-resend', require('../controllers/authController').resendSignupOtp);
 router.post('/verify-otp', verifyOtp);
 router.post('/refresh', refreshToken);
 router.get('/me', auth, loadUser);

@@ -21,6 +21,32 @@ const SecurityPage = () => {
     const [showResetDataSheet, setShowResetDataSheet] = useState(false);
     const [otp, setOtp] = useState('');
     const [resetStep, setResetStep] = useState('confirm'); // confirm -> otp -> success
+    const [resendTimer, setResendTimer] = useState(30);
+
+    /* Timer Logic for Reset Data OTP */
+    useEffect(() => {
+        let interval;
+        if (resetStep === 'otp' && resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [resetStep, resendTimer]);
+
+    const handleResendResetOtp = async () => {
+        if (resendTimer > 0) return;
+        setLoading(true);
+        try {
+            await dispatch(resetDataInit()).unwrap();
+            toast.success("Verification code resent");
+            setResendTimer(30);
+        } catch (err) {
+            toast.error("Failed to resend code");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const [pageLoading, setPageLoading] = useState(true);
 
@@ -78,6 +104,7 @@ const SecurityPage = () => {
         try {
             await dispatch(resetDataInit()).unwrap();
             setResetStep('otp');
+            setResendTimer(30);
         } catch (err) {
             // Error handled by slice toast
         } finally {
@@ -315,9 +342,20 @@ const SecurityPage = () => {
                                         {loading ? 'Deleting Data...' : 'Confirm Deletion'}
                                     </button>
 
-                                    <button onClick={() => setResetStep('confirm')} className="w-full text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                        Back
-                                    </button>
+                                    <div className="flex flex-col gap-3 text-center mt-2">
+                                        <button
+                                            type="button"
+                                            disabled={resendTimer > 0 || loading}
+                                            onClick={handleResendResetOtp}
+                                            className="text-sm font-medium text-indigo-400 hover:text-indigo-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Verification Code'}
+                                        </button>
+
+                                        <button onClick={() => setResetStep('confirm')} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                                            Back
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </motion.div>

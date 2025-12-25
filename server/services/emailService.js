@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
 
 
-const USE_SENDGRID = process.env.NODE_ENV === 'production' && process.env.SENDGRID_API_KEY;
+const USE_SENDGRID = !!process.env.SENDGRID_API_KEY;
 
 
 if (USE_SENDGRID) {
@@ -33,9 +33,12 @@ async function sendEmail(mailOptions) {
             to: mailOptions.to,
             from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
             subject: mailOptions.subject,
+            replyTo: mailOptions.replyTo || process.env.EMAIL_REPLY_TO, // Handle replyTo or default
+            text: mailOptions.text, // Plain text fallback
             html: mailOptions.html,
             attachments: mailOptions.attachments, // Pass attachments array { content, filename, type, disposition }
         };
+
         return await sgMail.send(msg);
     } else {
 

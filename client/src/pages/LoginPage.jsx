@@ -14,6 +14,29 @@ const LoginPage = () => {
 
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
+    const [resendTimer, setResendTimer] = useState(30);
+
+    useEffect(() => {
+        let interval;
+        if (otpSent && resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [otpSent, resendTimer]);
+
+    const handleResendOtp = async () => {
+        if (resendTimer > 0) return;
+
+        const result = await dispatch(loginSendOtp(email));
+        if (loginSendOtp.fulfilled.match(result)) {
+            toast.success("Code resent successfully!");
+            setResendTimer(30);
+        } else {
+            toast.error(result.payload?.msg || "Failed to resend code");
+        }
+    };
 
     useEffect(() => {
         if (location.state?.email) {
@@ -131,13 +154,24 @@ const LoginPage = () => {
                                 {loading ? <Loader2 className="animate-spin" size={18} /> : 'Login'}
                             </button>
 
-                            <button
-                                type="button"
-                                onClick={() => window.location.reload()}
-                                className="w-full text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                            >
-                                Use a different email
-                            </button>
+                            <div className="flex flex-col gap-3 text-center">
+                                <button
+                                    type="button"
+                                    disabled={resendTimer > 0 || loading}
+                                    onClick={handleResendOtp}
+                                    className="text-sm font-medium text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Verification Code'}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => window.location.reload()}
+                                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                >
+                                    Use a different email
+                                </button>
+                            </div>
                         </form>
                     )}
                 </div>

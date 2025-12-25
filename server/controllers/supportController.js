@@ -36,7 +36,7 @@ exports.contactSupport = async (req, res) => {
         const supportEmailOptions = {
             from: `"SpendWise Support System" <${process.env.EMAIL_USER}>`,
             to: process.env.EMAIL_USER, // Send to self/support team
-            replyTo: user.email,
+            replyTo: user.email, // Allow admin to reply directly to user
             subject: `[Support Ticket] ${type} - ${user.name}`,
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -44,6 +44,7 @@ exports.contactSupport = async (req, res) => {
                     <p><strong>User:</strong> ${user.name} (${user.email})</p>
                     <p><strong>User ID:</strong> ${userId}</p>
                     <p><strong>Issue Type:</strong> <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px;">${type}</span></p>
+                    <p><a href="mailto:${user.email}?subject=Re: Support Ticket ${type}" style="color: #4f46e5; text-decoration: none; font-weight: bold;">Reply to User</a></p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <h3 style="color: #374151;">Message:</h3>
                     <p style="white-space: pre-wrap; color: #4b5563; background: #f9fafb; padding: 15px; border-radius: 8px;">${message}</p>
@@ -51,6 +52,7 @@ exports.contactSupport = async (req, res) => {
                     <p style="font-size: 12px; color: #9ca3af;">Sent via SpendWise App • ${new Date().toLocaleString()}</p>
                 </div>
             `,
+            text: `New Support Request\n\nUser: ${user.name} (${user.email})\nUser ID: ${userId}\nIssue Type: ${type}\n\nMessage:\n${message}\n\nReply to user: ${user.email}\n\nSent via SpendWise App • ${new Date().toLocaleString()}`,
             attachments: attachments
         };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { signupInit, verifyOtp, syncGuestData } from '../store/slices/authSlice';
+import { signupInit, verifyOtp, syncGuestData, resendSignupOtp } from '../store/slices/authSlice';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Mail, User, ArrowRight, Loader2 } from 'lucide-react';
@@ -27,6 +27,29 @@ const SignupPage = () => {
     }, [location.state]);
 
     const [otp, setOtp] = useState('');
+    const [resendTimer, setResendTimer] = useState(30);
+
+    useEffect(() => {
+        let interval;
+        if (otpSent && resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [otpSent, resendTimer]);
+
+    const handleResendOtp = async () => {
+        if (resendTimer > 0) return;
+
+        const result = await dispatch(resendSignupOtp(formData.email));
+        if (resendSignupOtp.fulfilled.match(result)) {
+            toast.success("Code resent successfully!");
+            setResendTimer(30);
+        } else {
+            toast.error(result.payload?.msg || "Failed to resend code");
+        }
+    };
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -168,6 +191,17 @@ const SignupPage = () => {
                             >
                                 {loading ? <Loader2 className="animate-spin" size={18} /> : 'Verify & Create'}
                             </button>
+
+                            <div className="text-center">
+                                <button
+                                    type="button"
+                                    disabled={resendTimer > 0 || loading}
+                                    onClick={handleResendOtp}
+                                    className="text-sm font-medium text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Resend Verification Code'}
+                                </button>
+                            </div>
                         </form>
                     )}
                 </div>

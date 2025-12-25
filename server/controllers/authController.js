@@ -97,26 +97,57 @@ exports.loginSendOtp = async (req, res) => {
             to: email,
             subject: 'Login Verification Code - SpendWise',
             html: `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
-        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 0.5px;">SpendWise</h1>
-        </div>
-        <div style="padding: 32px 24px;">
-            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Welcome Back!</h2>
-            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">It looks like you're trying to log in. Here represents your One-Time Password (OTP) to complete the process. This code is valid for 10 minutes.</p>
-            <div style="background-color: #f1f5f9; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #4f46e5; display: block;">${otp}</span>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-font-smoothing: antialiased; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #f1f5f9; }
+            .header { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; letter-spacing: -0.5px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .otp-container { background: #f0fdf4; border: 2px dashed #86efac; border-radius: 16px; padding: 24px; margin: 0 auto 32px; display: inline-block; min-width: 200px; }
+            .otp-code { font-size: 36px; font-weight: 800; color: #166534; letter-spacing: 8px; font-family: monospace; display: block; }
+            .otp-label { display: block; font-size: 12px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+            .warning { font-size: 13px; color: #94a3b8; background: #f8fafc; padding: 12px; border-radius: 8px; display: inline-block; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+            .social-links { margin-bottom: 12px; }
+            .social-link { display: inline-block; width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; padding: 6px; margin: 0 4px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
             </div>
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you didn't request this code, you can safely ignore this email.</p>
+            <div class="content">
+                <h2 class="title">Secure Login</h2>
+                <p class="text">You requested a secure login to your SpendWise account. Use the code below to complete verification.</p>
+                
+                <div class="otp-container">
+                    <span class="otp-code">${otp}</span>
+                    <span class="otp-label">Verification Code</span>
+                </div>
+
+                <div class="warning">
+                    Valid for 10 minutes • Do not share this code
+                </div>
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} SpendWise Student Edition. All rights reserved.</p>
+                <p>Secure System Notification</p>
+            </div>
         </div>
-        <div style="background-color: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} SpendWise Student Edition</p>
-        </div>
-    </div>
+    </body>
+    </html>
     `
         };
-
-
+        mailOptions.text = `Secure Login\n\nCode: ${otp}\n\nValid for 10 minutes.`;
         await sendEmail(mailOptions);
 
 
@@ -169,29 +200,134 @@ exports.signupInit = async (req, res) => {
             to: email,
             subject: 'Verify Your Email - SpendWise',
             html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #f1f5f9; }
+            .header { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .otp-container { background: #f5f3ff; border: 2px dashed #c4b5fd; border-radius: 16px; padding: 24px; margin: 0 auto 32px; display: inline-block; min-width: 200px; }
+            .otp-code { font-size: 36px; font-weight: 800; color: #5b21b6; letter-spacing: 8px; font-family: monospace; display: block; }
+            .otp-label { display: block; font-size: 12px; font-weight: 600; color: #5b21b6; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title">Verify Account</h2>
+                <p class="text">Welcome to SpendWise! Please verify your email address to start your financial journey.</p>
+                <div class="otp-container">
+                    <span class="otp-code">${otp}</span>
+                    <span class="otp-label">Activation Code</span>
+                </div>
+                <p style="font-size: 13px; color: #94a3b8;">Valid for 10 minutes</p>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise
+            </div>
+        </div>
+    </body>
+    </html>
+    `
+        };
+        mailOptions.text = `Welcome to SpendWise!\n\nVerify your account with this code:\n\nOTP: ${otp}\n\nValid for 10 minutes.`;
+        await sendEmail(mailOptions);
+
+        res.json({ msg: 'OTP sent for verification', userId: user.id });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.resendSignupOtp = async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ msg: 'Email is required' });
+
+    try {
+        // Ensure lowercase comparison if desired, but for now exact match or similar
+        // Ideally we should always lowercase emails on ingress. 
+        // Let's assume user entered same email.
+        let user = await User.findOne({ email });
+
+        // If user not found, maybe they are trying to resend for an email that wasn't registered?
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found. Please sign up first.' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otp = otp;
+        user.otpExpires = Date.now() + 600000; // 10 mins
+        await user.save();
+
+        const mailOptions = {
+            from: `"SpendWise Team" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Verify Your Email - SpendWise',
+            html: `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
         <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
             <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 0.5px;">SpendWise</h1>
         </div>
         <div style="padding: 32px 24px;">
-            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Welcome Aboard!</h2>
-            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">Thanks for starting your journey with SpendWise. Please use the following One-Time Password (OTP) to verify your email address. This code is valid for 10 minutes.</p>
+            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Resend Verification Code</h2>
+            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">You requested to resend your verification code. Please use the following One-Time Password (OTP) to verify your email address. This code is valid for 10 minutes.</p>
             <div style="background-color: #f1f5f9; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
                 <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #4f46e5; display: block;">${otp}</span>
             </div>
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you didn't create an account, please ignore this email.</p>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you didn't request this code, please ignore this email.</p>
         </div>
-        <div style="background-color: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0;">
-            <p style="color: #94a3b8; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} SpendWise Student Edition</p>
+            body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .otp-container { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 24px; margin: 0 auto 32px; display: inline-block; min-width: 200px; }
+            .otp-code { font-size: 36px; font-weight: 800; color: #0f172a; letter-spacing: 8px; font-family: monospace; display: block; }
+            .otp-label { display: block; font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title">New Verification Code</h2>
+                <p class="text">You requested a new verification code. Codes are valid for 10 minutes from request.</p>
+                <div class="otp-container">
+                    <span class="otp-code">${otp}</span>
+                    <span class="otp-label">Verification Code</span>
+                </div>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise
+            </div>
         </div>
-    </div>
+    </body>
+    </html>
     `
         };
-
+        mailOptions.text = `New Verification Code\n\nOTP: ${otp}\n\nValid for 10 minutes.`;
 
         await sendEmail(mailOptions);
+        res.json({ msg: 'OTP resent for verification' });
 
-        res.json({ msg: 'OTP sent for verification', userId: user.id });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -334,23 +470,47 @@ exports.setPasscode = async (req, res) => {
                 to: user.email,
                 subject: 'App Lock Enabled - SpendWise',
                 html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
-                        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
-                        </div>
-                        <div style="padding: 32px 24px;">
-                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">App Lock Enabled</h2>
-                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">You have successfully enabled App Lock with a ${passcode.length}-digit PIN. This PIN will be required to access the app.</p>
-                            <div style="background-color: #fff1f2; border-left: 4px solid #e11d48; padding: 16px; margin: 24px 0; border-radius: 4px;">
-                                <p style="color: #9f1239; font-size: 14px; margin: 0;"><strong>Security Note:</strong> It is recommended to change your passcode every 24 hours.</p>
-                            </div>
-                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you did not make this change, please contact support immediately.</p>
-                        </div>
-                    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+             body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .box { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 12px; padding: 20px; margin-bottom: 24px; color: #065f46; font-weight: 500; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title" style="color: #059669;">App Lock Enabled</h2>
+                <p class="text">Your account is now secured with a PIN.</p>
+                <div class="box">
+                    ${passcode.length}-Digit PIN Active
+                </div>
+                <p style="font-size: 14px; color: #059669;"><strong>Tip:</strong> Change your passcode periodically.</p>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise
+            </div>
+        </div>
+    </body>
+    </html>
                 `
             };
-            // Fire and forget email to not block response? Or await? Await is safer for feedback but slower.
-            // Let's await but catch error so we don't fail the request if email fails.
+            mailOptions.text = `App Lock Enabled\n\nYour account is now secured with a ${passcode.length}-digit PIN.`;
+
+
             try {
                 await sendEmail(mailOptions);
             } catch (emailErr) {
@@ -421,21 +581,48 @@ exports.forgotPasscode = async (req, res) => {
                 to: user.email,
                 subject: 'Reset App Lock - SpendWise',
                 html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
-                        <div style="background-color: #4f46e5; padding: 24px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
-                        </div>
-                        <div style="padding: 32px 24px;">
-                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Reset App Lock</h2>
-                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">Use the following OTP to reset your App Lock PIN:</p>
-                            <div style="background-color: #f1f5f9; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
-                                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #4f46e5; display: block;">${otp}</span>
-                            </div>
-                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you didn't request this, you can ignore this email.</p>
-                        </div>
-                    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+             body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .otp-container { background: #fff7ed; border: 2px dashed #fdba74; border-radius: 16px; padding: 24px; margin: 0 auto 32px; display: inline-block; min-width: 200px; }
+            .otp-code { font-size: 36px; font-weight: 800; color: #9a3412; letter-spacing: 8px; font-family: monospace; display: block; }
+            .otp-label { display: block; font-size: 12px; font-weight: 600; color: #9a3412; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title">Reset Passcode</h2>
+                <p class="text">We received a request to reset your App Lock. If this was you, use the code below.</p>
+                <div class="otp-container">
+                    <span class="otp-code">${otp}</span>
+                    <span class="otp-label">Reset PIN</span>
+                </div>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise
+            </div>
+        </div>
+    </body>
+    </html>
                 `
             };
+            mailOptions.text = `Reset Passcode\n\nOTP: ${otp}`;
+
             await sendEmail(mailOptions);
             res.json({ msg: 'OTP sent to your email' });
         } else {
@@ -490,22 +677,52 @@ exports.resetDataInit = async (req, res) => {
                 to: user.email,
                 subject: 'Confirm Data Reset - SpendWise',
                 html: `
-                    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
-                        <div style="background-color: #ef4444; padding: 24px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SpendWise</h1>
-                        </div>
-                        <div style="padding: 32px 24px;">
-                            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Confirm Data Reset</h2>
-                            <p style="color: #64748b; margin-bottom: 24px; font-size: 16px; line-height: 1.5;">You have requested to reset all your account data. <strong>This action cannot be undone.</strong></p>
-                            <p style="color: #64748b; margin-bottom: 16px; font-size: 16px;">Use the following OTP to confirm:</p>
-                            <div style="background-color: #fee2e2; padding: 16px; text-align: center; border-radius: 8px; margin: 24px 0;">
-                                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #ef4444; display: block;">${otp}</span>
-                            </div>
-                            <p style="color: #94a3b8; font-size: 14px; margin-top: 24px;">If you did not request this, please change your password immediately.</p>
-                        </div>
-                    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+             body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 500px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; text-align: center; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .text { font-size: 16px; line-height: 1.6; margin-bottom: 32px; color: #475569; }
+            .warning { background: #fef2f2; color: #dc2626; padding: 16px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 24px; border: 1px solid #fee2e2; }
+            .otp-container { background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 16px; padding: 24px; margin: 0 auto 32px; display: inline-block; min-width: 200px; }
+            .otp-code { font-size: 36px; font-weight: 800; color: #dc2626; letter-spacing: 8px; font-family: monospace; display: block; }
+            .otp-label { display: block; font-size: 12px; font-weight: 600; color: #dc2626; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title" style="color: #dc2626;">Data Reset Request</h2>
+                <div class="warning">
+                    Warning: This action will permanently delete all your account data.
+                </div>
+                <p class="text">If you requested this full account reset, please use the confirmation code below.</p>
+                <div class="otp-container">
+                    <span class="otp-code">${otp}</span>
+                    <span class="otp-label">Confirmation Code</span>
+                </div>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise
+            </div>
+        </div>
+    </body>
+    </html>
                 `
             };
+            mailOptions.text = `Confirm Data Reset\n\nYou have requested to reset all your account data. This action cannot be undone.\n\nUse the following OTP to confirm:\n\nOTP: ${otp}\n\nIf you did not request this, please change your password immediately.`;
+
             await sendEmail(mailOptions);
             res.json({ msg: 'Verification code sent to your email' });
         } else {
@@ -541,6 +758,14 @@ exports.resetDataConfirm = async (req, res) => {
             Subscription.deleteMany({ user: userId }),
             Notification.deleteMany({ user: userId })
         ]);
+
+        // Reset User Profile for "Fresh Start"
+        user.budget = 0;
+        user.currency = 'INR';
+        user.onboardingComplete = false;
+        user.status = 'student'; // Default
+        // user.college = undefined; // Optional: Keep college or reset? "Like new user" implies reset.
+        await user.save();
 
         res.json({ msg: 'All account data has been reset successfully.' });
 

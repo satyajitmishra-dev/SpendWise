@@ -15,12 +15,21 @@ export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestDa
 });
 
 
-export const signupInit = createAsyncThunk('auth/signupInit', async (userData, { rejectWithValue }) => {
+export const signupInit = createAsyncThunk('auth/signupInit', async (formData, thunkAPI) => {
     try {
-        const res = await api.post('/auth/signup-init', userData);
+        const res = await api.post('/auth/signup-init', formData);
         return res.data;
     } catch (err) {
-        return rejectWithValue(err.response.data);
+        return thunkAPI.rejectWithValue(err.response.data);
+    }
+});
+
+export const resendSignupOtp = createAsyncThunk('auth/resendSignupOtp', async (email, thunkAPI) => {
+    try {
+        const res = await api.post('/auth/signup-resend', { email });
+        return res.data;
+    } catch (err) {
+        return thunkAPI.rejectWithValue(err.response.data);
     }
 });
 
