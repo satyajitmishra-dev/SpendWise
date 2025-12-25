@@ -244,7 +244,7 @@ const Profile = () => {
 
                     <motion.div variants={item} className="text-center pb-8 pt-4">
                         <p className="text-xs font-medium text-gray-400 dark:text-slate-600">
-                            SpendWise Premium • v2.2.0 (Build 2025)
+                            SpendWise Premium • v2.3.1
                         </p>
                     </motion.div>
                 </motion.div>

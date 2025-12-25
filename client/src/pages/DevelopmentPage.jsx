@@ -24,7 +24,7 @@ const DevelopmentPage = () => {
                         <Code size={40} />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">SpendWise</h2>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">Student Edition • v1.0.3</p>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">Student Edition • v2.3.1</p>
                     <p className="text-xs text-gray-400 dark:text-slate-600 uppercase tracking-widest">Built with ❤️ & React</p>
                 </div>
 

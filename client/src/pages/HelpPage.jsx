@@ -117,7 +117,7 @@ const HelpPage = () => {
                                 <span className="font-bold text-gray-900 dark:text-white block">App Info</span>
                                 <span className="text-xs font-medium text-emerald-500 dark:text-emerald-400 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    App running smoothly • v1.0.3
+                                    App running smoothly • v2.3.1
                                 </span>
                             </div>
                         </div>
@@ -155,7 +155,7 @@ const HelpPage = () => {
                     className="mt-16 pt-8 border-t border-gray-100 dark:border-slate-800/50 text-center opacity-70"
                 >
                     <p className="text-xs font-semibold text-gray-400 dark:text-slate-600 mb-2">
-                        App Version 1.0.3
+                        App Version 2.3.1
                     </p>
                     <div className="flex items-center justify-center gap-6 text-[11px] text-gray-400 dark:text-slate-600 font-medium uppercase tracking-wider">
                         <button className="hover:text-indigo-500 transition-colors min-h-[30px] flex items-center">Privacy Policy</button>

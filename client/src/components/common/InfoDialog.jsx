@@ -53,7 +53,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
         {
             icon: Smartphone,
             title: "Cross Platform",
-            desc: "Access your finances from any device, anywhere. Now v2.1.0!",
+            desc: "Access your finances from any device, anywhere. Now v2.3.1!",
             color: "text-purple-400",
             bg: "bg-purple-500/10",
         }
@@ -109,7 +109,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
                             Student Edition
                         </span>
                         <span className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-[10px] font-bold tracking-widest uppercase">
-                            V2.1.0
+                            v2.3.1
                         </span>
                     </div>
 
