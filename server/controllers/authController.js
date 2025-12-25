@@ -48,7 +48,7 @@ exports.initUser = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ token: accessToken, user });
+        res.json({ token: accessToken, refreshToken, user });
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
@@ -217,7 +217,7 @@ exports.verifyOtp = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
-        res.json({ token: accessToken, user });
+        res.json({ token: accessToken, refreshToken, user });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
@@ -547,5 +547,31 @@ exports.resetDataConfirm = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
+    }
+};
+
+exports.refreshToken = async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(401).json({ msg: 'No token, authorization denied' });
+
+    try {
+        const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+        const user = await User.findById(decoded.user.id);
+
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Check if the token matches the one in DB
+        if (user.refreshToken !== refreshToken) {
+            return res.status(401).json({ msg: 'Invalid refresh token' });
+        }
+
+        const tokens = generateTokens(user.id);
+        user.refreshToken = tokens.refreshToken; // Rotate refresh token
+        await user.save();
+
+        res.json({ token: tokens.accessToken, refreshToken: tokens.refreshToken });
+    } catch (err) {
+        console.error('Refresh Token Error:', err.message);
+        res.status(401).json({ msg: 'Token is not valid' });
     }
 };

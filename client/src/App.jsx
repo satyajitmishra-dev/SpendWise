@@ -28,6 +28,10 @@ import LoadingScreen from './components/common/LoadingScreen';
 import LockScreen from './components/common/LockScreen';
 import IdleTimer from './components/common/IdleTimer';
 import SecurityPage from './pages/SecurityPage';
+import HelpPage from './pages/HelpPage';
+import ContactSupport from './pages/ContactSupport';
+import FAQPage from './pages/FAQPage';
+import DevelopmentPage from './pages/DevelopmentPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -144,6 +148,12 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="security" element={<SecurityPage />} />
         </Route>
+
+        {/* Help Pages - No Layout/Navbar */}
+        <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+        <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
+        <Route path="/faq" element={<ProtectedRoute><FAQPage /></ProtectedRoute>} />
+        <Route path="/development" element={<ProtectedRoute><DevelopmentPage /></ProtectedRoute>} />
 
         {/* 404 Catch-All */}
         <Route path="*" element={<NotFoundPage />} />

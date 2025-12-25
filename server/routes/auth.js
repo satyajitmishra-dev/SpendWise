@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { initUser, loginSendOtp, signupInit, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, forgotPasscode, resetPasscode, uploadAvatar, deleteAvatar, resetDataInit, resetDataConfirm } = require('../controllers/authController');
+const { initUser, loginSendOtp, signupInit, verifyOtp, loadUser, updateProfile, setPasscode, verifyPasscode, disablePasscode, forgotPasscode, resetPasscode, uploadAvatar, deleteAvatar, resetDataInit, resetDataConfirm, refreshToken } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -10,6 +10,7 @@ router.post('/init', initUser);
 router.post('/login-otp', loginSendOtp);
 router.post('/signup-init', signupInit);
 router.post('/verify-otp', verifyOtp);
+router.post('/refresh', refreshToken);
 router.get('/me', auth, loadUser);
 router.post('/update-profile', updateProfile);
 router.post('/avatar', auth, upload.single('avatar'), uploadAvatar);

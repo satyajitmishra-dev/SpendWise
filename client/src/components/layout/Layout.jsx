@@ -11,7 +11,9 @@ import ProfileReminder from './ProfileReminder';
 import ThemeToggler from './ThemeToggler';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
+
 import ErrorBoundary from '../common/ErrorBoundary';
+
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);

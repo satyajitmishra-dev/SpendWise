@@ -106,7 +106,22 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
             return;
         }
 
-        const parsedAmount = parseFloat(amount);
+        let parsedAmount = 0;
+        try {
+            // Check if it's an expression
+            if (/[\+\-\*\/]/.test(amount.toString())) {
+                // eslint-disable-next-line no-new-func
+                parsedAmount = new Function('return ' + amount)();
+            } else {
+                parsedAmount = parseFloat(amount);
+            }
+        } catch (err) {
+            toast.error('Invalid amount format');
+            return;
+        }
+
+        parsedAmount = Math.round(parsedAmount * 100) / 100; // Round to 2 decimals
+
         if (isNaN(parsedAmount) || parsedAmount <= 0) {
             toast.error('Amount must be greater than 0');
             return;
@@ -257,18 +272,37 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                             Income
                         </button>
                     </div>
-                    {/* Amount Input */}
+                    {/* Amount Input with Calculator */}
                     <div>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">₹</span>
                             <input
-                                type="number"
+                                type="text"
+                                inputMode="decimal"
                                 value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
+                                onChange={(e) => {
+                                    // Allow digits, operators, dots, parenthese
+                                    const val = e.target.value;
+                                    if (/^[0-9+\-*/().\s]*$/.test(val)) {
+                                        setAmount(val);
+                                    }
+                                }}
                                 placeholder="100"
                                 className={`w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 dark:bg-slate-800 rounded-2xl border-none focus:ring-2 outline-none dark:text-white ${type === 'income' ? 'focus:ring-green-500 text-green-600' : 'focus:ring-indigo-500 text-gray-900'}`}
                                 autoFocus
                             />
+                            {/* Calculation Preview */}
+                            {amount && /[\+\-\*\/]/.test(amount) && (
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded-full text-sm font-bold text-gray-600 dark:text-gray-300 animate-in fade-in">
+                                    = {(() => {
+                                        try {
+                                            // eslint-disable-next-line no-new-func
+                                            const res = new Function('return ' + amount)();
+                                            return isNaN(res) ? '...' : Math.round(res * 100) / 100;
+                                        } catch { return '...'; }
+                                    })()}
+                                </div>
+                            )}
                         </div>
                     </div>
 

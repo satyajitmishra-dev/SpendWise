@@ -115,10 +115,21 @@ const LockScreen = () => {
             await dispatch(verifyPasscode(passcode)).unwrap();
             // App will unlock via state change
         } catch (err) {
-            // toast handled by api interceptor
-            if (navigator.vibrate) navigator.vibrate(200); // Vibrate for 200ms
+            // Err object from rejectWithValue
+            const msg = err?.msg || 'Verification failed';
+
+            if (msg === 'Passcode not enabled') {
+                // Backend says disabled, so unlock frontend
+                toast.info('Passcode was disabled everywhere');
+                dispatch(loadUser());
+                return;
+            }
+
+            // Normal Incorrect Passcode
+            if (navigator.vibrate) navigator.vibrate(200);
             setPasscode('');
-            setErrorShake(prev => prev + 1); // Trigger shake
+            setErrorShake(prev => prev + 1);
+            // Optional: Show small visual hint instead of big toast
         } finally {
             setLoading(false);
         }

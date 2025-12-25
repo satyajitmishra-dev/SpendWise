@@ -34,6 +34,7 @@ async function sendEmail(mailOptions) {
             from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
             subject: mailOptions.subject,
             html: mailOptions.html,
+            attachments: mailOptions.attachments, // Pass attachments array { content, filename, type, disposition }
         };
         return await sgMail.send(msg);
     } else {

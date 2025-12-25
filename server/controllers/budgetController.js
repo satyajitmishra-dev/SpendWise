@@ -5,7 +5,8 @@ exports.getBudgets = async (req, res) => {
         const budgets = await Budget.find({ userId: req.user.id });
         res.json(budgets);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -21,7 +22,8 @@ exports.addBudget = async (req, res) => {
         const budget = await newBudget.save();
         res.json(budget);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -41,7 +43,8 @@ exports.updateBudget = async (req, res) => {
         );
         res.json(budget);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -57,6 +60,7 @@ exports.deleteBudget = async (req, res) => {
         await Budget.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Budget removed' });
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };

@@ -10,7 +10,7 @@ exports.getExpenses = async (req, res) => {
         res.json(expenses);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -64,7 +64,7 @@ exports.addExpense = async (req, res) => {
         res.json(expense);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -109,7 +109,7 @@ exports.updateExpense = async (req, res) => {
         res.json(expense);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -152,7 +152,7 @@ exports.deleteExpense = async (req, res) => {
         res.json({ msg: 'Expense removed' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -181,7 +181,7 @@ exports.syncExpenses = async (req, res) => {
         res.json({ msg: 'Sync successful', count: newExpenses.length });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -258,6 +258,6 @@ exports.getExpenseStats = async (req, res) => {
         res.json({ trend: trendData, category: categoryData });
     } catch (err) {
         console.error('Stats Error:', err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };

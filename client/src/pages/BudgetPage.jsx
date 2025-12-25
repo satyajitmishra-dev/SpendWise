@@ -19,8 +19,15 @@ const CATEGORY_COLORS = {
 
 const BudgetPage = () => {
     const dispatch = useDispatch();
-    const { items: budgets, loading: budgetsLoading } = useSelector((state) => state.budgets);
-    const { items: expenses, loading: expensesLoading } = useSelector((state) => state.expenses);
+    const { user } = useSelector((state) => state.auth);
+    const budgetState = useSelector((state) => state.budgets);
+    const budgets = budgetState?.items || [];
+    const budgetsLoading = budgetState?.loading || false;
+
+    const expenseState = useSelector((state) => state.expenses);
+    const expenses = expenseState?.items || [];
+    const expensesLoading = expenseState?.loading || false;
+
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [editingBudget, setEditingBudget] = useState(null);
 
@@ -29,6 +36,7 @@ const BudgetPage = () => {
         dispatch(fetchExpenses());
     }, [dispatch]);
 
+    // Categorical Stats (for the grid)
     const budgetStats = useMemo(() => {
         const now = new Date();
         const thisMonth = now.getMonth();
@@ -49,9 +57,34 @@ const BudgetPage = () => {
         });
     }, [budgets, expenses]);
 
-    const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
-    const totalSpentInBudgets = budgetStats.reduce((sum, b) => sum + b.spent, 0);
-    const totalPercent = totalBudget > 0 ? (totalSpentInBudgets / totalBudget) * 100 : 0;
+    // Global Stats (for the main card)
+    const { totalSpentMonth, globalBudget, globalPercent } = useMemo(() => {
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+
+        // 1. Total Spent this month (ALL categories)
+        const totalSpent = expenses
+            .filter(exp => {
+                const d = new Date(exp.date);
+                return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+            })
+            .reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+
+        // 2. Global Budget Target
+        // Use user.budget (Profile Budget) if set, otherwise fallback to sum of category budgets
+        const sumOfCategories = budgets.reduce((sum, b) => sum + b.amount, 0);
+        // Prefer user.budget if it is non-zero, else sumOfCategories
+        const effectiveBudget = (user?.budget && user.budget > 0) ? user.budget : sumOfCategories;
+
+        const percent = effectiveBudget > 0 ? (totalSpent / effectiveBudget) * 100 : 0;
+
+        return {
+            totalSpentMonth: totalSpent,
+            globalBudget: effectiveBudget,
+            globalPercent: percent
+        };
+    }, [budgets, expenses, user]);
 
     const handleDelete = async (id) => {
         if (confirm('Delete this budget?')) {
@@ -101,8 +134,8 @@ const BudgetPage = () => {
                 <div>
                     <p className="text-emerald-100 text-sm font-medium mb-1">Total Budget</p>
                     <div className="flex items-baseline gap-2">
-                        <h2 className="text-3xl font-bold">₹{totalSpentInBudgets.toLocaleString()}</h2>
-                        <span className="text-emerald-100">/ ₹{totalBudget.toLocaleString()}</span>
+                        <h2 className="text-3xl font-bold">₹{totalSpentMonth.toLocaleString()}</h2>
+                        <span className="text-emerald-100">/ ₹{globalBudget.toLocaleString()}</span>
                     </div>
                 </div>
 
@@ -110,12 +143,12 @@ const BudgetPage = () => {
                 <div className="mt-4 pt-4 border-t border-white/20">
                     <div className="flex justify-between text-xs mb-1 text-emerald-100">
                         <span>Total Usage</span>
-                        <span>{Math.round(totalPercent)}%</span>
+                        <span>{Math.round(globalPercent)}%</span>
                     </div>
                     <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-white/90 rounded-full transition-all duration-1000"
-                            style={{ width: `${totalPercent}%` }}
+                            style={{ width: `${Math.min(globalPercent, 100)}%` }}
                         ></div>
                     </div>
                 </div>

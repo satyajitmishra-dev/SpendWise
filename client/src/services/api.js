@@ -24,6 +24,21 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+const shownErrors = new Set();
+
+const showErrorToast = (message) => {
+    if (shownErrors.has(message)) return;
+
+    shownErrors.add(message);
+    toast.error(message, {
+        duration: 4000,
+        onDismiss: () => shownErrors.delete(message),
+        onAutoClose: () => shownErrors.delete(message),
+    });
+    // Fallback cleanup
+    setTimeout(() => shownErrors.delete(message), 4500);
+};
+
 // Enhanced response interceptor with error handling and retry logic
 api.interceptors.response.use(
     (response) => response,
@@ -31,9 +46,39 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         // Handle 401 Unauthorized
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            // Don't show toast for 401 as auth slice handles this
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            if (refreshToken) {
+                try {
+                    // Try to refresh the token
+                    const res = await axios.post('/api/auth/refresh', { refreshToken });
+
+                    if (res.data.token) {
+                        localStorage.setItem('token', res.data.token);
+                        // Update refresh token if rotated
+                        if (res.data.refreshToken) {
+                            localStorage.setItem('refreshToken', res.data.refreshToken);
+                        }
+
+                        // Retry original request with new token
+                        originalRequest.headers['x-auth-token'] = res.data.token;
+                        return api(originalRequest);
+                    }
+                } catch (refreshErr) {
+                    // Refresh failed - clean up and logout
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
+                    // Optional: You might want to redirect to login page here
+                    // window.location.href = '/login'; 
+                }
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+            }
+            // For 401, we generally rely on state/redirect, but if it fails to refresh, maybe show?
+            // "Session expired"
             return Promise.reject(error);
         }
 
@@ -54,17 +99,7 @@ api.interceptors.response.use(
             // Don't show toast if user is offline (offline page will handle this)
             if (navigator.onLine) {
                 const errorMsg = getErrorMessage(error);
-                toast.error(errorMsg, {
-                    duration: 4000,
-                    action: {
-                        label: 'Retry',
-                        onClick: () => {
-                            // Reset retry count and try again
-                            originalRequest.retryCount = 0;
-                            api(originalRequest);
-                        }
-                    }
-                });
+                showErrorToast(errorMsg);
             }
 
             return Promise.reject(error);
@@ -75,11 +110,11 @@ api.interceptors.response.use(
             const status = error.response.status;
 
             // Don't show toast for certain status codes that components handle themselves
-            const silentStatuses = [401]; // Add more if needed
+            const silentStatuses = [401, 400]; // Add more if needed
 
             if (!silentStatuses.includes(status)) {
                 const errorMsg = getErrorMessage(error);
-                toast.error(errorMsg, { duration: 4000 });
+                showErrorToast(errorMsg);
             }
         } else {
             // Generic error
@@ -87,7 +122,7 @@ api.interceptors.response.use(
             if (error.response && typeof error.response.data === 'string' && error.response.data.includes('<html')) {
                 msg = `Server Error (${error.response.status})`;
             }
-            toast.error(msg, { duration: 4000 });
+            showErrorToast(msg);
         }
 
         return Promise.reject(error);

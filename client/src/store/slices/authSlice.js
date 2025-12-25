@@ -7,6 +7,7 @@ export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestDa
     try {
         const res = await api.post('/auth/init', guestData);
         localStorage.setItem('token', res.data.token);
+        if (res.data.refreshToken) localStorage.setItem('refreshToken', res.data.refreshToken);
         return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
@@ -38,6 +39,7 @@ export const verifyOtp = createAsyncThunk('auth/verifyOtp', async ({ email, otp 
     try {
         const res = await api.post('/auth/verify-otp', { email, otp });
         localStorage.setItem('token', res.data.token);
+        if (res.data.refreshToken) localStorage.setItem('refreshToken', res.data.refreshToken);
         return res.data;
     } catch (err) {
         return rejectWithValue(err.response.data);
@@ -170,6 +172,7 @@ const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
             state.user = null;
             state.isAuthenticated = false;
             state.loading = false;

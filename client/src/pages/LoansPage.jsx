@@ -100,7 +100,7 @@ const LoansPage = () => {
                 </div>
             </div>
 
-            {loading ? (
+            {loading && items.length === 0 ? (
                 <div className="text-center py-10 text-gray-400">Loading loans...</div>
             ) : (
                 <motion.div

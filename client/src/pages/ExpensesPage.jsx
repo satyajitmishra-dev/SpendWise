@@ -198,7 +198,7 @@ const ExpensesPage = () => {
                 </div>
             </div>
 
-            {loading ? (
+            {loading && items.length === 0 ? (
                 <div className="space-y-4">
                     {[1, 2, 3, 4, 5].map((i) => (
                         <Skeleton key={i} className="h-20 w-full rounded-2xl bg-white shadow-sm" />

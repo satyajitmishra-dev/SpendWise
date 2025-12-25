@@ -6,7 +6,8 @@ exports.getAccounts = async (req, res) => {
         const accounts = await Account.find({ userId: req.user.id });
         res.json(accounts);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -19,7 +20,8 @@ exports.addAccount = async (req, res) => {
 
         res.json(account);
     } catch (err) {
-        res.status(500).send('Server Error');
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 exports.updateAccount = async (req, res) => {
@@ -35,7 +37,7 @@ exports.updateAccount = async (req, res) => {
         res.json(account);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -52,6 +54,6 @@ exports.deleteAccount = async (req, res) => {
         res.json({ msg: 'Account removed' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
