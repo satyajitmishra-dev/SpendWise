@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { isNetworkError, getErrorMessage } from '../utils/networkUtils';
 
 const api = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
     headers: {
         'Content-Type': 'application/json',
     },
