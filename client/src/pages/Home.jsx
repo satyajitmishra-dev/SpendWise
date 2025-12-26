@@ -6,7 +6,7 @@ import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
-import { fetchBudgets } from '../store/slices/budgetSlice'; // NEW
+import { fetchBudgets, updateBudget } from '../store/slices/budgetSlice'; // NEW
 import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap } from 'lucide-react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -14,6 +14,10 @@ import { cn } from '../lib/utils';
 import HomeSkeleton from '../components/common/HomeSkeleton';
 import Footer from '../components/layout/Footer';
 import { fetchRemoteConfig, getFeatureConfig } from '../services/remoteConfig';
+import BudgetRenewalDialog from '../components/features/BudgetRenewalDialog';
+import AddBudgetSheet from '../components/features/AddBudgetSheet';
+import { addDays } from 'date-fns';
+import { toast } from 'sonner';
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -31,6 +35,66 @@ const Home = () => {
 
     // Remote Config State
     const [featureBanner, setFeatureBanner] = useState({ show: false, text: '', link: '/about-feature' });
+
+    // Budget Renewal State
+    const [expiredBudget, setExpiredBudget] = useState(null);
+    const [isRenewOpen, setIsRenewOpen] = useState(false);
+    const [isAddBudgetOpen, setIsAddBudgetOpen] = useState(false);
+
+    useEffect(() => {
+        if (budgets.length > 0) {
+            const today = new Date();
+            const expired = budgets.find(b => {
+                if (!b.endDate) return false;
+                const end = new Date(b.endDate);
+                // Check if end date is before today (meaning strictly past, e.g. yesterday)
+                // If end date is TODAY, it is active until end of today.
+                // So we check if end < start of today? 
+                // date-fns compares timestamps.
+                // Let's safe check: if endDate set to T00:00:00, then it expires as soon as day starts?
+                // Usually end of day is T23:59:59.
+                // Let's assume passed dates imply expiry.
+                return end < today;
+            });
+
+            if (expired) {
+                const isDismissed = sessionStorage.getItem(`dismissed_budget_${expired._id}`);
+                if (!isDismissed) {
+                    setExpiredBudget(expired);
+                    setIsRenewOpen(true);
+                }
+            }
+        }
+    }, [budgets]);
+
+    const handleRenew = async (budget, type) => {
+        if (type === 'extend') {
+            const today = new Date();
+            try {
+                await dispatch(updateBudget({
+                    id: budget._id,
+                    data: {
+                        startDate: today.toISOString(),
+                        endDate: addDays(today, 30).toISOString(),
+                        period: 'custom'
+                    }
+                })).unwrap();
+                toast.success(`Extended ${budget.category} budget for 30 days!`);
+                setIsRenewOpen(false);
+            } catch (e) {
+                toast.error("Failed to extend budget");
+            }
+        } else {
+            // New Limit
+            setIsRenewOpen(false);
+            setIsAddBudgetOpen(true);
+        }
+    };
+
+    const handleDismiss = (id) => {
+        sessionStorage.setItem(`dismissed_budget_${id}`, 'true');
+        setIsRenewOpen(false);
+    };
 
     useEffect(() => {
         const initConfig = async () => {
@@ -342,6 +406,19 @@ const Home = () => {
                 </>
             )}
 
+
+            {/* Budget Renewal Dialogs */}
+            <BudgetRenewalDialog
+                isOpen={isRenewOpen}
+                expiredBudgets={expiredBudget ? [expiredBudget] : []}
+                onRenew={handleRenew}
+                onDismiss={handleDismiss}
+            />
+            <AddBudgetSheet
+                isOpen={isAddBudgetOpen}
+                onClose={() => setIsAddBudgetOpen(false)}
+                initialData={expiredBudget}
+            />
 
             {/* Footer */}
             <Footer />

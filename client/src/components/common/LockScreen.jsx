@@ -170,13 +170,16 @@ const LockScreen = () => {
 
     // Auto submit when length reached
     useEffect(() => {
+        if (!isAppLocked || !user?.isPasscodeEnabled) return;
         if (passcode.length === expectedLength) {
             handleSubmit();
         }
-    }, [passcode, expectedLength]);
+    }, [passcode, expectedLength, isAppLocked, user?.isPasscodeEnabled]);
 
     // Keyboard Support
     useEffect(() => {
+        if (!isAppLocked || !user?.isPasscodeEnabled) return;
+
         const handleKeyDown = (e) => {
             if (loading) return;
 
@@ -189,7 +192,7 @@ const LockScreen = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [loading, passcode.length, expectedLength]);
+    }, [loading, passcode.length, expectedLength, isAppLocked, user?.isPasscodeEnabled]);
 
     // Safety check: Don't show if not locked OR if user hasn't enabled passcode
     if (!isAppLocked || !user?.isPasscodeEnabled) return null;

@@ -11,7 +11,13 @@ export const fetchBudgets = createAsyncThunk(
             const isGuest = !token || (user && !user.email);
 
             if (isGuest) {
-                return JSON.parse(localStorage.getItem('guest_budgets') || '[]');
+                const raw = JSON.parse(localStorage.getItem('guest_budgets') || '[]');
+                // Deduplicate by _id
+                const unique = Array.from(new Map(raw.map(item => [item._id, item])).values());
+                if (unique.length !== raw.length) {
+                    localStorage.setItem('guest_budgets', JSON.stringify(unique));
+                }
+                return unique;
             }
             const res = await api.get('/budgets');
             return res.data;
@@ -32,7 +38,7 @@ export const addBudget = createAsyncThunk(
             if (isGuest) {
                 const newBudget = {
                     ...budgetData,
-                    _id: Date.now().toString(),
+                    _id: Date.now().toString() + Math.floor(Math.random() * 1000),
                     createdAt: new Date().toISOString()
                 };
                 const current = JSON.parse(localStorage.getItem('guest_budgets') || '[]');

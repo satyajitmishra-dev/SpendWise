@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { updateUser } from '../store/slices/authSlice';
 import { addAccount } from '../store/slices/accountSlice';
 import { addExpense } from '../store/slices/expenseSlice';
+import { addBudget } from '../store/slices/budgetSlice'; // IMPORTED
 import { setTheme } from '../store/slices/themeSliceFixed';
 import api from '../services/api';
 import { ChevronRight, User, School, IndianRupee, Wallet, CreditCard, Tag, Sun, Moon, Monitor, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 
 const steps = [
     { id: 1, title: 'Profile', desc: 'Let\'s get to know you' },
@@ -16,6 +18,18 @@ const steps = [
     { id: 3, title: 'First Wallet', desc: 'Where do you keep money?' },
     { id: 4, title: 'First Expense', desc: 'Track your first spend' }
 ];
+
+const getCategoryEmoji = (category) => {
+    const map = {
+        food: '🍔',
+        travel: '🚕',
+        rent: '🏠',
+        study: '📚',
+        fun: '🎮',
+        other: '🪙'
+    };
+    return map[category] || '💸';
+};
 
 const ProfileSetup = () => {
     const { user } = useSelector((state) => state.auth);
@@ -31,7 +45,19 @@ const ProfileSetup = () => {
         college: '',
         status: 'student',
         currency: 'INR',
-        budget: ''
+        budget: '' // Keep for legacy / overall sync
+    });
+
+    // Budget Flow State
+    const [budgetEnabled, setBudgetEnabled] = useState(false);
+    const [budgetType, setBudgetType] = useState('overall'); // 'overall' | 'categorized'
+    const [categorizedBudgets, setCategorizedBudgets] = useState({
+        food: 2000,
+        rent: 0,
+        travel: 500,
+        study: 0,
+        fun: 500,
+        other: 0
     });
 
     // Step 3 Data
@@ -71,14 +97,22 @@ const ProfileSetup = () => {
             return;
         }
 
-        if (step === 2 && profileData.budget) {
-            if (Number(profileData.budget) < 0) {
-                toast.error('Budget cannot be negative');
-                return;
-            }
-            if (Number(profileData.budget) == 0) {
-                toast.error('Budget cannot be zero');
-                return;
+        // Budget / Step 2 Validation
+        if (step === 2) {
+            if (budgetEnabled) {
+                if (budgetType === 'overall') {
+                    if (!profileData.budget || Number(profileData.budget) <= 0) {
+                        toast.error('Please enter a valid monthly budget');
+                        return;
+                    }
+                } else {
+                    // Check if at least one category has value
+                    const hasValue = Object.values(categorizedBudgets).some(v => Number(v) > 0);
+                    if (!hasValue) {
+                        toast.error('Please set at least one category budget');
+                        return;
+                    }
+                }
             }
         }
 
@@ -86,12 +120,38 @@ const ProfileSetup = () => {
         if (step === 2) {
             setIsLoading(true);
             try {
+                // 1. Update Profile (Theme, Currency, Name)
                 const res = await api.post('/auth/update-profile', {
                     userId: user._id,
-                    ...profileData,
-                    onboardingComplete: false // Not done yet
+                    ...profileData, // This saves 'budget' field to User model (good for overall backup)
+                    onboardingComplete: false
                 });
                 dispatch(updateUser(res.data));
+
+                // 2. Create Budget Docs (The new logic)
+                if (budgetEnabled) {
+                    if (budgetType === 'overall') {
+                        // Create one 'Monthly Budget' doc
+                        await dispatch(addBudget({
+                            category: 'Monthly Budget',
+                            amount: Number(profileData.budget),
+                            period: 'monthly'
+                        })).unwrap();
+                    } else {
+                        // Create individual docs
+                        const promises = Object.entries(categorizedBudgets)
+                            .filter(([_, val]) => Number(val) > 0)
+                            .map(([cat, val]) => dispatch(addBudget({
+                                category: cat,
+                                amount: Number(val),
+                                period: 'monthly'
+                            })).unwrap());
+
+                        await Promise.all(promises);
+                    }
+                    toast.success('Budget preferences saved!');
+                }
+
                 setStep(prev => prev + 1);
             } catch (error) {
                 console.error(error);
@@ -259,45 +319,41 @@ const ProfileSetup = () => {
                 </div>
             )}
 
-            {/* Step 2: Preferences */}
+            {/* Step 2: Preferences & Budget */}
             {step === 2 && (
-                <div className="flex-1 flex flex-col gap-6 animate-in slide-in-from-right duration-300">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Theme</label>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[
-                                    { id: 'light', icon: Sun, label: 'Light' },
-                                    { id: 'dark', icon: Moon, label: 'Dark' },
-                                    { id: 'system', icon: Monitor, label: 'System' }
-                                ].map((t) => (
-                                    <button
-                                        key={t.id}
-                                        onClick={() => dispatch(setTheme(t.id))}
-                                        className={cn(
-                                            "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all",
-                                            mode === t.id
-                                                ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
-                                                : "border-transparent bg-gray-50 dark:bg-slate-900 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"
-                                        )}
-                                    >
-                                        <t.icon size={20} />
-                                        <span className="text-xs font-medium">{t.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
+                <div className="flex-1 flex flex-col gap-6 animate-in slide-in-from-right duration-300 pb-6">
+                    <div className="space-y-6">
+                        {/* Theme & Currency Section */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Currency</label>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Theme</label>
+                                <div className="flex bg-gray-100 dark:bg-slate-900 rounded-xl p-1 relative">
+                                    {['light', 'dark', 'system'].map((t) => (
+                                        <button
+                                            key={t}
+                                            onClick={() => dispatch(setTheme(t))}
+                                            className={cn(
+                                                "flex-1 p-2 rounded-lg flex items-center justify-center transition-all",
+                                                mode === t ? "bg-white dark:bg-slate-800 shadow-sm text-indigo-600 dark:text-white" : "text-gray-400 dark:text-gray-500 hover:text-gray-600"
+                                            )}
+                                        >
+                                            {t === 'light' && <Sun size={16} />}
+                                            {t === 'dark' && <Moon size={16} />}
+                                            {t === 'system' && <Monitor size={16} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Currency</label>
                                 <div className="relative">
-                                    <IndianRupee className="absolute left-3 top-3 text-gray-400" size={18} />
+                                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                     <select
                                         name="currency"
                                         value={profileData.currency}
                                         onChange={handleProfileChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none appearance-none dark:text-white"
+                                        className="w-full pl-9 pr-3 py-3 bg-gray-50 dark:bg-slate-900 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold text-gray-900 dark:text-white appearance-none"
                                     >
                                         <option value="INR">INR (₹)</option>
                                         <option value="USD">USD ($)</option>
@@ -305,26 +361,107 @@ const ProfileSetup = () => {
                                     </select>
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Budget</label>
-                                <div className="relative">
-                                    <Wallet className="absolute left-3 top-3 text-gray-400" size={18} />
-                                    <input
-                                        type="number"
-                                        name="budget"
-                                        value={profileData.budget}
-                                        onChange={handleProfileChange}
-                                        placeholder="5000"
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all dark:text-white"
-                                    />
+                        </div>
+
+                        <hr className="border-gray-100 dark:border-slate-800" />
+
+                        {/* Budget Section */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 className="font-bold text-gray-900 dark:text-white">Monthly Budget</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Set spending limits to save more</p>
                                 </div>
+                                <button
+                                    onClick={() => setBudgetEnabled(!budgetEnabled)}
+                                    className={cn(
+                                        "w-12 h-7 rounded-full transition-colors relative p-1",
+                                        budgetEnabled ? "bg-indigo-600" : "bg-gray-200 dark:bg-slate-700"
+                                    )}
+                                >
+                                    <div className={cn(
+                                        "w-5 h-5 bg-white rounded-full shadow-sm transition-transform",
+                                        budgetEnabled ? "translate-x-5" : "translate-x-0"
+                                    )} />
+                                </button>
                             </div>
+
+                            {budgetEnabled && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    className="space-y-4 overflow-hidden"
+                                >
+                                    {/* Strategy Toggle */}
+                                    <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
+                                        <button
+                                            onClick={() => setBudgetType('overall')}
+                                            className={cn(
+                                                "flex-1 py-2 rounded-lg text-sm font-bold transition-all",
+                                                budgetType === 'overall' ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-white" : "text-gray-400"
+                                            )}
+                                        >
+                                            Overall Limit
+                                        </button>
+                                        <button
+                                            onClick={() => setBudgetType('categorized')}
+                                            className={cn(
+                                                "flex-1 py-2 rounded-lg text-sm font-bold transition-all",
+                                                budgetType === 'categorized' ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-white" : "text-gray-400"
+                                            )}
+                                        >
+                                            Smart Distribution
+                                        </button>
+                                    </div>
+
+                                    {/* Inputs */}
+                                    {budgetType === 'overall' ? (
+                                        <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/10 text-center">
+                                            <label className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1 block">Total Monthly Limit</label>
+                                            <div className="relative inline-block max-w-[200px]">
+                                                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-xl font-bold text-indigo-300">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={profileData.budget} // Reusing profileData.budget for strict overall
+                                                    onChange={handleProfileChange}
+                                                    name="budget"
+                                                    placeholder="5000"
+                                                    className="w-full pl-6 pr-2 py-2 bg-transparent border-b-2 border-indigo-200 dark:border-indigo-500/30 text-3xl font-black text-indigo-600 dark:text-indigo-400 text-center focus:outline-none focus:border-indigo-500 placeholder:text-indigo-200"
+                                                    autoFocus
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {Object.entries(categorizedBudgets).map(([cat, val]) => (
+                                                <div key={cat} className="bg-gray-50 dark:bg-slate-900/50 p-3 rounded-xl border border-gray-100 dark:border-slate-800">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-lg p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm">{getCategoryEmoji(cat)}</span>
+                                                        <span className="text-xs font-bold capitalize text-gray-500">{cat}</span>
+                                                    </div>
+                                                    <div className="relative">
+                                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</span>
+                                                        <input
+                                                            type="number"
+                                                            value={val}
+                                                            onChange={(e) => setCategorizedBudgets(prev => ({ ...prev, [cat]: e.target.value }))}
+                                                            className="w-full pl-5 py-1 bg-transparent text-sm font-bold text-gray-900 dark:text-white focus:outline-none placeholder:text-gray-300"
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
                         </div>
                     </div>
+
                     <button
                         onClick={handleNext}
                         disabled={isLoading}
-                        className="mt-auto w-full bg-indigo-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
+                        className="mt-auto w-full bg-indigo-600 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100 shadow-lg shadow-indigo-200 dark:shadow-none"
                     >
                         {isLoading ? <Loader2 className="animate-spin" size={20} /> : <>Next <ChevronRight size={20} /></>}
                     </button>

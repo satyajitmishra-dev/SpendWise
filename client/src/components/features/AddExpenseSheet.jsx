@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addExpense, updateExpense } from '../../store/slices/expenseSlice';
-import { fetchAccounts, updateAccountBalance } from '../../store/slices/accountSlice';
+import { fetchAccounts, updateAccountBalance, addAccount } from '../../store/slices/accountSlice';
 import {
     X, Calendar, FileText, ArrowRight, Calculator, Check, Plus,
     Utensils, Car, GraduationCap, Gamepad2, Home, Lightbulb, // Expense Icons
@@ -138,13 +138,19 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
         if (!selectedAccount && !confirmNoAccount) {
             setConfirmNoAccount(true);
-            toast.warning("Your money is not safe!", {
-                description: "To safely and properly track your money, please add an account. Press Save again to ignore.",
+            toast.warning("No Wallet Selected", {
+                description: "Press Save again to create a 'Other' wallet automatically.",
                 action: {
-                    label: 'Add Account',
-                    onClick: () => {
-                        onClose();
-                        navigate('/accounts', { state: { openAdd: true } });
+                    label: 'Create Now',
+                    onClick: async () => {
+                        // Manual trigger if they click the button
+                        try {
+                            const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
+                            setSelectedAccount(newAcc._id);
+                            toast.success("Created 'Other' wallet!");
+                        } catch (e) {
+                            toast.error("Failed to create wallet");
+                        }
                     }
                 },
                 duration: 5000,
@@ -152,8 +158,30 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
             return;
         }
 
-        if (type === 'expense' && selectedAccount) {
-            const account = accounts.find(a => a._id === selectedAccount);
+        // Logic to Auto-Create Account if confirmed
+        let finalAccountId = selectedAccount;
+        if (!finalAccountId && confirmNoAccount) {
+            // START AUTO-CREATION
+            try {
+                // Create "Other" wallet
+                const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
+
+                finalAccountId = newAcc._id;
+                toast.success("Created 'Other' wallet & saved expense!");
+            } catch (e) {
+                console.error(e);
+                toast.error("Failed to auto-create wallet. Please try adding one manually.");
+                return;
+            }
+        }
+
+        if (type === 'expense' && finalAccountId) {
+            const account = accounts.find(a => a._id === finalAccountId);
+            // If it's a new account, it might not be in 'accounts' list yet if selector hasn't refreshed?
+            // But we just created it. Redux should update. 
+            // However, we can proceed without strict balance check for the NEW account (it has 0 balance).
+            // Logic below checks balance. New account 0 balance - expense negative?
+
             if (account) {
                 const currentBalance = parseFloat(account.balance) || 0;
                 const newBalance = currentBalance - parsedAmount;
@@ -173,7 +201,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
             if (expenseToEdit) {
                 await dispatch(updateExpense({
                     id: expenseToEdit._id,
-                    data: { amount: parsedAmount, category, note, date, accountId: selectedAccount || null, type }
+                    data: { amount: parsedAmount, category, note, date, accountId: finalAccountId, type }
                 })).unwrap();
 
                 if (expenseToEdit.accountId) {
@@ -182,9 +210,9 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     dispatch(updateAccountBalance({ accountId: expenseToEdit.accountId, amount: oldImpact }));
                 }
 
-                if (selectedAccount) {
+                if (finalAccountId) {
                     const newImpact = type === 'income' ? parsedAmount : -parsedAmount;
-                    dispatch(updateAccountBalance({ accountId: selectedAccount, amount: newImpact }));
+                    dispatch(updateAccountBalance({ accountId: finalAccountId, amount: newImpact }));
                 }
 
                 toast.success('Transaction updated!');
@@ -204,33 +232,19 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     category,
                     note,
                     date: finalDate.toISOString(),
-                    accountId: selectedAccount || null,
+                    accountId: finalAccountId,
                     type
                 })).unwrap();
 
-                if (selectedAccount) {
+                if (finalAccountId) {
                     dispatch(updateAccountBalance({
-                        accountId: selectedAccount,
+                        accountId: finalAccountId,
                         amount: type === 'income' ? parsedAmount : -parsedAmount
                     }));
                 }
 
-                const isGuest = !isAuthenticated || (user && !user.email);
-                if (isGuest) {
-                    toast.warning('Expense saved locally', {
-                        description: 'Log in to sync and keep your data safe.',
-                        action: { label: 'Login', onClick: () => { onClose(); navigate('/login'); } },
-                        duration: 5000,
-                    });
-                } else if (!selectedAccount) {
-                    toast.warning("Your money is not safe!", {
-                        description: "To safely and properly track your money, please add an account.",
-                        action: { label: 'Add Account', onClick: () => navigate('/accounts', { state: { openAdd: true } }) },
-                        duration: 6000,
-                    });
-                } else {
-                    toast.success('Expense added successfully!');
-                }
+                // Removed the "Money not safe" toast since we forced account creation
+                toast.success('Expense added successfully!');
             }
             triggerHaptic(HAPTIC_SUCCESS);
             onClose();
@@ -481,7 +495,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
                     <button
                         type="submit"
-                        disabled={submitting || (!expenseToEdit && !isFormValid && !confirmNoAccount && !confirmNegative)}
+                        disabled={submitting || !amount || parseFloat(amount) <= 0}
                         className={cn(
                             "w-full text-white py-5 rounded-2xl font-bold text-xl shadow-xl dark:shadow-none active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed",
                             confirmNegative ? "bg-orange-500 hover:bg-orange-600" : (type === 'income' ? "bg-green-600 hover:bg-green-700 shadow-green-200/50" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50")

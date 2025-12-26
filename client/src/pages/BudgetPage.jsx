@@ -7,6 +7,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { Plus, Trash2, PieChart, TrendingUp, AlertCircle, Edit, Edit2, Edit2Icon, Edit3Icon, EditIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
+import { startOfMonth, endOfMonth, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
 const CATEGORY_COLORS = {
     food: 'bg-orange-500',
@@ -14,7 +15,8 @@ const CATEGORY_COLORS = {
     study: 'bg-green-500',
     fun: 'bg-purple-500',
     rent: 'bg-red-500',
-    other: 'bg-gray-500'
+    other: 'bg-gray-500',
+    'monthly budget': 'bg-indigo-600' // NEW
 };
 
 const BudgetPage = () => {
@@ -39,50 +41,94 @@ const BudgetPage = () => {
     // Categorical Stats (for the grid)
     const budgetStats = useMemo(() => {
         const now = new Date();
-        const thisMonth = now.getMonth();
-        const thisYear = now.getFullYear();
+        const defaultStart = startOfMonth(now);
+        const defaultEnd = endOfMonth(now);
 
         return budgets.map(budget => {
-            const spent = expenses
-                .filter(exp => {
-                    const d = new Date(exp.date);
-                    return d.getMonth() === thisMonth &&
-                        d.getFullYear() === thisYear &&
-                        exp.category === budget.category;
-                })
-                .reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+            // Determine Date Range
+            const start = budget.startDate ? startOfDay(new Date(budget.startDate)) : defaultStart;
+            const end = budget.endDate ? endOfDay(new Date(budget.endDate)) : defaultEnd;
 
-            const percent = Math.min((spent / budget.amount) * 100, 100);
-            return { ...budget, spent, percent };
+            // Calculate Spent
+            const localSpent = expenses.reduce((sum, exp) => {
+                const expDate = new Date(exp.date);
+                // Check Date
+                const inTime = isWithinInterval(expDate, { start, end });
+                if (!inTime) return sum;
+
+                // Check Category
+                if (budget.category === 'Monthly Budget') return sum + (parseFloat(exp.amount) || 0); // Overall
+                if (exp.category === budget.category) return sum + (parseFloat(exp.amount) || 0);
+
+                return sum;
+            }, 0);
+
+            const percent = budget.amount > 0 ? Math.min((localSpent / budget.amount) * 100, 100) : 0;
+            return { ...budget, spent: localSpent, percent, startDate: start, endDate: end };
         });
     }, [budgets, expenses]);
 
     // Global Stats (for the main card)
-    const { totalSpentMonth, globalBudget, globalPercent } = useMemo(() => {
+    const { totalSpentMonth, globalBudget, globalPercent, dateLabel } = useMemo(() => {
         const now = new Date();
-        const thisMonth = now.getMonth();
-        const thisYear = now.getFullYear();
+        const defaultStart = startOfMonth(now);
+        const defaultEnd = endOfMonth(now);
 
-        // 1. Total Spent this month (ALL categories)
+        // Check if we have an "Overall" budget doc
+        const overallBudgetDoc = budgets.find(b => b.category === 'Monthly Budget');
+
+        // Determine Global Timeframe
+        // If Overall exists, use its dates. Else, use Calendar Month.
+        const start = overallBudgetDoc?.startDate ? startOfDay(new Date(overallBudgetDoc.startDate)) : defaultStart;
+        const end = overallBudgetDoc?.endDate ? endOfDay(new Date(overallBudgetDoc.endDate)) : defaultEnd;
+
+        // 1. Total Spent (in the determined timeframe)
         const totalSpent = expenses
-            .filter(exp => {
-                const d = new Date(exp.date);
-                return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-            })
+            .filter(exp => isWithinInterval(new Date(exp.date), { start, end }))
             .reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
 
         // 2. Global Budget Target
-        // Use user.budget (Profile Budget) if set, otherwise fallback to sum of category budgets
         const sumOfCategories = budgets.reduce((sum, b) => sum + b.amount, 0);
-        // Prefer user.budget if it is non-zero, else sumOfCategories
-        const effectiveBudget = (user?.budget && user.budget > 0) ? user.budget : sumOfCategories;
 
-        const percent = effectiveBudget > 0 ? (totalSpent / effectiveBudget) * 100 : 0;
+        // Prioritize: Overall Doc > Sum of Cats > Legacy User Field
+        // Actually, if Overall Doc exists, that IS the global budget.
+        // If not, sum of categories is a "virtual" global budget.
+        // But if categories have wacky diverse dates, summing them is weird.
+        // Simplification: 
+        // If "Overall" exists -> Use it.
+        // Else -> Sum items (assuming they loosely align to 'now').
+
+        const effectiveBudget = budgets.length > 0 ? sumOfCategories : (user?.budget || 0);
+        // Note: sumOfCategories includes the "Overall" doc amount if it exists, effectively making it the dominant factor + any other categories?
+        // Wait, if I have "Overall: 10k" AND "Food: 2k", sum is 12k. NOT RIGHT.
+        // User sets "Overall" OR "Categories" usually.
+        // But if they mix: "Overall Limit 10k" + "Food Limit 2k". The Food limit is a sub-limit.
+        // The Global Budget (spending power) should be the "Overall" one if it exists.
+        // Logic fix:
+
+        let finalBudget = 0;
+        if (overallBudgetDoc) {
+            finalBudget = overallBudgetDoc.amount;
+        } else if (budgets.length > 0) {
+            finalBudget = sumOfCategories;
+        } else {
+            finalBudget = user?.budget || 0;
+        }
+
+        const percent = finalBudget > 0 ? (totalSpent / finalBudget) * 100 : 0;
+
+        // Label
+        let label = "This Month";
+        if (overallBudgetDoc?.startDate) {
+            // If spans multiple months or custom
+            label = `${new Date(overallBudgetDoc.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} - ${new Date(overallBudgetDoc.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`;
+        }
 
         return {
             totalSpentMonth: totalSpent,
-            globalBudget: effectiveBudget,
-            globalPercent: percent
+            globalBudget: finalBudget,
+            globalPercent: percent,
+            dateLabel: label
         };
     }, [budgets, expenses, user]);
 
@@ -128,29 +174,42 @@ const BudgetPage = () => {
                         <PieChart size={24} />
                     </div>
                     <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
-                        This Month
+                        {dateLabel}
                     </div>
                 </div>
                 <div>
-                    <p className="text-emerald-100 text-sm font-medium mb-1">Total Budget</p>
+                    <p className="text-emerald-100 text-sm font-medium mb-1">
+                        {globalBudget > 0 ? "Total Budget" : "Total Spent"}
+                    </p>
                     <div className="flex items-baseline gap-2">
                         <h2 className="text-3xl font-bold">₹{totalSpentMonth.toLocaleString()}</h2>
-                        <span className="text-emerald-100">/ ₹{globalBudget.toLocaleString()}</span>
+                        {globalBudget > 0 ? (
+                            <span className="text-emerald-100">/ ₹{globalBudget.toLocaleString()}</span>
+                        ) : (
+                            <button
+                                onClick={() => setIsAddOpen(true)}
+                                className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded-lg backdrop-blur-sm transition-colors flex items-center gap-1"
+                            >
+                                <Plus size={12} /> Set Limit
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {/* Global Progress */}
                 <div className="mt-4 pt-4 border-t border-white/20">
                     <div className="flex justify-between text-xs mb-1 text-emerald-100">
-                        <span>Total Usage</span>
-                        <span>{Math.round(globalPercent)}%</span>
+                        <span>{globalBudget > 0 ? "Total Usage" : "No Monthly Limit Set"}</span>
+                        <span>{globalBudget > 0 ? `${Math.round(globalPercent)}%` : ""}</span>
                     </div>
-                    <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-white/90 rounded-full transition-all duration-1000"
-                            style={{ width: `${Math.min(globalPercent, 100)}%` }}
-                        ></div>
-                    </div>
+                    {globalBudget > 0 && (
+                        <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-white/90 rounded-full transition-all duration-1000"
+                                style={{ width: `${Math.min(globalPercent, 100)}%` }}
+                            ></div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -159,23 +218,34 @@ const BudgetPage = () => {
                     [1, 2].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)
                 ) : (
                     budgetStats.length === 0 ? (
-                        <div className="text-center py-16 bg-gray-50 dark:bg-slate-900 rounded-3xl">
-                            <PieChart className="mx-auto text-gray-300 dark:text-slate-600 mb-2" size={32} />
-                            <p className="text-gray-400 dark:text-slate-500 font-medium">No budgets set</p>
-                            <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">Set limits for Food, Travel, etc.</p>
+                        <div className="col-span-full py-12 flex flex-col items-center justify-center text-center bg-gray-50 dark:bg-slate-900/50 border border-dashed border-gray-200 dark:border-slate-800 rounded-3xl">
+                            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-4 text-indigo-500">
+                                <TrendingUp size={32} />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">No Budgets Yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 max-w-xs">
+                                Set monthly limits for specific categories or an overall budget to track your savings.
+                            </p>
+                            <button
+                                onClick={() => setIsAddOpen(true)}
+                                className="px-6 py-2.5 bg-indigo-600 text-white rounded-full font-semibold text-sm shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 active:scale-95 transition-all"
+                            >
+                                Set First Budget
+                            </button>
                         </div>
                     ) : (
                         budgetStats.map(item => (
                             <div key={item._id} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 relative group">
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex items-center gap-3">
-                                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-lg text-white", CATEGORY_COLORS[item.category] || 'bg-gray-400')}>
-                                            {item.category === 'food' && '🍔'}
-                                            {item.category === 'travel' && '🚕'}
-                                            {item.category === 'study' && '📚'}
-                                            {item.category === 'fun' && '🎮'}
-                                            {item.category === 'rent' && '🏠'}
-                                            {item.category === 'other' && '📦'}
+                                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-lg text-white", CATEGORY_COLORS[item.category.toLowerCase()] || 'bg-gray-400')}>
+                                            {item.category.toLowerCase() === 'food' && '🍔'}
+                                            {item.category.toLowerCase() === 'travel' && '🚕'}
+                                            {item.category.toLowerCase() === 'study' && '📚'}
+                                            {item.category.toLowerCase() === 'fun' && '🎮'}
+                                            {item.category.toLowerCase() === 'rent' && '🏠'}
+                                            {item.category.toLowerCase() === 'monthly budget' && '💰'}
+                                            {!['food', 'travel', 'study', 'fun', 'rent', 'monthly budget'].includes(item.category.toLowerCase()) && '📦'}
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-gray-800 dark:text-white capitalize">{item.category}</h3>
@@ -189,7 +259,7 @@ const BudgetPage = () => {
                                             onClick={() => handleEdit(item)}
                                             className="text-gray-300 hover:text-indigo-500 transition-colors p-1"
                                         >
-                                            <EditIcon size={16} className="rotate-0" /> {/* Reusing TrendingUp as editish icon or use Pencil */}
+                                            <EditIcon size={16} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(item._id)}
