@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const InfoDialog = ({ isOpen, onClose }) => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
+    const { version } = useSelector((state) => state.app);
     const navigate = useNavigate();
 
     // Determine if guest (no email or not authenticated)
@@ -53,7 +54,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
         {
             icon: Smartphone,
             title: "Cross Platform",
-            desc: "Access your finances from any device, anywhere. Now v2.3.1!",
+            desc: `Access your finances from any device, anywhere. Now v${version}!`,
             color: "text-purple-400",
             bg: "bg-purple-500/10",
         }
@@ -109,7 +110,7 @@ const InfoDialog = ({ isOpen, onClose }) => {
                             Student Edition
                         </span>
                         <span className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-300 text-[10px] font-bold tracking-widest uppercase">
-                            v2.3.1
+                            v{version}
                         </span>
                     </div>
 

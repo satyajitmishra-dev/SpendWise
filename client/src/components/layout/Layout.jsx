@@ -9,8 +9,10 @@ import { Toaster } from 'sonner';
 import GuestWarning from './GuestWarning';
 import ProfileReminder from './ProfileReminder';
 import ThemeToggler from './ThemeToggler';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import api from '../../services/api';
+import { initAppConfig } from '../../store/slices/appSlice';
+import UpdateChecker from './UpdateChecker';
 
 import ErrorBoundary from '../common/ErrorBoundary';
 
@@ -96,6 +98,7 @@ const Layout = () => {
 
 
     const { user } = useSelector((state) => state.auth);
+    const { version } = useSelector((state) => state.app);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -112,12 +115,16 @@ const Layout = () => {
         }
     };
 
+    const dispatch = useDispatch();
+
     useEffect(() => {
+        // Initialize Global App Config (Version, Feature Flags)
+        dispatch(initAppConfig());
+
         fetchUnreadCount();
-        // Poll every 30 seconds
         const interval = setInterval(fetchUnreadCount, 30000);
         return () => clearInterval(interval);
-    }, [location.pathname]); // Also refresh on route change
+    }, [dispatch, location.pathname]);
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-slate-100 transition-colors duration-300 relative selection:bg-indigo-500/30">
@@ -126,7 +133,11 @@ const Layout = () => {
             <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-blob animation-delay-2000 pointer-events-none dark:opacity-20"></div>
 
             <GuestWarning />
+            <GuestWarning />
             <ProfileReminder />
+
+            {/* Version Check Logic */}
+            <UpdateChecker />
 
             {/* Desktop Sidebar - Premium Floating Dock Style */}
             <aside className="hidden md:flex flex-col w-72 h-[96vh] my-auto ml-4 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl z-50 transition-all duration-300 relative">
@@ -136,7 +147,7 @@ const Layout = () => {
                     </NavLink>
                     <div>
                         <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white block">SpendWise</span>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Student Edition <span className="text-indigo-500/50 ml-1">v2.3.1</span></span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Student Edition <span className="text-indigo-500/50 ml-1">v{version}</span></span>
                     </div>
                 </div>
 

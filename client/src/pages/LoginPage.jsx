@@ -344,9 +344,7 @@ const LoginPage = () => {
                 </Card>
 
                 {/* Version */}
-                <div className="mt-8 text-center bg-white/5 backdrop-blur rounded-full py-1.5 px-4 inline-block mx-auto w-full max-w-[150px]">
-                    <p className="text-[10px] text-slate-500 font-mono tracking-widest">VERSION 1.0.3</p>
-                </div>
+
 
             </motion.div>
         </div>

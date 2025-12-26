@@ -23,6 +23,7 @@ exports.addExpense = async (req, res) => {
         accountId = null;
     }
 
+
     // Start a transaction or just do sequential updates (No transaction for simple MVP)
     try {
         // If accountId is provided, update account balance

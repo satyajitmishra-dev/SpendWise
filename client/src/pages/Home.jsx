@@ -1,17 +1,18 @@
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info } from 'lucide-react';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap } from 'lucide-react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import HomeSkeleton from '../components/common/HomeSkeleton';
 import Footer from '../components/layout/Footer';
+import { fetchRemoteConfig, getFeatureConfig } from '../services/remoteConfig';
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -25,6 +26,22 @@ const Home = () => {
     const accountsLoading = useSelector(state => state.accounts.loading);
     const authLoading = useSelector(state => state.auth.loading);
     const isLoading = expensesLoading || accountsLoading || authLoading;
+
+    // Remote Config State
+    const [featureBanner, setFeatureBanner] = useState({ show: false, text: '', link: '/about-feature' });
+
+    useEffect(() => {
+        const initConfig = async () => {
+            await fetchRemoteConfig();
+            const config = getFeatureConfig();
+            setFeatureBanner({
+                show: config.showBanner,
+                text: config.bannerText,
+                link: config.bannerLink
+            });
+        };
+        initConfig();
+    }, []);
 
     useEffect(() => {
         if (!authLoading) {
@@ -136,66 +153,87 @@ const Home = () => {
                                 statusText = "🟡 Careful, budget tight";
                             }
                         } else {
-                            statusText = "🔵 Set a budget to track health";
+                            statusText = "🔵 Set a budget to track Money";
                             badgeVariant = "default";
                         }
 
                         return (
-                            <div className="space-y-6">
-                                {/* 1. Today's Status (Safe or Broke) */}
-                                <Link to="/budgets">
-                                    <Card variant="default" className="relative p-8 overflow-hidden shadow-2xl shadow-indigo-500/10 group active:scale-[0.98] transition-all duration-500 border-indigo-50 dark:border-slate-800 hover:shadow-indigo-500/20 cursor-pointer rounded-[2.5rem]">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
-
-                                        <div className="flex flex-col items-center justify-center text-center">
-                                            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm tracking-widest uppercase mb-4">Available this month</p>
-                                            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
-                                                <span className="text-2xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
-                                                {available.toLocaleString()}
-                                            </h2>
-
-                                            <Badge variant={badgeVariant} className="px-4 py-1.5 text-sm md:text-base">
-                                                {statusText}
-                                            </Badge>
-                                        </div>
-                                    </Card>
-                                </Link>
-
-                                {/* 2. This month's spending direction */}
-                                <Link to="/expenses">
-                                    <Card variant="interactive" className="p-6 rounded-[2rem]">
-                                        <div className="flex justify-between items-end mb-4">
-                                            <div>
-                                                <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
-                                                    Spending Direction <TrendingUp size={18} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                                                </h3>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                                    {hasBudget
-                                                        ? `Spent ₹${monthlySpending.toLocaleString()} of ₹${budgetLimit.toLocaleString()} limit`
-                                                        : `Total Spent: ₹${monthlySpending.toLocaleString()}`}
-                                                </p>
+                            <div className="flex flex-col gap-8">
+                                {/* Remote Feature Banner */}
+                                {featureBanner.show && (
+                                    <Link to={featureBanner.link}>
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            className="bg-indigo-600 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-indigo-500/20 mb-6 cursor-pointer relative overflow-hidden group"
+                                        >
+                                            <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                                            <div className="flex items-center gap-3 text-white relative z-10">
+                                                <span className="bg-white/20 p-1.5 rounded-lg"><Zap size={16} fill="currentColor" /></span>
+                                                <span className="font-bold text-sm tracking-wide">{featureBanner.text}</span>
                                             </div>
-                                            {hasBudget && (
-                                                <span className={`text-xl font-black ${spentPercentage > 100 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
-                                                    {spentPercentage.toFixed(0)}%
-                                                </span>
-                                            )}
-                                        </div>
+                                            <ArrowUpRight size={18} className="text-white relative z-10" />
+                                        </motion.div>
+                                    </Link>
+                                )}
+                                {/* Responsive Grid for Main Stats */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                                    {/* 1. Today's Status (Safe or Broke) */}
+                                    <Link to="/budgets" className="h-full block">
+                                        <Card variant="default" className="relative p-6 sm:p-8 h-full flex flex-col justify-center overflow-hidden shadow-2xl shadow-indigo-500/10 group active:scale-[0.98] transition-all duration-500 border-indigo-50 dark:border-slate-800 hover:shadow-indigo-500/20 cursor-pointer rounded-[2rem] sm:rounded-[2.5rem]">
+                                            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
 
-                                        {/* Progress Bar */}
-                                        <div className="h-4 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                            <motion.div
-                                                className={`h-full ${!hasBudget ? 'bg-blue-500' :
-                                                    spentPercentage > 90 ? 'bg-red-500' :
-                                                        spentPercentage > 60 ? 'bg-yellow-400' : 'bg-green-500'
-                                                    }`}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${Math.min(spentPercentage, 100)}%` }}
-                                                transition={{ duration: 1, ease: "easeOut" }}
-                                            />
-                                        </div>
-                                    </Card>
-                                </Link>
+                                            <div className="flex flex-col items-center justify-center text-center">
+                                                <p className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4">Available this month</p>
+                                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 sm:mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm truncate w-full px-2">
+                                                    <span className="text-xl sm:text-2xl lg:text-3xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
+                                                    {available.toLocaleString()}
+                                                </h2>
+
+                                                <Badge variant={badgeVariant} className="px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm md:text-base">
+                                                    {statusText}
+                                                </Badge>
+                                            </div>
+                                        </Card>
+                                    </Link>
+
+                                    {/* 2. This month's spending direction */}
+                                    <Link to="/expenses" className="h-full block">
+                                        <Card variant="interactive" className="p-6 h-full flex flex-col justify-between rounded-[2rem]">
+                                            <div className="flex justify-between items-start gap-4 mb-4">
+                                                <div className="flex-1 min-w-0 pr-2">
+                                                    <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2 truncate">
+                                                        <span className="truncate">Spending Direction</span>
+                                                        <TrendingUp size={18} className="text-gray-400 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium truncate mt-1">
+                                                        {hasBudget
+                                                            ? `Spent ₹${monthlySpending.toLocaleString()} of ₹${budgetLimit.toLocaleString()} limit`
+                                                            : `Total Spent: ₹${monthlySpending.toLocaleString()}`}
+                                                    </p>
+                                                </div>
+                                                {hasBudget && (
+                                                    <span className={`text-xl font-black flex-shrink-0 self-center ${spentPercentage > 100 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                                                        {spentPercentage.toFixed(0)}%
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Progress Bar */}
+                                            <div className="h-4 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden mt-auto">
+                                                <motion.div
+                                                    className={`h-full ${!hasBudget ? 'bg-blue-500' :
+                                                        spentPercentage > 90 ? 'bg-red-500' :
+                                                            spentPercentage > 60 ? 'bg-yellow-400' : 'bg-green-500'
+                                                        }`}
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min(spentPercentage, 100)}%` }}
+                                                    transition={{ duration: 1, ease: "easeOut" }}
+                                                />
+                                            </div>
+                                        </Card>
+                                    </Link>
+                                </div>
 
                                 {/* 2.5. Micro Context Stats */}
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -329,7 +367,7 @@ const getCategoryEmoji = (cat) => {
         case 'salary': return '💰';
         case 'gift': return '🎁';
         case 'refund': return '↩️';
-        default: return '🔹';
+        default: return '🪙';
     }
 }
 

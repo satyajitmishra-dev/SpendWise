@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { ArrowLeft, Code, Github, Linkedin, Mail, ExternalLink } from 'lucide-react';
 
 const DevelopmentPage = () => {
     const navigate = useNavigate();
+    const { version } = useSelector((state) => state.app);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-500">
@@ -24,7 +26,7 @@ const DevelopmentPage = () => {
                         <Code size={40} />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">SpendWise</h2>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">Student Edition • v2.3.1</p>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">Student Edition • v{version}</p>
                     <p className="text-xs text-gray-400 dark:text-slate-600 uppercase tracking-widest">Built with ❤️ & React</p>
                 </div>
 

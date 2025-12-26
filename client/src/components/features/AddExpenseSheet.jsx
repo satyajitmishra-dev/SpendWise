@@ -2,28 +2,33 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addExpense, updateExpense } from '../../store/slices/expenseSlice';
-import { fetchAccounts, updateAccountBalance } from '../../store/slices/accountSlice'; // Import actions
-// Force HMR update
-import { X, Calendar, Tag, FileText, Wallet } from 'lucide-react';
+import { fetchAccounts, updateAccountBalance } from '../../store/slices/accountSlice';
+import {
+    X, Calendar, FileText, ArrowRight, Calculator, Check, Plus,
+    Utensils, Car, GraduationCap, Gamepad2, Home, Lightbulb, // Expense Icons
+    Banknote, Gift, RefreshCcw, Gem, Wallet, ChevronRight, PenLine, // Income Icons & Helpers
+    TrendingDown, TrendingUp
+} from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import CustomCalendar from '../ui/CustomCalendar';
-import { format } from 'date-fns';
+import { format, isToday } from 'date-fns';
+import { triggerHaptic, HAPTIC_SUCCESS, HAPTIC_ERROR, HAPTIC_TAP } from '../../lib/haptics';
 
 const CATEGORIES = [
-    { id: 'food', label: 'Food 🍔', color: 'bg-orange-100 text-orange-600' },
-    { id: 'travel', label: 'Travel 🚕', color: 'bg-blue-100 text-blue-600' },
-    { id: 'study', label: 'Study 📚', color: 'bg-green-100 text-green-600' },
-    { id: 'fun', label: 'Fun 🎮', color: 'bg-purple-100 text-purple-600' },
-    { id: 'rent', label: 'Rent 🏠', color: 'bg-red-100 text-red-600' },
-    { id: 'other', label: 'Other', color: 'bg-gray-100 text-gray-600' },
+    { id: 'food', label: 'Food', icon: Utensils, color: 'text-orange-500' },
+    { id: 'travel', label: 'Travel', icon: Car, color: 'text-blue-500' },
+    { id: 'study', label: 'Study', icon: GraduationCap, color: 'text-emerald-500' },
+    { id: 'fun', label: 'Fun', icon: Gamepad2, color: 'text-purple-500' },
+    { id: 'rent', label: 'Rent', icon: Home, color: 'text-red-500' },
+    { id: 'other', label: 'Other', icon: Lightbulb, color: 'text-yellow-500' },
 ];
 
 const INCOME_CATEGORIES = [
-    { id: 'salary', label: 'Salary 💰', color: 'bg-green-100 text-green-600' },
-    { id: 'gift', label: 'Gift 🎁', color: 'bg-pink-100 text-pink-600' },
-    { id: 'refund', label: 'Refund ↩️', color: 'bg-blue-100 text-blue-600' },
-    { id: 'other', label: 'Other', color: 'bg-gray-100 text-gray-600' },
+    { id: 'salary', label: 'Salary', icon: Banknote, color: 'text-green-500' },
+    { id: 'gift', label: 'Gift', icon: Gift, color: 'text-pink-500' },
+    { id: 'refund', label: 'Refund', icon: RefreshCcw, color: 'text-blue-400' },
+    { id: 'other', label: 'Other', icon: Gem, color: 'text-indigo-400' },
 ];
 
 const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialAccountId, onExpenseAdded }) => {
@@ -33,10 +38,10 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
     const { items: accounts } = useSelector(state => state.accounts);
 
     const [amount, setAmount] = useState('');
-    const [type, setType] = useState('expense'); // 'expense' or 'income'
+    const [type, setType] = useState('expense');
     const [category, setCategory] = useState(CATEGORIES[0].id);
     const [note, setNote] = useState('');
-    // Initialize date with local timezone YYYY-MM-DD
+
     const getLocalDate = () => {
         const d = new Date();
         const year = d.getFullYear();
@@ -48,11 +53,13 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
     const [selectedAccount, setSelectedAccount] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [confirmNegative, setConfirmNegative] = useState(false);
+    const [confirmNoAccount, setConfirmNoAccount] = useState(false);
     const [showCalendar, setShowCalendar] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
 
-    // Reset confirmation when inputs change
     useEffect(() => {
         setConfirmNegative(false);
+        setConfirmNoAccount(false);
     }, [amount, selectedAccount]);
 
     // Populate or Reset Form
@@ -67,17 +74,13 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                 setDate(new Date(expenseToEdit.date).toISOString().split('T')[0]);
                 setSelectedAccount(expenseToEdit.accountId || '');
             } else if (initialData) {
-                // Pre-fill from initialData (Duplication) but don't set expenseToEdit
                 setAmount(initialData.amount ? initialData.amount.toString() : '');
                 setType(initialData.type || 'expense');
                 setCategory(initialData.category || (initialData.type === 'income' ? INCOME_CATEGORIES[0].id : CATEGORIES[0].id));
                 setNote(initialData.note || '');
-                // Use today's date for duplicate, or preserve original? Usually today is better for "Repeat".
-                // But let's default to today's date for "New Entry based on Old".
                 setDate(getLocalDate());
                 setSelectedAccount(initialData.accountId || '');
             } else {
-                // Reset to defaults for Add mode
                 setAmount('');
                 setType('expense');
                 setCategory(CATEGORIES[0].id);
@@ -88,7 +91,6 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
         }
     }, [isOpen, expenseToEdit, initialData, initialAccountId, dispatch]);
 
-    // Switch categories when type changes
     useEffect(() => {
         if (type === 'expense') {
             if (!CATEGORIES.find(c => c.id === category)) setCategory(CATEGORIES[0].id);
@@ -99,6 +101,14 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
     const currentCategories = type === 'expense' ? CATEGORIES : INCOME_CATEGORIES;
 
+    // Helper to format date display
+    const getDisplayDate = (dateStr) => {
+        if (!dateStr) return 'Select Date';
+        const d = new Date(dateStr);
+        if (isToday(d)) return `Today · ${format(d, 'd MMM')}`;
+        return format(d, 'd MMM yyyy');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!amount) {
@@ -108,7 +118,6 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
         let parsedAmount = 0;
         try {
-            // Check if it's an expression
             if (/[\+\-\*\/]/.test(amount.toString())) {
                 // eslint-disable-next-line no-new-func
                 parsedAmount = new Function('return ' + amount)();
@@ -120,14 +129,29 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
             return;
         }
 
-        parsedAmount = Math.round(parsedAmount * 100) / 100; // Round to 2 decimals
+        parsedAmount = Math.round(parsedAmount * 100) / 100;
 
         if (isNaN(parsedAmount) || parsedAmount <= 0) {
             toast.error('Amount must be greater than 0');
             return;
         }
 
-        // Check for negative balance (Only for Expense)
+        if (!selectedAccount && !confirmNoAccount) {
+            setConfirmNoAccount(true);
+            toast.warning("Your money is not safe!", {
+                description: "To safely and properly track your money, please add an account. Press Save again to ignore.",
+                action: {
+                    label: 'Add Account',
+                    onClick: () => {
+                        onClose();
+                        navigate('/accounts', { state: { openAdd: true } });
+                    }
+                },
+                duration: 5000,
+            });
+            return;
+        }
+
         if (type === 'expense' && selectedAccount) {
             const account = accounts.find(a => a._id === selectedAccount);
             if (account) {
@@ -147,21 +171,17 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
         setSubmitting(true);
         try {
             if (expenseToEdit) {
-                // Update Logic
                 await dispatch(updateExpense({
                     id: expenseToEdit._id,
                     data: { amount: parsedAmount, category, note, date, accountId: selectedAccount || null, type }
                 })).unwrap();
 
-                // Optimistic Balance Update for Edit
-                // 1. Revert Old
                 if (expenseToEdit.accountId) {
                     const oldAmt = parseFloat(expenseToEdit.amount);
                     const oldImpact = expenseToEdit.type === 'income' ? -oldAmt : oldAmt;
                     dispatch(updateAccountBalance({ accountId: expenseToEdit.accountId, amount: oldImpact }));
                 }
 
-                // 2. Apply New
                 if (selectedAccount) {
                     const newImpact = type === 'income' ? parsedAmount : -parsedAmount;
                     dispatch(updateAccountBalance({ accountId: selectedAccount, amount: newImpact }));
@@ -169,29 +189,14 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
                 toast.success('Transaction updated!');
             } else {
-                // Add Logic
-                // Include current time if date is today, or default/preserve logic
                 const now = new Date();
-                let finalDate = new Date(date); // This is usually UTC 00:00 or Local 00:00 depending on construction
-
-                // Fix: Construct date object explicitly from YYYY-MM-DD to avoid timezone shifts
+                let finalDate = new Date(date);
                 const [y, m, d] = date.split('-').map(Number);
-                finalDate = new Date(y, m - 1, d); // Local Midnight
+                finalDate = new Date(y, m - 1, d);
 
-                // If selected date is today (matches local YYYY-MM-DD), use current time
                 const todayStr = getLocalDate();
                 if (date === todayStr) {
                     finalDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-                } else {
-                    // For past/future dates, maybe set to 12:00 PM to avoid timezone shifting issues or keep midnight?
-                    // User asked for "device time", usually implies "now" for today.
-                    // For others, we'll leaving it at start of day is safer, or set to 12:00
-                    // Let's set it to current TIME on that day to separate order if multiple entries?
-                    // Or just use 12:00. Let's start with keeping it simple (Start of Day) unless specific request.
-                    // Actually, to sort "Recent" correctly, if I add past date, it should just rely on date part?
-                    // But sorting is `new Date(b.date) - new Date(a.date)`.
-                    // If everything today is 00:00, sorting is arbitrary.
-                    // So for TODAY, adding time is critical.
                 }
 
                 await dispatch(addExpense({
@@ -203,7 +208,6 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     type
                 })).unwrap();
 
-                // Update balance (Only on Add)
                 if (selectedAccount) {
                     dispatch(updateAccountBalance({
                         accountId: selectedAccount,
@@ -211,26 +215,32 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     }));
                 }
 
-                // Check guest
                 const isGuest = !isAuthenticated || (user && !user.email);
                 if (isGuest) {
                     toast.warning('Expense saved locally', {
                         description: 'Log in to sync and keep your data safe.',
-                        action: { label: 'Login', onClick: () => navigate('/login') },
+                        action: { label: 'Login', onClick: () => { onClose(); navigate('/login'); } },
                         duration: 5000,
+                    });
+                } else if (!selectedAccount) {
+                    toast.warning("Your money is not safe!", {
+                        description: "To safely and properly track your money, please add an account.",
+                        action: { label: 'Add Account', onClick: () => navigate('/accounts', { state: { openAdd: true } }) },
+                        duration: 6000,
                     });
                 } else {
                     toast.success('Expense added successfully!');
                 }
             }
+            triggerHaptic(HAPTIC_SUCCESS);
             onClose();
-            // Reset form
             setAmount('');
             setNote('');
             setSelectedAccount('');
         } catch (error) {
             console.error(error);
             toast.error('Failed to add expense. Try again.');
+            triggerHaptic(HAPTIC_ERROR);
         } finally {
             setSubmitting(false);
             onClose();
@@ -239,61 +249,94 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
     if (!isOpen) return null;
 
+    // Derived state for button text
+    const getButtonText = () => {
+        if (confirmNegative) return 'Confirm Negative Balance';
+        if (confirmNoAccount) return 'Confirm without Account';
+        if (submitting) return 'Saving...';
+
+        const action = expenseToEdit ? 'Update' : 'Save';
+        const typeLabel = type === 'income' ? 'Income' : 'Expense';
+        const amtLabel = amount ? `₹${amount}` : '';
+
+        return `${action} ${amtLabel} ${typeLabel}`;
+    };
+
+    const isFormValid = amount && parseFloat(amount) > 0 && selectedAccount;
+
     return (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
             {/* Sheet */}
-            <div className={`relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto border-t-4 ${type === 'income' ? 'border-green-500' : 'border-indigo-500'}`}>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold dark:text-white">{expenseToEdit ? 'Edit Transaction' : 'Add Transaction'}</h2>
-                    <button onClick={onClose} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <X size={20} />
+            <div className={`relative bg-white dark:bg-slate-900 w-full max-w-[28rem] rounded-t-[2.5rem] sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[96vh] border-t-[6px] ${type === 'income' ? 'border-green-500' : 'border-indigo-500'} transition-all`}>
+
+                {/* Header & Toggle Row */}
+                {/* Header Row: Title & Close */}
+                <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-xl font-bold dark:text-white tracking-tight">
+                        {expenseToEdit ? 'Edit Transaction' : 'New Transaction'}
+                    </h2>
+                    <button onClick={onClose} className="p-2 -mr-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors active:scale-95">
+                        <X size={22} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-
-                    {/* Type Toggle */}
-                    <div className="flex p-1 bg-gray-100 dark:bg-slate-800 rounded-xl">
+                {/* Toggle Row */}
+                <div className="mb-5">
+                    <div className="flex p-1.5 bg-gray-100/80 dark:bg-slate-800/80 rounded-xl relative w-full">
+                        <div
+                            className={`absolute inset-y-1.5 left-1.5 w-[calc(50%-0.375rem)] bg-white dark:bg-slate-700 rounded-lg shadow-sm transition-transform duration-300 ease-spring ${type === 'income' ? 'translate-x-full' : 'translate-x-0'}`}
+                        />
                         <button
                             type="button"
-                            onClick={() => setType('expense')}
-                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === 'expense' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
+                            onClick={() => { setType('expense'); triggerHaptic(HAPTIC_TAP); }}
+                            className={`flex-1 relative z-10 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${type === 'expense' ? 'text-indigo-600 dark:text-white scale-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'}`}
                         >
+                            <TrendingDown size={16} strokeWidth={2.5} />
                             Expense
                         </button>
                         <button
                             type="button"
-                            onClick={() => setType('income')}
-                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${type === 'income' ? 'bg-white dark:bg-slate-700 shadow text-green-600 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
+                            onClick={() => { setType('income'); triggerHaptic(HAPTIC_TAP); }}
+                            className={`flex-1 relative z-10 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${type === 'income' ? 'text-green-600 dark:text-white scale-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'}`}
                         >
+                            <TrendingUp size={16} strokeWidth={2.5} />
                             Income
                         </button>
                     </div>
-                    {/* Amount Input with Calculator */}
-                    <div>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-gray-400">₹</span>
-                            <input
-                                type="text"
-                                inputMode="decimal"
-                                value={amount}
-                                onChange={(e) => {
-                                    // Allow digits, operators, dots, parenthese
-                                    const val = e.target.value;
-                                    if (/^[0-9+\-*/().\s]*$/.test(val)) {
-                                        setAmount(val);
-                                    }
-                                }}
-                                placeholder="100"
-                                className={`w-full pl-10 pr-4 py-4 text-4xl font-bold bg-gray-50 dark:bg-slate-800 rounded-2xl border-none focus:ring-2 outline-none dark:text-white ${type === 'income' ? 'focus:ring-green-500 text-green-600' : 'focus:ring-indigo-500 text-gray-900'}`}
-                                autoFocus
-                            />
-                            {/* Calculation Preview */}
-                            {amount && /[\+\-\*\/]/.test(amount) && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-200 dark:bg-slate-700 px-3 py-1 rounded-full text-sm font-bold text-gray-600 dark:text-gray-300 animate-in fade-in">
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+
+                    {/* HERO Amount Input */}
+                    <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : 'scale-100'}`}>
+                        <div className="flex flex-col items-center justify-center py-2">
+                            <div className="relative w-full max-w-[200px]">
+                                <span className={`absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold transition-colors ${amount ? (type === 'income' ? 'text-green-600' : 'text-slate-800 dark:text-white') : 'text-gray-300'}`}>₹</span>
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={amount}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={() => setIsFocused(false)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (/^[0-9+\-*/().\s]*$/.test(val)) setAmount(val);
+                                    }}
+                                    placeholder="0"
+                                    className={`w-full pl-8 pr-4 py-2 text-5xl font-black bg-transparent border-none focus:ring-0 outline-none text-center tracking-tight transition-colors ${type === 'income' ? 'text-green-600 placeholder:text-green-100/50' : 'text-slate-800 dark:text-white placeholder:text-gray-200'}`}
+                                    autoFocus
+                                />
+                            </div>
+                            <p className="text-xs font-medium text-gray-400 animate-in fade-in slide-in-from-top-1">Enter amount spent</p>
+                        </div>
+
+                        {amount && /[\+\-\*\/]/.test(amount) && (
+                            <div className="absolute right-0 top-0 flex items-center gap-2 bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-full animate-in fade-in">
+                                <Calculator size={12} className="text-gray-500" />
+                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
                                     = {(() => {
                                         try {
                                             // eslint-disable-next-line no-new-func
@@ -301,84 +344,126 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                                             return isNaN(res) ? '...' : Math.round(res * 100) / 100;
                                         } catch { return '...'; }
                                     })()}
-                                </div>
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Account Scroller - Enhanced Affordance */}
+                    <div>
+                        <div className="flex justify-between items-baseline mb-2 mx-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{type === 'income' ? 'Deposited To' : 'Deducted From'}</label>
+                            {!selectedAccount && <span className="text-[10px] text-indigo-500 font-medium animate-pulse">Select account &rarr;</span>}
+                        </div>
+
+                        <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 no-scrollbar snap-x">
+                            {accounts.length > 0 ? (
+                                <>
+                                    {accounts.map(acc => (
+                                        <button
+                                            key={acc._id}
+                                            type="button"
+                                            onClick={() => { setSelectedAccount(acc._id); triggerHaptic(HAPTIC_TAP); }}
+                                            className={cn(
+                                                "snap-start flex-shrink-0 px-4 py-3 rounded-2xl text-sm font-bold transition-all border-2 flex flex-col items-start gap-1 min-w-[7rem] group active:scale-95",
+                                                selectedAccount === acc._id
+                                                    ? (type === 'income' ? "bg-green-50 border-green-500 text-green-700 shadow-sm" : "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm")
+                                                    : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-indigo-200"
+                                            )}
+                                        >
+                                            <div className="flex w-full justify-between items-center">
+                                                <Wallet size={16} className={cn("opacity-70", selectedAccount === acc._id ? "opacity-100" : "")} />
+                                                {selectedAccount === acc._id && <Check size={14} strokeWidth={3} className="animate-in zoom-in" />}
+                                            </div>
+                                            <span className="truncate max-w-[90px]">{acc.name}</span>
+                                        </button>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => { onClose(); navigate('/accounts', { state: { openAdd: true } }); }}
+                                        className="snap-start flex-shrink-0 flex items-center justify-center w-12 rounded-2xl bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 text-gray-400 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => { onClose(); navigate('/accounts', { state: { openAdd: true } }); }}
+                                    className="flex w-full items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-sm font-medium bg-gray-50 dark:bg-slate-800 border-2 border-dashed border-gray-300 dark:border-slate-700 text-gray-500 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                                >
+                                    <span>Add Account</span>
+                                </button>
                             )}
                         </div>
                     </div>
 
-                    {/* Account Selection */}
+                    {/* Category Grid - Enhanced Selection */}
                     <div>
-                        <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">{type === 'income' ? 'Deposited To' : 'Deducted From'}</label>
-                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                            {accounts.length > 0 ? (
-                                accounts.map(acc => (
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Category</label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {currentCategories.map(cat => {
+                                const Icon = cat.icon;
+                                const isSelected = category === cat.id;
+                                return (
                                     <button
-                                        key={acc._id}
+                                        key={cat.id}
                                         type="button"
-                                        onClick={() => setSelectedAccount(acc._id)}
+                                        onClick={() => { setCategory(cat.id); triggerHaptic(HAPTIC_TAP); }}
                                         className={cn(
-                                            "flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all border",
-                                            selectedAccount === acc._id
-                                                ? (type === 'income' ? "bg-green-600 text-white border-green-600 shadow-md shadow-green-200" : "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200")
-                                                : "bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100"
+                                            "flex flex-col items-center justify-center gap-2 p-3 rounded-2xl transition-all border-2 active:scale-95 group",
+                                            isSelected
+                                                ? `border-${type === 'income' ? 'green' : 'indigo'}-500 bg-${type === 'income' ? 'green' : 'indigo'}-50 dark:bg-slate-800 shadow-sm scale-[1.02]`
+                                                : "border-transparent bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
                                         )}
                                     >
-                                        {acc.name}
+                                        <Icon
+                                            size={24}
+                                            weight="fill"
+                                            className={cn(
+                                                "transition-colors",
+                                                isSelected ? cat.color : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                                            )}
+                                        />
+                                        <span className={cn("text-[10px] font-bold uppercase tracking-tight", isSelected ? `text-${type === 'income' ? 'green' : 'indigo'}-700` : "")}>
+                                            {cat.label}
+                                        </span>
                                     </button>
-                                ))
-                            ) : (
-                                <p className="text-sm text-gray-400 italic">No accounts found.</p>
-                            )}
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Category Grid */}
-                    <div>
-                        <label className="block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Category</label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {currentCategories.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    type="button"
-                                    onClick={() => setCategory(cat.id)}
-                                    className={cn(
-                                        "p-3 rounded-xl text-sm font-medium transition-all border-2",
-                                        category === cat.id
-                                            ? `border-${type === 'income' ? 'green' : 'indigo'}-600 ${cat.color} ring-2 ring-${type === 'income' ? 'green' : 'indigo'}-100 dark:ring-${type === 'income' ? 'green' : 'indigo'}-900`
-                                            : "border-transparent bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-300"
-                                    )}
-                                >
-                                    {cat.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-3">
-                        <div className="relative">
-                            <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
+                    {/* Split Row: Note & Date */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="relative group">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors">
+                                <PenLine size={16} />
+                            </span>
                             <input
                                 type="text"
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                placeholder={type === 'income' ? "e.g. Salary, Freelance" : "e.g. Coffee, Lunch"}
-                                className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-1 dark:text-white ${type === 'income' ? 'focus:ring-green-500' : 'focus:ring-indigo-500'}`}
+                                placeholder="Add a short note (optional)"
+                                className={`w-full pl-10 pr-3 py-3.5 bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none focus:ring-2 dark:text-white font-medium text-xs placeholder:text-gray-400 transition-all ${type === 'income' ? 'focus:ring-green-500' : 'focus:ring-indigo-500'}`}
                             />
                         </div>
                         <div className="relative">
-                            <Calendar className="absolute left-3 top-3 text-gray-400" size={18} />
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                <Calendar size={16} />
+                            </span>
                             <button
                                 type="button"
                                 onClick={() => setShowCalendar(!showCalendar)}
-                                className={`w-full pl-10 pr-4 py-3 text-left bg-gray-50 dark:bg-slate-800 rounded-xl outline-none focus:ring-1 dark:text-white ${type === 'income' ? 'focus:ring-green-500' : 'focus:ring-indigo-500'} ${showCalendar ? 'ring-2 ring-indigo-100 dark:ring-indigo-900' : ''}`}
+                                className={`w-full pl-10 pr-3 py-3.5 text-left bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none focus:ring-2 dark:text-white font-bold text-xs truncate transition-all ${type === 'income' ? 'focus:ring-green-500' : 'focus:ring-indigo-500'} ${showCalendar ? 'ring-2 ring-indigo-200 dark:ring-indigo-900' : ''}`}
                             >
-                                {date ? format(new Date(date), 'dd MMMM yyyy') : 'Select Date'}
+                                {getDisplayDate(date)}
                             </button>
+
                             {/* Calendar Popup */}
                             {showCalendar && (
-                                <div className="absolute bottom-full mb-2 left-0 z-50 animate-in zoom-in-95 duration-200">
-                                    <div className="relative">
+                                <div className="absolute bottom-full mb-3 right-0 z-50 animate-in zoom-in-95 duration-200 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-gray-200">
+                                    <div className="relative bg-white dark:bg-slate-900">
                                         <CustomCalendar
                                             value={date}
                                             onChange={(newDate) => {
@@ -387,10 +472,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                                             }}
                                             maxDate={new Date().toISOString().split('T')[0]}
                                         />
-                                        {/* Arrow */}
-                                        <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-gray-100 dark:border-slate-800 transform rotate-45"></div>
                                     </div>
-                                    {/* Backdrop for outside click */}
                                     <div className="fixed inset-0 z-[-1]" onClick={() => setShowCalendar(false)}></div>
                                 </div>
                             )}
@@ -399,17 +481,24 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
 
                     <button
                         type="submit"
-                        disabled={submitting}
+                        disabled={submitting || (!expenseToEdit && !isFormValid && !confirmNoAccount && !confirmNegative)}
                         className={cn(
-                            "w-full text-white py-4 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-all",
-                            confirmNegative ? "bg-orange-500 hover:bg-orange-600" : (type === 'income' ? "bg-green-600 hover:bg-green-700" : "bg-indigo-600 hover:bg-indigo-700")
+                            "w-full text-white py-5 rounded-2xl font-bold text-xl shadow-xl dark:shadow-none active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed",
+                            confirmNegative ? "bg-orange-500 hover:bg-orange-600" : (type === 'income' ? "bg-green-600 hover:bg-green-700 shadow-green-200/50" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/50")
                         )}
                     >
-                        {submitting ? 'Saving...' : (confirmNegative ? 'Confirm Negative Balance' : (expenseToEdit ? 'Update Transaction' : 'Save Transaction'))}
+                        {submitting ? (
+                            <span className="opacity-90">Saving...</span>
+                        ) : (
+                            <>
+                                <span>{getButtonText()}</span>
+                                {!confirmNegative && !confirmNoAccount && <ArrowRight size={20} className="opacity-80" />}
+                            </>
+                        )}
                     </button>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

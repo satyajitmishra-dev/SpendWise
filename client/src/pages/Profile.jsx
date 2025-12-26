@@ -13,6 +13,7 @@ const Profile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
+    const { version } = useSelector((state) => state.app);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -256,7 +257,7 @@ const Profile = () => {
 
                     <motion.div variants={item} className="text-center pb-8 pt-4">
                         <p className="text-xs font-medium text-gray-400 dark:text-slate-600">
-                            SpendWise Premium • v2.3.1
+                            SpendWise Premium • v{version}
                         </p>
                     </motion.div>
                 </motion.div>

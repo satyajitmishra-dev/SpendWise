@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { verifyPasscode, logout } from '../../store/slices/authSlice';
+import { verifyPasscode, logout, loadUser } from '../../store/slices/authSlice';
 import { toast } from 'sonner';
 import { Shield, Delete, LogOut, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

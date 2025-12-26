@@ -6,9 +6,11 @@ import subscriptionReducer from './slices/subscriptionSlice';
 import loanReducer from './slices/loanSlice';
 import budgetReducer from './slices/budgetSlice';
 import themeReducer from './slices/themeSliceFixed';
+import appReducer from './slices/appSlice';
 
 export const store = configureStore({
     reducer: {
+        app: appReducer,
         auth: authReducer,
         expenses: expenseReducer,
         accounts: accountReducer,

@@ -32,6 +32,7 @@ import HelpPage from './pages/HelpPage';
 import ContactSupport from './pages/ContactSupport';
 import FAQPage from './pages/FAQPage';
 import DevelopmentPage from './pages/DevelopmentPage';
+import FeatureDetailsPage from './pages/FeatureDetailsPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -154,6 +155,7 @@ function App() {
         <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
         <Route path="/faq" element={<ProtectedRoute><FAQPage /></ProtectedRoute>} />
         <Route path="/development" element={<ProtectedRoute><DevelopmentPage /></ProtectedRoute>} />
+        <Route path="/about-feature" element={<ProtectedRoute><FeatureDetailsPage /></ProtectedRoute>} />
 
         {/* 404 Catch-All */}
         <Route path="*" element={<NotFoundPage />} />
