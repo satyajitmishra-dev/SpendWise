@@ -6,6 +6,7 @@ import { fetchExpenses } from '../store/slices/expenseSlice';
 import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
+import { fetchBudgets } from '../store/slices/budgetSlice'; // NEW
 import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap } from 'lucide-react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -21,6 +22,7 @@ const Home = () => {
     const accounts = useSelector((state) => state.accounts.items);
     const subscriptions = useSelector((state) => state.subscriptions.items);
     const loans = useSelector((state) => state.loans.items);
+    const budgets = useSelector((state) => state.budgets.items); // NEW
 
     const expensesLoading = useSelector(state => state.expenses.loading);
     const accountsLoading = useSelector(state => state.accounts.loading);
@@ -49,6 +51,7 @@ const Home = () => {
             dispatch(fetchAccounts());
             dispatch(fetchSubscriptions());
             dispatch(fetchLoans());
+            dispatch(fetchBudgets()); // NEW
         }
     }, [dispatch, authLoading]);
 
@@ -78,6 +81,10 @@ const Home = () => {
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 4);
     }, [expenses]);
+
+    const totalBudgetLimit = useMemo(() => {
+        return budgets.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+    }, [budgets]);
 
     const greeting = () => {
         const hour = new Date().getHours();
@@ -135,7 +142,7 @@ const Home = () => {
                 <>
                     {/* NEW: Student-Centric Status Card */}
                     {(() => {
-                        const budgetLimit = user?.budget || 0;
+                        const budgetLimit = totalBudgetLimit; // Use the calculated total
                         // If budget is set, "Available" is Budget - Spent. If not, use Total Balance.
                         const hasBudget = budgetLimit > 0;
                         const available = hasBudget ? (budgetLimit - monthlySpending) : totalBalance;
@@ -153,7 +160,7 @@ const Home = () => {
                                 statusText = "🟡 Careful, budget tight";
                             }
                         } else {
-                            statusText = "🔵 Set a budget to track Money";
+                            statusText = "🔵 Track efficiently";
                             badgeVariant = "default";
                         }
 
@@ -184,14 +191,25 @@ const Home = () => {
                                             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
 
                                             <div className="flex flex-col items-center justify-center text-center">
-                                                <p className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4">Available this month</p>
-                                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 sm:mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm truncate w-full px-2">
-                                                    <span className="text-xl sm:text-2xl lg:text-3xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
-                                                    {available.toLocaleString()}
-                                                </h2>
+                                                <p className="text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm tracking-widest uppercase mb-3 sm:mb-4">
+                                                    {hasBudget ? 'Available this month' : 'No Budget Set'}
+                                                </p>
+
+                                                {hasBudget ? (
+                                                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4 sm:mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm truncate w-full px-2">
+                                                        <span className="text-xl sm:text-2xl lg:text-3xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
+                                                        {available.toLocaleString()}
+                                                    </h2>
+                                                ) : (
+                                                    <div className="mb-6 flex flex-col items-center gap-2">
+                                                        <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300">Set a budget</h2>
+                                                        <p className="text-sm text-gray-400">to track efficiently</p>
+                                                    </div>
+                                                )}
 
                                                 <Badge variant={badgeVariant} className="px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm md:text-base">
                                                     {statusText}
+                                                    {!hasBudget && <ArrowRight size={14} className="ml-1 inline" />}
                                                 </Badge>
                                             </div>
                                         </Card>
