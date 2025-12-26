@@ -23,12 +23,13 @@ if (process.env.ALLOWED_ORIGINS) {
 
 const corsOptions = {
     origin: function (origin, callback) {
-
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        // Allow localhost, custom domain, and any Vercel deployment
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
             callback(null, true);
         } else {
+            console.log('Blocked by CORS:', origin); // Log for debugging
             callback(new Error('Not allowed by CORS'));
         }
     },
