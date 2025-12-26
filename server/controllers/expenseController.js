@@ -15,7 +15,13 @@ exports.getExpenses = async (req, res) => {
 };
 
 exports.addExpense = async (req, res) => {
-    const { amount, category, note, date, accountId, type = 'expense' } = req.body;
+    let { amount, category, note, date, accountId, type = 'expense' } = req.body;
+
+    // Validate accountId (handle guest/local IDs)
+    if (accountId && !mongoose.Types.ObjectId.isValid(accountId)) {
+        console.warn(`Invalid Account ID: ${accountId} - stripping from expense.`);
+        accountId = null;
+    }
 
     // Start a transaction or just do sequential updates (No transaction for simple MVP)
     try {
@@ -90,7 +96,14 @@ exports.updateExpense = async (req, res) => {
         }
 
         // 2. Prepare New Values
-        const { amount, accountId, type } = req.body;
+        let { amount, accountId, type } = req.body;
+
+        // Validate new accountId
+        if (accountId !== undefined && accountId !== null && !mongoose.Types.ObjectId.isValid(accountId)) {
+            console.warn(`Invalid Account ID in update: ${accountId} - ignoring.`);
+            accountId = null;
+        }
+
         const newAmount = amount !== undefined ? Number(amount) : expense.amount;
         const newAccountId = accountId !== undefined ? accountId : expense.accountId;
         const newType = type !== undefined ? type : expense.type;
@@ -105,7 +118,11 @@ exports.updateExpense = async (req, res) => {
             }
         }
 
-        expense = await Expense.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        // Update body with validated accountId if it changed
+        const updateBody = { ...req.body };
+        if (accountId === null) updateBody.accountId = null;
+
+        expense = await Expense.findByIdAndUpdate(req.params.id, { $set: updateBody }, { new: true });
         res.json(expense);
     } catch (err) {
         console.error(err.message);
@@ -163,15 +180,20 @@ exports.syncExpenses = async (req, res) => {
     }
 
     try {
-        const newExpenses = expenses.map(exp => ({
-            userId: req.user.id,
-            amount: exp.amount,
-            category: exp.category,
-            note: exp.note,
-            date: exp.date,
-            accountId: exp.accountId, // Optional: might need mapping if account IDs are local
-            type: exp.type || 'expense'
-        }));
+        const newExpenses = expenses.map(exp => {
+            // Validate accountId is a real ObjectId
+            const isValidAccount = exp.accountId && mongoose.Types.ObjectId.isValid(exp.accountId);
+
+            return {
+                userId: req.user.id,
+                amount: exp.amount,
+                category: exp.category,
+                note: exp.note,
+                date: exp.date,
+                accountId: isValidAccount ? exp.accountId : null, // Strip invalid IDs
+                type: exp.type || 'expense'
+            };
+        });
 
         if (newExpenses.length > 0) {
             await Expense.insertMany(newExpenses);

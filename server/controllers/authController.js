@@ -10,6 +10,7 @@ const Budget = require('../models/Budget');
 const Loan = require('../models/Loan');
 const Subscription = require('../models/Subscription');
 const Notification = require('../models/Notification');
+const admin = require('../config/firebase'); // Firebase Admin
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'refreshsecret';
@@ -798,5 +799,66 @@ exports.refreshToken = async (req, res) => {
     } catch (err) {
         console.error('Refresh Token Error:', err.message);
         res.status(401).json({ msg: 'Token is not valid' });
+    }
+};
+
+exports.firebaseLogin = async (req, res) => {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ msg: 'No token provided' });
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { uid, email, phone_number, name, picture } = decodedToken;
+
+        console.log('Firebase Auth Verified:', { uid, email, phone: phone_number });
+
+        // 1. Try to find user by firebaseUid
+        let user = await User.findOne({ firebaseUid: uid });
+
+        // 2. If not found, try by Email (Link account)
+        if (!user && email) {
+            user = await User.findOne({ email });
+            if (user) {
+                // Link Firebase UID to existing email account
+                user.firebaseUid = uid;
+                if (!user.avatar && picture) user.avatar = picture;
+                await user.save();
+            }
+        }
+
+        // 3. If not found, try by Phone (Link account)
+        if (!user && phone_number) {
+            user = await User.findOne({ phone: phone_number });
+            if (user) {
+                user.firebaseUid = uid;
+                await user.save();
+            }
+        }
+
+        // 4. Create New User if still not found
+        if (!user) {
+            user = new User({
+                firebaseUid: uid,
+                name: name || (phone_number ? 'Mobile User' : 'New User'),
+                email: email, // might be undefined for phone auth
+                phone: phone_number, // might be undefined for google auth
+                avatar: picture,
+                status: 'student',
+                currency: 'INR', // Default
+                onboardingComplete: false
+            });
+            await user.save();
+        }
+
+        // 5. Generate SpendWise Session Tokens
+        const tokens = generateTokens(user.id);
+        user.refreshToken = tokens.refreshToken;
+        await user.save();
+
+        res.json({ token: tokens.accessToken, refreshToken: tokens.refreshToken, user });
+
+    } catch (err) {
+        console.error('Firebase Login Error:', err);
+        res.status(401).json({ msg: 'Invalid Firebase Token', error: err.message });
     }
 };

@@ -23,6 +23,7 @@ router.post('/passcode/forgot', auth, forgotPasscode);
 router.post('/passcode/reset', auth, resetPasscode);
 router.post('/reset-data/init', auth, resetDataInit);
 router.post('/reset-data/confirm', auth, resetDataConfirm);
+router.post('/firebase', require('../controllers/authController').firebaseLogin); // New Firebase Endpoint
 router.get('/test-reminders', triggerReminders);
 
 module.exports = router;

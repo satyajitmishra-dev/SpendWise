@@ -1,3 +1,5 @@
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchExpenses } from '../store/slices/expenseSlice';
@@ -122,110 +124,118 @@ const Home = () => {
                         const available = hasBudget ? (budgetLimit - monthlySpending) : totalBalance;
                         const spentPercentage = hasBudget ? (monthlySpending / budgetLimit) * 100 : 0;
 
-                        let statusColor = "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800";
+                        let badgeVariant = "success";
                         let statusText = "🟢 You're on track";
-                        let statusEmoji = "😎";
 
                         if (hasBudget) {
                             if (spentPercentage >= 90) {
-                                statusColor = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800";
+                                badgeVariant = "destructive";
                                 statusText = "🔴 Overspending alert";
-                                statusEmoji = "😱";
                             } else if (spentPercentage >= 60) {
-                                statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800";
+                                badgeVariant = "warning";
                                 statusText = "🟡 Careful, budget tight";
-                                statusEmoji = "😬";
                             }
                         } else {
                             statusText = "🔵 Set a budget to track health";
-                            statusColor = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800";
-                            statusEmoji = "🤔";
+                            badgeVariant = "default";
                         }
 
                         return (
                             <div className="space-y-6">
                                 {/* 1. Today's Status (Safe or Broke) */}
-                                <Link to="/budgets" className="relative overflow-hidden rounded-[2.5rem] p-8 shadow-2xl shadow-indigo-500/10 group active:scale-[0.98] transition-all duration-500 bg-white dark:bg-slate-900 border border-indigo-50 dark:border-slate-800 block hover:shadow-indigo-500/20 cursor-pointer">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
+                                <Link to="/budgets">
+                                    <Card variant="default" className="relative p-8 overflow-hidden shadow-2xl shadow-indigo-500/10 group active:scale-[0.98] transition-all duration-500 border-indigo-50 dark:border-slate-800 hover:shadow-indigo-500/20 cursor-pointer rounded-[2.5rem]">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 dark:bg-indigo-900/20 rounded-bl-[2.5rem] -z-10 transition-transform group-hover:scale-110" />
 
-                                    <div className="flex flex-col items-center justify-center text-center">
-                                        <p className="text-gray-500 dark:text-gray-400 font-medium text-sm tracking-widest uppercase mb-4">Available this month</p>
-                                        <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
-                                            <span className="text-2xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
-                                            {available.toLocaleString()}
-                                        </h2>
+                                        <div className="flex flex-col items-center justify-center text-center">
+                                            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm tracking-widest uppercase mb-4">Available this month</p>
+                                            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-gray-900 dark:text-white drop-shadow-sm">
+                                                <span className="text-2xl md:text-4xl text-gray-400 dark:text-gray-600 align-top mr-1">₹</span>
+                                                {available.toLocaleString()}
+                                            </h2>
 
-                                        <div className={`px-6 py-3 rounded-2xl border ${statusColor} font-bold text-sm md:text-base flex items-center gap-2 shadow-sm uppercase tracking-wide`}>
-                                            {statusText}
+                                            <Badge variant={badgeVariant} className="px-4 py-1.5 text-sm md:text-base">
+                                                {statusText}
+                                            </Badge>
                                         </div>
-                                    </div>
+                                    </Card>
                                 </Link>
 
                                 {/* 2. This month's spending direction */}
-                                <Link to="/expenses" className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md transition-all cursor-pointer group">
-                                    <div className="flex justify-between items-end mb-4">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
-                                                Spending Direction <TrendingUp size={18} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                                {hasBudget
-                                                    ? `Spent ₹${monthlySpending.toLocaleString()} of ₹${budgetLimit.toLocaleString()} limit`
-                                                    : `Total Spent: ₹${monthlySpending.toLocaleString()}`}
-                                            </p>
+                                <Link to="/expenses">
+                                    <Card variant="interactive" className="p-6 rounded-[2rem]">
+                                        <div className="flex justify-between items-end mb-4">
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
+                                                    Spending Direction <TrendingUp size={18} className="text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                                </h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                                    {hasBudget
+                                                        ? `Spent ₹${monthlySpending.toLocaleString()} of ₹${budgetLimit.toLocaleString()} limit`
+                                                        : `Total Spent: ₹${monthlySpending.toLocaleString()}`}
+                                                </p>
+                                            </div>
+                                            {hasBudget && (
+                                                <span className={`text-xl font-black ${spentPercentage > 100 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+                                                    {spentPercentage.toFixed(0)}%
+                                                </span>
+                                            )}
                                         </div>
-                                        {hasBudget && (
-                                            <span className={`text-xl font-black ${spentPercentage > 100 ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
-                                                {spentPercentage.toFixed(0)}%
-                                            </span>
-                                        )}
-                                    </div>
 
-                                    {/* Progress Bar */}
-                                    <div className="h-4 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <motion.div
-                                            className={`h-full ${!hasBudget ? 'bg-blue-500' :
-                                                spentPercentage > 90 ? 'bg-red-500' :
-                                                    spentPercentage > 60 ? 'bg-yellow-400' : 'bg-green-500'
-                                                }`}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${Math.min(spentPercentage, 100)}%` }}
-                                            transition={{ duration: 1, ease: "easeOut" }}
-                                        />
-                                    </div>
+                                        {/* Progress Bar */}
+                                        <div className="h-4 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className={`h-full ${!hasBudget ? 'bg-blue-500' :
+                                                    spentPercentage > 90 ? 'bg-red-500' :
+                                                        spentPercentage > 60 ? 'bg-yellow-400' : 'bg-green-500'
+                                                    }`}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.min(spentPercentage, 100)}%` }}
+                                                transition={{ duration: 1, ease: "easeOut" }}
+                                            />
+                                        </div>
+                                    </Card>
                                 </Link>
 
                                 {/* 2.5. Micro Context Stats */}
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                    <Link to="/expenses" className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer active:scale-95">
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Spent (Month)</p>
-                                        <p className="text-2xl font-black text-gray-900 dark:text-white">₹{monthlySpending.toLocaleString()}</p>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1">
-                                            {hasBudget ? `/ ₹${budgetLimit.toLocaleString()} budget` : 'No budget set'}
-                                        </p>
+                                    <Link to="/expenses">
+                                        <Card variant="interactive" className="p-5 rounded-[2rem]">
+                                            <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Spent (Month)</p>
+                                            <p className="text-2xl font-black text-gray-900 dark:text-white">₹{monthlySpending.toLocaleString()}</p>
+                                            <p className="text-[10px] text-gray-400 font-medium mt-1">
+                                                {hasBudget ? `/ ₹${budgetLimit.toLocaleString()} budget` : 'No budget set'}
+                                            </p>
+                                        </Card>
                                     </Link>
-                                    <Link to="/subscriptions" className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-800 shadow-sm block hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer active:scale-95">
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Fixed Subs</p>
-                                        <p className="text-2xl font-black text-gray-900 dark:text-white">{subscriptions.filter(s => s.status !== 'cancelled').length} <span className="text-sm font-medium text-gray-400">active</span></p>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1 truncate">
-                                            ₹{activeSubscriptionsCost.toLocaleString()} / month
-                                        </p>
+                                    <Link to="/subscriptions">
+                                        <Card variant="interactive" className="p-5 rounded-[2rem]">
+                                            <p className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Fixed Subs</p>
+                                            <p className="text-2xl font-black text-gray-900 dark:text-white">{subscriptions.filter(s => s.status !== 'cancelled').length} <span className="text-sm font-medium text-gray-400">active</span></p>
+                                            <p className="text-[10px] text-gray-400 font-medium mt-1 truncate">
+                                                ₹{activeSubscriptionsCost.toLocaleString()} / month
+                                            </p>
+                                        </Card>
                                     </Link>
                                 </div>
 
                                 {/* 3. Quick Actions */}
                                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                    <Link to="/expenses" state={{ openAdd: true }} className="bg-black dark:bg-white text-white dark:text-black p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
-                                        <div className="p-2 bg-white/20 dark:bg-black/10 rounded-full">
-                                            <TrendingDown size={24} />
-                                        </div>
-                                        <span className="font-bold">View Expenses</span>
+                                    <Link to="/expenses" state={{ openAdd: true }}>
+                                        <Card className="bg-black dark:bg-white text-white dark:text-black p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 border-0">
+                                            <div className="p-2 bg-white/20 dark:bg-black/10 rounded-full">
+                                                <TrendingDown size={24} />
+                                            </div>
+                                            <span className="font-bold">View Expenses</span>
+                                        </Card>
                                     </Link>
-                                    <Link to="/accounts" state={{ openAdd: true }} className="bg-indigo-600 text-white p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl shadow-indigo-200 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95">
-                                        <div className="p-2 bg-white/20 rounded-full">
-                                            <Wallet size={24} />
-                                        </div>
-                                        <span className="font-bold">Add Income</span>
+                                    <Link to="/accounts" state={{ openAdd: true }}>
+                                        <Card className="bg-indigo-600 text-white p-5 rounded-[2rem] flex flex-col items-center justify-center gap-2 shadow-xl shadow-indigo-200 dark:shadow-none hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 border-0">
+                                            <div className="p-2 bg-white/20 rounded-full">
+                                                <Wallet size={24} />
+                                            </div>
+                                            <span className="font-bold">Add Income</span>
+                                        </Card>
                                     </Link>
                                 </div>
                             </div>

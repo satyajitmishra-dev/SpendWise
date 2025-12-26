@@ -16,7 +16,11 @@ const UserSchema = new mongoose.Schema({
     college: { type: String },
     currency: { type: String, default: 'INR' },
     budget: { type: Number, default: 0 },
-    onboardingComplete: { type: Boolean, default: false }
+    onboardingComplete: { type: Boolean, default: false },
+
+    // Firebase Auth
+    firebaseUid: { type: String, unique: true, sparse: true },
+    phone: { type: String, unique: true, sparse: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

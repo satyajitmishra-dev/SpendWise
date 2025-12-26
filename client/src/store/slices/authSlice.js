@@ -14,6 +14,17 @@ export const loginAsGuest = createAsyncThunk('auth/loginAsGuest', async (guestDa
     }
 });
 
+export const firebaseLogin = createAsyncThunk('auth/firebaseLogin', async (idToken, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/firebase', { idToken });
+        localStorage.setItem('token', res.data.token);
+        if (res.data.refreshToken) localStorage.setItem('refreshToken', res.data.refreshToken);
+        return res.data;
+    } catch (err) {
+        return rejectWithValue(err.response.data);
+    }
+});
+
 
 export const signupInit = createAsyncThunk('auth/signupInit', async (formData, thunkAPI) => {
     try {
@@ -261,6 +272,23 @@ const authSlice = createSlice({
             .addCase(loginAsGuest.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.error || 'Guest login failed';
+            })
+
+            // Firebase Login
+            .addCase(firebaseLogin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(firebaseLogin.fulfilled, (state, action) => {
+                state.isAuthenticated = true;
+                state.user = action.payload.user;
+                state.loading = false;
+                state.error = null;
+                state.isAppLocked = action.payload.user?.isPasscodeEnabled === true;
+            })
+            .addCase(firebaseLogin.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.msg || 'Firebase Login Failed';
             })
 
 

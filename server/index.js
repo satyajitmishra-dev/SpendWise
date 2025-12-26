@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); // Server Entry Point
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
@@ -42,11 +42,12 @@ app.use(
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'", "'unsafe-inline'", "https://apis.google.com", "https://www.gstatic.com"],
                 styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
                 fontSrc: ["'self'", "https://fonts.gstatic.com"],
-                imgSrc: ["'self'", "data:", "https://images.unsplash.com"],
-                connectSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.googleusercontent.com"],
+                connectSrc: ["'self'", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://*.firebaseio.com", "https://*.firebase.com"],
+                frameSrc: ["'self'", "https://*.firebaseapp.com", "https://*.google.com"],
             },
         },
     })

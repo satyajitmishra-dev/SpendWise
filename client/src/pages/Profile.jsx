@@ -1,3 +1,6 @@
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../store/slices/authSlice';
 import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles } from 'lucide-react';
@@ -108,11 +111,13 @@ const Profile = () => {
                     {/* Premium Profile Card */}
                     <motion.div variants={item} className="group relative">
                         <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-[2.2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-                        <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl p-6 sm:p-8 rounded-[2rem] border border-white/50 dark:border-slate-700/50 shadow-2xl">
+                        <Card variant="glass" className="relative p-6 sm:p-8 border-white/50 dark:border-slate-700/50 shadow-2xl">
 
                             {/* Pro Badge */}
-                            <div className="absolute top-4 right-4 bg-gradient-to-r from-amber-200 to-yellow-400 dark:from-amber-700 dark:to-yellow-600 text-amber-900 dark:text-amber-100 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                                <Sparkles size={10} /> Pro
+                            <div className="absolute top-4 right-4">
+                                <Badge variant="pro" className="flex items-center gap-1 shadow-sm px-3 py-1 text-[10px] font-black tracking-wider rounded-full uppercase">
+                                    <Sparkles size={10} /> Pro
+                                </Badge>
                             </div>
 
                             <div className="flex flex-col items-center">
@@ -144,54 +149,55 @@ const Profile = () => {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => navigate('/budgets')}
-                                        className="bg-gradient-to-b from-indigo-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 rounded-3xl flex flex-col items-center border border-indigo-100/50 dark:border-slate-700/50 shadow-sm relative overflow-hidden cursor-pointer group/card"
                                     >
-                                        <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
-                                        <div className="flex items-center gap-1 mb-1">
-                                            <span className="text-[10px] font-bold text-indigo-400 dark:text-indigo-300 uppercase tracking-widest leading-none">Budget Goal</span>
-                                            <ChevronRight size={10} className="text-indigo-300 opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                        </div>
-                                        <span className="text-lg sm:text-xl font-black text-indigo-600 dark:text-white tracking-tight">
-                                            {user?.currency === 'USD' ? '$' : user?.currency === 'EUR' ? '€' : '₹'}
-                                            {(user?.budget || 0).toLocaleString()}
-                                        </span>
+                                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center cursor-pointer group/card border-indigo-100/50 dark:border-slate-700/50 bg-gradient-to-b from-indigo-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50">
+                                            <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <span className="text-[10px] font-bold text-indigo-400 dark:text-indigo-300 uppercase tracking-widest leading-none">Budget Goal</span>
+                                                <ChevronRight size={10} className="text-indigo-300 opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                            </div>
+                                            <span className="text-lg sm:text-xl font-black text-indigo-600 dark:text-white tracking-tight">
+                                                {user?.currency === 'USD' ? '$' : user?.currency === 'EUR' ? '€' : '₹'}
+                                                {(user?.budget || 0).toLocaleString()}
+                                            </span>
+                                        </Card>
                                     </motion.div>
 
                                     {/* 2. Member Type */}
-                                    <div className="bg-gradient-to-b from-purple-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 rounded-3xl flex flex-col items-center border border-purple-100/50 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
+                                    <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-purple-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-purple-100/50 dark:border-slate-700/50">
                                         <div className="absolute top-0 right-0 w-12 h-12 bg-purple-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
                                         <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 uppercase tracking-widest mb-1 leading-none">Status</span>
                                         <span className="text-lg sm:text-xl font-black text-purple-600 dark:text-white tracking-tight capitalize">{user?.status || 'Student'}</span>
-                                    </div>
+                                    </Card>
                                 </div>
 
-                                <motion.button
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate('/edit-profile')}
-                                    className="px-8 py-3.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl text-sm font-bold shadow-xl shadow-gray-200 dark:shadow-none hover:shadow-2xl transition-all w-full md:w-auto mt-8"
-                                >
-                                    Edit Profile Information
-                                </motion.button>
+                                <motion.div className="w-full md:w-auto mt-8" whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
+                                    <Button
+                                        onClick={() => navigate('/edit-profile')}
+                                        className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-xl shadow-gray-200 dark:shadow-none hover:shadow-2xl w-full md:w-auto px-8 h-12 rounded-2xl"
+                                    >
+                                        Edit Profile Information
+                                    </Button>
+                                </motion.div>
                             </div>
-                        </div>
+                        </Card>
                     </motion.div>
 
                     {/* Grid 2: Secondary Stats (Joined & Currency) - Outside Main Card */}
                     <motion.div variants={item} className="grid grid-cols-2 gap-3 w-full">
                         {/* 3. Joined */}
-                        <div className="bg-gradient-to-b from-orange-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 rounded-3xl flex flex-col items-center border border-orange-100/50 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
+                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-orange-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-orange-100/50 dark:border-slate-700/50">
                             <div className="absolute top-0 right-0 w-12 h-12 bg-orange-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
                             <span className="text-[10px] font-bold text-orange-400 dark:text-orange-300 uppercase tracking-widest mb-1 leading-none">Joined</span>
                             <span className="text-sm sm:text-base font-bold text-orange-600 dark:text-white tracking-tight truncate max-w-full">{joinDate}</span>
-                        </div>
+                        </Card>
 
                         {/* 4. Currency */}
-                        <div className="bg-gradient-to-b from-blue-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 p-4 rounded-3xl flex flex-col items-center border border-blue-100/50 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
+                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-blue-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-blue-100/50 dark:border-slate-700/50">
                             <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
                             <span className="text-[10px] font-bold text-blue-400 dark:text-blue-300 uppercase tracking-widest mb-1 leading-none">Currency</span>
                             <span className="text-lg sm:text-xl font-black text-blue-600 dark:text-white tracking-tight">{user?.currency || 'INR'}</span>
-                        </div>
+                        </Card>
                     </motion.div>
 
 
@@ -230,16 +236,22 @@ const Profile = () => {
                         </MenuSection>
 
                         {/* Actions */}
-                        <motion.button
+                        <motion.div
                             variants={item}
                             whileHover={{ scale: 1.01 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={handleLogout}
-                            className="w-full bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold py-5 rounded-[2rem] flex items-center justify-center gap-3 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all border border-red-100 dark:border-red-900/20 shadow-sm"
                         >
-                            <LogOut size={20} strokeWidth={2.5} />
-                            Log Out
-                        </motion.button>
+                            <Button
+                                variant="destructive"
+                                fullWidth
+                                size="lg"
+                                onClick={handleLogout}
+                                leftIcon={<LogOut size={20} strokeWidth={2.5} />}
+                                className="bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 border border-red-100 dark:border-red-900/20 shadow-sm h-auto py-5 rounded-[2rem]"
+                            >
+                                Log Out
+                            </Button>
+                        </motion.div>
                     </motion.div>
 
                     <motion.div variants={item} className="text-center pb-8 pt-4">
