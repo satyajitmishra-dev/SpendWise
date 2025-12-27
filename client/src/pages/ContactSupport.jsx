@@ -120,13 +120,13 @@ const ContactSupport = () => {
     }
 
     return (
-        <div className="h-[100vh] h-[100dvh] bg-gray-50 dark:bg-slate-900 transition-colors duration-500 relative flex flex-col overflow-hidden">
+        <div className="h-[100vh] h-[100dvh] bg-gray-50 dark:bg-slate-950 transition-colors duration-500 relative flex flex-col overflow-hidden">
             {/* Premium Ambient Background */}
-            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-200/30 dark:bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none fixed" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-200/30 dark:bg-purple-900/10 rounded-full blur-[120px] pointer-events-none fixed" />
+            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-500/10 rounded-full mix-blend-multiply filter blur-[100px] pointer-events-none animate-blob"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full mix-blend-multiply filter blur-[100px] pointer-events-none animate-blob animation-delay-4000"></div>
 
             {/* Header (Stable) */}
-            <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-100 dark:border-slate-800/50 relative z-50 px-4 py-4 md:px-8 flex items-center gap-4 shadow-sm">
+            <div className="shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/5 relative z-50 px-4 py-4 md:px-8 flex items-center gap-4 shadow-sm">
                 <button
                     onClick={() => navigate(-1)}
                     className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 transition"
@@ -134,31 +134,31 @@ const ContactSupport = () => {
                     <ArrowLeft size={22} />
                 </button>
                 <div>
-                    <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">Contact Support</h1>
-                    <p className="text-xs text-emerald-500 font-medium flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">Contact Support</h1>
+                    <p className="text-xs text-emerald-500 font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span>
                         Usually replies within 24h
                     </p>
                 </div>
             </div>
 
             {/* Content Scrollable Area (Flex-1) */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-8 relative z-10 scrollbar-hide py-6">
-                <div className="max-w-xl mx-auto space-y-6">
+            <div className="flex-1 overflow-y-auto px-4 md:px-8 relative z-10 scrollbar-hide py-8">
+                <div className="max-w-xl mx-auto space-y-8">
 
                     {/* Email Field (Only for Guests) */}
                     {!isAuthenticated && (
                         <div className="group">
-                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Email Address <span className="text-red-500">*</span></label>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Email Address <span className="text-rose-500">*</span></label>
                             <div className="relative">
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="your@email.com"
-                                    className="w-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-gray-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 pl-12 text-gray-900 dark:text-white font-medium shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10"
+                                    className="w-full bg-white dark:bg-slate-900/50 backdrop-blur-md border border-gray-200 dark:border-white/10 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 pl-12 text-gray-900 dark:text-white font-medium shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10 placeholder-gray-400 dark:placeholder-slate-600"
                                 />
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500">
                                     <Mail size={20} />
                                 </div>
                             </div>
@@ -167,19 +167,19 @@ const ContactSupport = () => {
 
                     {/* Issue Type */}
                     <div className="group">
-                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Issue Type <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Issue Type <span className="text-rose-500">*</span></label>
                         <div className="relative">
                             <select
                                 value={formData.type}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                className="w-full appearance-none bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-gray-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 pr-10 text-gray-900 dark:text-white font-medium shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10"
+                                className="w-full appearance-none bg-white dark:bg-slate-900/50 backdrop-blur-md border border-gray-200 dark:border-white/10 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 pr-10 text-gray-900 dark:text-white font-medium shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10"
                             >
-                                <option value="" disabled>Select issue type</option>
+                                <option value="" disabled className="dark:bg-slate-900">Select issue type</option>
                                 {ISSUE_TYPES.map(type => (
-                                    <option key={type.value} value={type.label}>{type.label}</option>
+                                    <option key={type.value} value={type.label} className="dark:bg-slate-900">{type.label}</option>
                                 ))}
                             </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-indigo-500 transition-colors">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 transition-colors">
                                 <ChevronRight className="rotate-90" size={18} />
                             </div>
                         </div>
@@ -187,20 +187,20 @@ const ContactSupport = () => {
 
                     {/* Message */}
                     <div className="group">
-                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Your Message <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Your Message <span className="text-rose-500">*</span></label>
                         <div className="relative">
                             <textarea
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                 placeholder="Describe your issue or suggestion..."
-                                className="w-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-gray-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 min-h-[160px] text-gray-900 dark:text-white shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10 resize-none text-base"
+                                className="w-full bg-white dark:bg-slate-900/50 backdrop-blur-md border border-gray-200 dark:border-white/10 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 min-h-[160px] text-gray-900 dark:text-white shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10 resize-none text-base placeholder-gray-400 dark:placeholder-slate-600"
                             />
-                            <div className={`absolute bottom-4 right-4 text-xs font-medium transition-colors ${formData.message.length > 0 && formData.message.length < 10 ? 'text-red-500' : 'text-gray-400'}`}>
-                                {formData.message.length} / 10 min
+                            <div className={`absolute bottom-4 right-4 text-xs font-bold transition-colors ${formData.message.length > 0 && formData.message.length < 10 ? 'text-rose-500' : 'text-gray-400 dark:text-slate-600'}`}>
+                                {formData.message.length} / 10
                             </div>
                         </div>
                         {formData.message.length > 0 && formData.message.length < 10 && (
-                            <p className="text-xs text-red-500 mt-2 ml-1 flex items-center gap-1 animate-fadeIn">
+                            <p className="text-xs text-rose-500 mt-2 ml-2 flex items-center gap-1 animate-fadeIn font-medium">
                                 <AlertCircle size={12} /> Minimum 10 characters required
                             </p>
                         )}
@@ -214,40 +214,40 @@ const ContactSupport = () => {
                             <>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all group active:scale-[0.99]"
+                                    className="w-full border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-all group active:scale-[0.99] bg-white dark:bg-transparent"
                                 >
-                                    <div className="p-3 bg-white dark:bg-slate-800 shadow-sm rounded-full mb-3 group-hover:scale-110 group-hover:text-indigo-500 transition-all">
-                                        <Paperclip size={20} />
+                                    <div className="p-4 bg-gray-50 dark:bg-slate-900 shadow-sm rounded-full mb-3 group-hover:scale-110 group-hover:text-indigo-500 transition-all border border-gray-100 dark:border-white/5">
+                                        <Paperclip size={22} />
                                     </div>
-                                    <span className="text-sm font-medium">Add a screenshot</span>
-                                    <span className="text-xs opacity-60 mt-1">PNG, JPG up to 2MB</span>
+                                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Tap to upload screenshot</span>
+                                    <span className="text-xs font-medium text-gray-400 dark:text-slate-500 mt-1">PNG, JPG up to 2MB</span>
                                 </button>
-                                <p className="text-xs text-gray-400 dark:text-slate-500 mt-2 ml-1">
-                                    You can attach screenshots (optional)
-                                </p>
                             </>
                         ) : (
-                            <div className="bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-3 flex items-center justify-between shadow-sm">
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex-shrink-0 overflow-hidden border border-indigo-100 dark:border-indigo-900/50">
+                            <div className="bg-white dark:bg-slate-900/80 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                                <div className="flex items-center gap-4 overflow-hidden">
+                                    <div className="w-14 h-14 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex-shrink-0 overflow-hidden border border-indigo-100 dark:border-indigo-500/20 relative">
                                         {formData.attachment.data.startsWith('data:image') ? (
                                             <img src={formData.attachment.data} alt="Preview" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-indigo-500">
-                                                <FileQuestion size={20} />
+                                                <FileQuestion size={24} />
                                             </div>
                                         )}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{formData.attachment.name}</p>
-                                        <p className="text-xs text-indigo-500 font-medium">Ready to upload</p>
+                                        <p className="text-xs text-emerald-500 font-bold flex items-center gap-1">
+                                            <Check size={12} strokeWidth={3} />
+                                            Ready to upload
+                                        </p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setFormData({ ...formData, attachment: null })}
-                                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full text-gray-400 hover:text-red-500 transition"
+                                    className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full text-gray-400 hover:text-rose-500 transition"
                                 >
-                                    <X size={18} />
+                                    <X size={20} />
                                 </button>
                             </div>
                         )}
@@ -261,22 +261,22 @@ const ContactSupport = () => {
                     </div>
 
                     {/* Secure Trust Badge */}
-                    <div className="pt-4 flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-slate-600 font-medium tracking-wide">
-                        <Shield size={12} className="text-green-500" />
-                        <span>Bank-grade encryption driven</span>
+                    <div className="pt-2 flex items-center justify-center gap-2 text-xs text-gray-400 dark:text-slate-600 font-bold uppercase tracking-widest opacity-70">
+                        <Shield size={12} className="text-emerald-500" />
+                        <span>Bank-grade encryption</span>
                     </div>
                     {/* Bottom Spacer for safe scroll */}
                     <div className="h-4"></div>
                 </div>
             </div>
 
-            {/* Stable Bottom Action Bar (Not Fixed, Just Flex Item) */}
-            <div className="shrink-0 p-4 pt-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-100 dark:border-slate-800 z-50 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
+            {/* Stable Bottom Action Bar */}
+            <div className="shrink-0 p-4 pt-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-gray-100 dark:border-white/5 z-50 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)]">
                 <div className="max-w-xl mx-auto w-full">
                     {status === 'error' && (
-                        <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-xl flex items-center gap-2 animate-shake">
+                        <div className="mb-3 p-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-sm rounded-xl flex items-center gap-2 animate-shake border border-rose-100 dark:border-rose-900/30">
                             <AlertCircle size={16} />
-                            <span>Submission failed. Please check your internet.</span>
+                            <span className="font-medium">Submission failed. Please check connection.</span>
                             <button onClick={() => setStatus('idle')} className="ml-auto font-bold underline">Retry</button>
                         </div>
                     )}
@@ -284,8 +284,8 @@ const ContactSupport = () => {
                         onClick={handleSubmit}
                         disabled={!isValid || status === 'loading'}
                         className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-base transition-all ${isValid && status !== 'loading'
-                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:scale-[1.02] active:scale-[0.98]'
-                            : 'bg-gray-200 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                            ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]'
+                            : 'bg-gray-200 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
                             }`}
                     >
                         {status === 'loading' ? (

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchLoans, updateLoan } from '../store/slices/loanSlice';
 import { Plus, Filter, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { triggerConfetti } from '../utils/confettiUtils';
 import AddLoanSheet from '../components/features/AddLoanSheet';
 import { cn } from '../lib/utils';
 
@@ -25,6 +26,7 @@ const LoansPage = () => {
         const newStatus = item.status === 'settled' ? 'pending' : 'settled';
         // Optional: Confirm only for settling, or both? Let's just do it directly or quick confirm
         if (newStatus === 'settled' || confirm('Mark as pending again?')) {
+            if (newStatus === 'settled') triggerConfetti();
             dispatch(updateLoan({ id: item._id, data: { status: newStatus } }));
         }
     };

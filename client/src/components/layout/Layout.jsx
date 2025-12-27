@@ -13,6 +13,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import api from '../../services/api';
 import { initAppConfig } from '../../store/slices/appSlice';
 import UpdateChecker from './UpdateChecker';
+import UpdateModal from '../common/UpdateModal';
 import Footer from './Footer';
 import ErrorBoundary from '../common/ErrorBoundary';
 
@@ -137,6 +138,7 @@ const Layout = ({ children }) => {
 
             {/* Version Check Logic */}
             <UpdateChecker />
+            <UpdateModal />
 
             {/* Desktop Sidebar - Premium Floating Dock Style */}
             <aside className="hidden md:flex flex-col w-72 h-[96vh] my-auto ml-4 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl z-50 transition-all duration-300 relative">
