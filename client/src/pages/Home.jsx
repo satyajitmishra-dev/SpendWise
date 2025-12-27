@@ -7,7 +7,7 @@ import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
 import { fetchBudgets, updateBudget } from '../store/slices/budgetSlice'; // NEW
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap } from 'lucide-react';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap, Snowflake } from 'lucide-react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -234,16 +234,35 @@ const Home = () => {
                                 {featureBanner.show && (
                                     <Link to={featureBanner.link}>
                                         <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            className="bg-indigo-600 rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-indigo-500/20 mb-6 cursor-pointer relative overflow-hidden group"
+                                            initial={{ height: 0, opacity: 0, y: -20 }}
+                                            animate={{ height: 'auto', opacity: 1, y: 0 }}
+                                            className="relative rounded-2xl p-1 mb-6 cursor-pointer overflow-hidden group shadow-xl shadow-sky-200 dark:shadow-none"
                                         >
-                                            <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-                                            <div className="flex items-center gap-3 text-white relative z-10">
-                                                <span className="bg-white/20 p-1.5 rounded-lg"><Zap size={16} fill="currentColor" /></span>
-                                                <span className="font-bold text-sm tracking-wide">{featureBanner.text}</span>
+                                            {/* Ice Background Gradient */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-300 opacity-90 dark:opacity-80 backdrop-blur-md"></div>
+
+                                            {/* Frost/Noise Overlay */}
+                                            <div className="absolute inset-0 bg-white/20 mix-blend-overlay"></div>
+
+                                            {/* Snowflake Decorations - Abstract */}
+                                            <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/30 rounded-full blur-xl animate-pulse"></div>
+                                            <div className="absolute -bottom-2 -left-2 w-12 h-12 bg-cyan-100/40 rounded-full blur-lg"></div>
+
+                                            <div className="relative bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 flex items-center justify-between border border-white/60 dark:border-white/10 group-hover:bg-white/50 transition-colors">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="bg-white/80 dark:bg-sky-900/50 p-2 rounded-xl text-sky-600 dark:text-sky-200 shadow-sm ring-1 ring-white/50">
+                                                        <Snowflake size={20} className="animate-[spin_4s_linear_infinite]" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] uppercase font-bold text-sky-800 dark:text-sky-200 tracking-wider mb-0.5 opacity-80">Winter Special</p>
+                                                        <p className="font-bold text-sm text-sky-950 dark:text-white tracking-wide drop-shadow-sm">{featureBanner.text}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-8 h-8 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                                                    <ArrowRight size={16} className="text-sky-900 dark:text-white" />
+                                                </div>
                                             </div>
-                                            <ArrowUpRight size={18} className="text-white relative z-10" />
                                         </motion.div>
                                     </Link>
                                 )}
