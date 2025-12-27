@@ -1,32 +1,40 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { toast } from 'sonner';
-import { fetchRemoteConfig, getVersionConfig } from '../../services/remoteConfig';
 import { ArrowUpCircle } from 'lucide-react';
 import packageJson from '../../../package.json';
 
 const UpdateChecker = () => {
     const [updateAvailable, setUpdateAvailable] = useState(false);
 
-    useEffect(() => {
-        const checkVersion = async () => {
-            await fetchRemoteConfig();
-            const { latestVersion } = getVersionConfig();
+    const { version: latestVersion } = useSelector(state => state.app);
 
-            // Simple string comparison for now (assumes semver format like 3.0.0)
+    useEffect(() => {
+        if (!latestVersion) return;
+
+        const checkVersion = () => {
             const currentVersion = packageJson.version;
 
+            // Compare versions
             if (latestVersion !== currentVersion) {
                 // Check if we've already shown the toast for this specific version
                 const toastShownKey = `update_toast_shown_${latestVersion}`;
                 const hasShownToast = localStorage.getItem(toastShownKey);
 
                 if (!hasShownToast) {
-                    toast('New update available!', {
-                        description: `Version ${latestVersion} is now live.`,
+                    // Clear any old version keys
+                    Object.keys(localStorage).forEach(key => {
+                        if (key.startsWith('update_toast_shown_') && key !== toastShownKey) {
+                            localStorage.removeItem(key);
+                        }
+                    });
+
+                    toast.success('New update available!', {
+                        description: `Version ${latestVersion} is now live. Click to update.`,
                         icon: <ArrowUpCircle className="text-indigo-500" />,
                         duration: 10000,
                         action: {
-                            label: 'Refresh',
+                            label: 'Update Now',
                             onClick: () => window.location.reload()
                         }
                     });
@@ -37,14 +45,11 @@ const UpdateChecker = () => {
             }
         };
 
-        // Delay check slightly to not block initial load
-        const timer = setTimeout(checkVersion, 3000);
+        // Small delay to ensure Remote Config has loaded
+        const timer = setTimeout(checkVersion, 500);
         return () => clearTimeout(timer);
-    }, []);
+    }, [latestVersion]);
 
-    if (!updateAvailable) return null;
-
-    // Optional: Render a non-intrusive floating pill if you want something more than a toast
     return null;
 };
 

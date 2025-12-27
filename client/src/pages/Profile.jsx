@@ -104,22 +104,24 @@ const Profile = () => {
     const joinDate = new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="min-h-screen relative w-full overflow-hidden">
-            {/* Ambient Background */}
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-200/20 dark:bg-purple-900/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200/20 dark:bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="min-h-screen relative w-full overflow-hidden bg-slate-50 dark:bg-[#020617]">
+            {/* Ambient Background - Subtle Deep Glows */}
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="p-4 md:p-8 pb-32 max-w-2xl mx-auto relative z-10">
+            <div className="p-4 md:p-8 pb-32 w-full max-w-lg mx-auto relative z-10 transition-all duration-500">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="flex items-center justify-between mb-8"
+                    className="flex items-center justify-between mb-6 px-2"
                 >
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        My Profile
-                        <span className="text-2xl animate-bounce-slow">✨</span>
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                        Profile
                     </h1>
+                    <div className="scale-90 origin-right">
+                        <ThemeToggler />
+                    </div>
                 </motion.div>
 
                 <motion.div
@@ -128,96 +130,77 @@ const Profile = () => {
                     animate="show"
                     className="space-y-6"
                 >
-                    {/* Premium Profile Card */}
-                    <motion.div variants={item} className="group relative">
-                        <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-[2.2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-                        <Card variant="glass" className="relative p-6 sm:p-8 border-white/50 dark:border-slate-700/50 shadow-2xl">
+                    {/* Main Dark Card - Premium Upgrade */}
+                    <motion.div variants={item} className="relative group">
+                        {/* Animated Glow */}
+                        <div className="absolute -inset-[1px] bg-gradient-to-r from-emerald-500/20 via-amber-500/20 to-emerald-500/20 rounded-[2.5rem] opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-700"></div>
 
-                            {/* Pro Badge */}
-                            <div className="absolute top-4 right-4">
-                                <Badge variant="pro" className="flex items-center gap-1 shadow-sm px-3 py-1 text-[10px] font-black tracking-wider rounded-full uppercase">
-                                    <Sparkles size={10} /> Pro
-                                </Badge>
-                            </div>
+                        <div className="relative bg-gradient-to-b from-[#0f172a] to-[#1e293b] text-white p-6 sm:p-8 rounded-[2.5rem] shadow-2xl shadow-black/40 border border-slate-700/50 overflow-hidden backdrop-blur-xl">
 
-                            <div className="flex flex-col items-center">
-                                {/* Avatar */}
-                                <div className="relative mb-6">
-                                    <div className="w-28 h-28 bg-gray-50 dark:bg-slate-800 rounded-full p-1 ring-4 ring-white/50 dark:ring-slate-700/50 shadow-xl overflow-hidden">
-                                        {user?.avatar ? (
-                                            <img src={user.avatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
-                                        ) : (
-                                            <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-4xl font-bold text-indigo-500 dark:text-indigo-400">
-                                                {user?.name?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                        )}
+                            <div className="flex flex-col items-center relative z-10">
+                                {/* Avatar with Enhanced Ring */}
+                                <div className="relative mb-6 group/avatar">
+                                    {/* Animated Pulse Glow */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400/30 to-amber-400/30 rounded-full blur-lg opacity-60 group-hover/avatar:opacity-100 transition-opacity duration-500"></div>
+
+                                    <div className="relative w-28 h-28 rounded-full p-[3px] bg-gradient-to-br from-emerald-400 via-amber-300 to-emerald-300 animate-gradient-xy">
+                                        <div className="w-full h-full rounded-full bg-gradient-to-b from-[#0f172a] to-[#1e293b] p-1.5 shadow-inner">
+                                            {user?.avatar ? (
+                                                <img src={user.avatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                            ) : (
+                                                <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-4xl font-bold text-slate-400">
+                                                    {user?.name?.[0]?.toUpperCase() || 'G'}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white dark:border-slate-900 z-20 flex items-center justify-center ${user?.email ? 'bg-emerald-500' : 'bg-gray-400'}`}>
-                                        {user?.email && <div className="w-2 h-2 bg-white rounded-full animate-pulse" />}
+                                    {/* Status Dot */}
+                                    <div className="absolute bottom-2 right-1">
+                                        <div className="w-5 h-5 bg-blue-500 rounded-full border-[3px] border-[#0f172a]"></div>
                                     </div>
                                 </div>
 
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1.5 tracking-tight text-center">{user?.name || 'Guest User'}</h2>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-800/50 px-4 py-1.5 rounded-full mb-8 border border-gray-100 dark:border-slate-700/50 max-w-full truncate">
-                                    {user?.email || 'Sign in to sync data'}
-                                </p>
+                                {/* Name & Email */}
+                                <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">{user?.name || 'Guest'}</h2>
+                                <div className="mb-8">
+                                    <span className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-slate-300 text-xs font-medium shadow-sm">
+                                        {user?.email || 'No email linked'}
+                                    </span>
+                                </div>
 
-                                {/* Grid 1: Main Stats (Budget & Status) with Unified 2x2 Grid Styling */}
-                                <div className="grid grid-cols-2 gap-3 w-full">
-                                    {/* 1. Budget Goal */}
-                                    <motion.div
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                                    <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => navigate('/budgets')}
+                                        className="bg-[#1e293b] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 border border-slate-600/30 hover:border-slate-500/50 transition-all cursor-pointer"
                                     >
-                                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center cursor-pointer group/card border-indigo-100/50 dark:border-slate-700/50 bg-gradient-to-b from-indigo-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50">
-                                            <div className="absolute top-0 right-0 w-12 h-12 bg-indigo-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
-                                            <div className="flex items-center gap-1 mb-1">
-                                                <span className="text-[10px] font-bold text-indigo-400 dark:text-indigo-300 uppercase tracking-widest leading-none">Budget Goal</span>
-                                                <ChevronRight size={10} className="text-indigo-300 opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                            </div>
-                                            <span className="text-lg sm:text-xl font-black text-indigo-600 dark:text-white tracking-tight">
-                                                {user?.currency === 'USD' ? '$' : user?.currency === 'EUR' ? '€' : '₹'}
-                                                {(effectiveBudget || 0).toLocaleString()}
-                                            </span>
-                                        </Card>
-                                    </motion.div>
-
-                                    {/* 2. Member Type */}
-                                    <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-purple-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-purple-100/50 dark:border-slate-700/50">
-                                        <div className="absolute top-0 right-0 w-12 h-12 bg-purple-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
-                                        <span className="text-[10px] font-bold text-purple-400 dark:text-purple-300 uppercase tracking-widest mb-1 leading-none">Status</span>
-                                        <span className="text-lg sm:text-xl font-black text-purple-600 dark:text-white tracking-tight capitalize">{user?.status || 'Student'}</span>
-                                    </Card>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Budget Goal</span>
+                                        <span className="text-2xl font-black text-white">
+                                            {user?.currency === 'USD' ? '$' : user?.currency === 'EUR' ? '€' : '₹'}
+                                            {(effectiveBudget || 0).toLocaleString()}
+                                        </span>
+                                    </motion.button>
+                                    <div className="bg-[#1e293b] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 border border-slate-600/30">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
+                                        <span className="text-2xl font-black text-white capitalize">{user?.status || 'Student'}</span>
+                                    </div>
                                 </div>
 
-                                <motion.div className="w-full md:w-auto mt-8" whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
-                                    <Button
-                                        onClick={() => navigate('/edit-profile')}
-                                        className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-xl shadow-gray-200 dark:shadow-none hover:shadow-2xl w-full md:w-auto px-8 h-12 rounded-2xl"
-                                    >
-                                        Edit Profile Information
-                                    </Button>
-                                </motion.div>
+                                {/* Edit Button - Enhanced */}
+                                <motion.button
+                                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px rgba(255,255,255,0.15)" }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate('/edit-profile')}
+                                    className="relative w-full bg-white text-slate-950 font-bold py-4 rounded-2xl uppercase text-sm tracking-wider shadow-2xl shadow-white/20 hover:bg-gradient-to-r hover:from-white hover:to-slate-100 transition-all overflow-hidden group"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                    <span className="relative z-10">
+                                        Edit Profile</span>
+                                </motion.button>
                             </div>
-                        </Card>
-                    </motion.div>
-
-                    {/* Grid 2: Secondary Stats (Joined & Currency) - Outside Main Card */}
-                    <motion.div variants={item} className="grid grid-cols-2 gap-3 w-full">
-                        {/* 3. Joined */}
-                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-orange-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-orange-100/50 dark:border-slate-700/50">
-                            <div className="absolute top-0 right-0 w-12 h-12 bg-orange-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
-                            <span className="text-[10px] font-bold text-orange-400 dark:text-orange-300 uppercase tracking-widest mb-1 leading-none">Joined</span>
-                            <span className="text-sm sm:text-base font-bold text-orange-600 dark:text-white tracking-tight truncate max-w-full">{joinDate}</span>
-                        </Card>
-
-                        {/* 4. Currency */}
-                        <Card variant="gradient" className="p-4 rounded-3xl flex flex-col items-center bg-gradient-to-b from-blue-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-900/50 border-blue-100/50 dark:border-slate-700/50">
-                            <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500/5 rounded-full blur-xl -mr-6 -mt-6"></div>
-                            <span className="text-[10px] font-bold text-blue-400 dark:text-blue-300 uppercase tracking-widest mb-1 leading-none">Currency</span>
-                            <span className="text-lg sm:text-xl font-black text-blue-600 dark:text-white tracking-tight">{user?.currency || 'INR'}</span>
-                        </Card>
+                        </div>
                     </motion.div>
 
 

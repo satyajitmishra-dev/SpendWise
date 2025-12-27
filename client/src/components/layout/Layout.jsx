@@ -124,7 +124,7 @@ const Layout = ({ children }) => {
         fetchUnreadCount();
         const interval = setInterval(fetchUnreadCount, 30000);
         return () => clearInterval(interval);
-    }, [dispatch, location.pathname]);
+    }, [dispatch]);
 
     return (
         <div className="flex h-screen bg-gray-50 dark:bg-slate-950 overflow-hidden text-gray-900 dark:text-slate-100 transition-colors duration-300 relative selection:bg-indigo-500/30">

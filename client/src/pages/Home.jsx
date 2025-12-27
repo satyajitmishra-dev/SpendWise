@@ -13,7 +13,6 @@ import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import HomeSkeleton from '../components/common/HomeSkeleton';
 import Footer from '../components/layout/Footer';
-import { fetchRemoteConfig, getFeatureConfig } from '../services/remoteConfig';
 import BudgetRenewalDialog from '../components/features/BudgetRenewalDialog';
 import AddBudgetSheet from '../components/features/AddBudgetSheet';
 import { addDays } from 'date-fns';
@@ -33,8 +32,8 @@ const Home = () => {
     const authLoading = useSelector(state => state.auth.loading);
     const isLoading = expensesLoading || accountsLoading || authLoading;
 
-    // Remote Config State
-    const [featureBanner, setFeatureBanner] = useState({ show: false, text: '', link: '/about-feature' });
+    // Remote Config State from Redux
+    const { featureBanner } = useSelector((state) => state.app);
 
     // Budget Renewal State
     const [expiredBudget, setExpiredBudget] = useState(null);
@@ -47,13 +46,6 @@ const Home = () => {
             const expired = budgets.find(b => {
                 if (!b.endDate) return false;
                 const end = new Date(b.endDate);
-                // Check if end date is before today (meaning strictly past, e.g. yesterday)
-                // If end date is TODAY, it is active until end of today.
-                // So we check if end < start of today? 
-                // date-fns compares timestamps.
-                // Let's safe check: if endDate set to T00:00:00, then it expires as soon as day starts?
-                // Usually end of day is T23:59:59.
-                // Let's assume passed dates imply expiry.
                 return end < today;
             });
 
@@ -95,19 +87,6 @@ const Home = () => {
         sessionStorage.setItem(`dismissed_budget_${id}`, 'true');
         setIsRenewOpen(false);
     };
-
-    useEffect(() => {
-        const initConfig = async () => {
-            await fetchRemoteConfig();
-            const config = getFeatureConfig();
-            setFeatureBanner({
-                show: config.showBanner,
-                text: config.bannerText,
-                link: config.bannerLink
-            });
-        };
-        initConfig();
-    }, []);
 
     useEffect(() => {
         if (!authLoading) {

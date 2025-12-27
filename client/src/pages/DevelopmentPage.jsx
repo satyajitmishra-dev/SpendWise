@@ -2,18 +2,23 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ArrowLeft, Code, Github, Linkedin, Mail, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, X, Globe, Server, Database, Zap, Layout, Users, Star, GitFork, MapPin, Link as LinkIcon, Copy, Check } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
-import { fetchRemoteConfig, getVersionConfig } from '../services/remoteConfig';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { toast } from 'sonner';
 
 // Tech Stack Icons
 const TechIcons = {
     React: <svg viewBox="-10.5 -9.45 21 18.9" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#61DAFB]"><circle cx="0" cy="0" r="2" fill="currentColor"></circle><g stroke="currentColor" strokeWidth="1" fill="none"><ellipse rx="10" ry="4.5"></ellipse><ellipse rx="10" ry="4.5" transform="rotate(60)"></ellipse><ellipse rx="10" ry="4.5" transform="rotate(120)"></ellipse></g></svg>,
+    Redux: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#764ABC]"><path d="M12 2L9 7L12 12L15 7L12 2Z" fill="currentColor" /><path d="M8.5 8L4.5 9.5L8.5 16L12 12.5L8.5 8Z" fill="currentColor" opacity="0.6" /><path d="M15.5 8L19.5 9.5L15.5 16L12 12.5L15.5 8Z" fill="currentColor" opacity="0.6" /><path d="M12 13L9 22L12 19L15 22L12 13Z" fill="currentColor" opacity="0.4" /></svg>,
     Node: <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#339933]"><path d="M16 3L3 10.5V21.5L16 29L29 21.5V10.5L16 3Z" fill="currentColor" opacity="0.2" /><path d="M16 5L5 11.5V20.5L16 27L27 20.5V11.5L16 5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
     Mongo: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#47A248]"><path d="M12 22C12 22 5 16 5 10C5 6.13401 8.13401 3 12 3C15.866 3 19 6.13401 19 10C19 16 12 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M12 3V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>,
     Firebase: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#FFCA28]"><path d="M4 15L10 3L13 9L4 15Z" fill="#FFA000" /><path d="M10 3L15.5 13.5L20 15L10 3Z" fill="#F57C00" /><path d="M20 15L13 9L4 15L12 22L20 15Z" fill="#FFCA28" /></svg>,
+    Framer: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-black dark:text-white"><path d="M4 0H20V8L12 16L4 8V0Z" fill="currentColor" /><path d="M4 16H12V24L4 16Z" fill="currentColor" opacity="0.5" /></svg>,
     Vite: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#646CFF]"><path d="M2 5L12 22L22 5L18 5L12 15L6 5H2Z" fill="currentColor" /></svg>,
-    Tailwind: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#38B2AC]"><path d="M12.5 6C12.5 6 12.5 9 15.5 10.5C18.5 12 18.5 15 18.5 15C18.5 15 18.5 12 15.5 10.5C12.5 9 12.5 6 12.5 6Z" fill="currentColor" /><path d="M5.5 12C5.5 12 5.5 15 8.5 16.5C11.5 18 11.5 21 11.5 21C11.5 21 11.5 18 8.5 16.5C5.5 15 5.5 12 5.5 12Z" fill="currentColor" /></svg>
+    Tailwind: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#38B2AC]"><path d="M12.5 6C12.5 6 12.5 9 15.5 10.5C18.5 12 18.5 15 18.5 15C18.5 15 18.5 12 15.5 10.5C12.5 9 12.5 6 12.5 6Z" fill="currentColor" /><path d="M5.5 12C5.5 12 5.5 15 8.5 16.5C11.5 18 11.5 21 11.5 21C11.5 21 11.5 18 8.5 16.5C5.5 15 5.5 12 5.5 12Z" fill="currentColor" /></svg>,
+    Vercel: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-black dark:text-white"><path d="M12 1L24 22H0L12 1Z" fill="currentColor" /></svg>,
+    Lucide: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-[#F05033]"><path d="M7 21h10" /><path d="M12 3l5 5-5 5" /><path d="M12 3v18" /></svg>,
+    Axios: <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#5A29E4]"><path d="M11.898 2.012h.204c3.48.066 6.438 1.838 8.163 4.545l.135.216c.414.67.754 1.38 1.016 2.115l.103.295a10.027 10.027 0 01.378 1.874l.006.28.006.28c0 5.522-4.477 10-10 10-5.523 0-10-4.478-10-10 0-.28.012-.558.035-.833l.012-.132.062-.516c.03-.223.067-.444.11-.661l.08-.387C3.966 3.737 7.636 1.758 11.59 2.002z" fill="currentColor" opacity="0.4" /><path d="M18.8 8.2c-.3 1-1.3 1.6-2.3 2.1-1 .5-2.2.7-3.3.7s-2.3-.2-3.3-.7c-1-.5-2-1.1-2.3-2.1-.3-1 .2-2.1 1.1-2.6.9-.5 2-.8 3.1-1.1s2.2-.4 3.3-.4c1.1 0 2.2.1 3.3.4 1.1.2 2.2.6 3.1 1.1 .9.5 1.4 1.6 1.1 2.6z" fill="currentColor" /></svg>,
+    Sonner: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-black dark:text-white"><circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
 };
 
 const TechItem = ({ icon, name, delay }) => (
@@ -250,29 +255,10 @@ const DeveloperModal = ({ isOpen, onClose, githubData }) => {
 const DevelopmentPage = () => {
     const navigate = useNavigate();
     const { version } = useSelector((state) => state.app);
-    const [remoteVersion, setRemoteVersion] = useState(null);
-    const [displayedVersion, setDisplayedVersion] = useState(version);
-    const [loading, setLoading] = useState(true);
     const [showDevModal, setShowDevModal] = useState(false);
     const [githubData, setGithubData] = useState(null);
 
     useEffect(() => {
-        // Check for simulated update
-        const storedVersion = localStorage.getItem('simulated_app_version');
-        if (storedVersion && version !== storedVersion) {
-            setDisplayedVersion(storedVersion);
-        } else {
-            setDisplayedVersion(version);
-        }
-    }, [version]);
-
-    useEffect(() => {
-        const loadConfig = async () => {
-            await fetchRemoteConfig();
-            const config = getVersionConfig();
-            setRemoteVersion(config.latestVersion);
-            setLoading(false);
-        };
         const fetchGithubData = async () => {
             try {
                 const res = await fetch('https://api.github.com/users/satyajitmishra-dev');
@@ -285,22 +271,17 @@ const DevelopmentPage = () => {
             }
         };
 
-        loadConfig();
         fetchGithubData();
     }, []);
 
-    const isUpdateAvailable = remoteVersion && remoteVersion !== displayedVersion;
+    const isUpdateAvailable = false; // Always up to date with remote
 
     const handleUpdate = () => {
-        if (isUpdateAvailable) {
-            toast.loading("Updating application...");
-            localStorage.setItem('simulated_app_version', remoteVersion);
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            toast.success("You are on the latest version.");
-        }
+        toast.loading("Refreshing application...");
+        localStorage.setItem('simulated_app_version', version);
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
     };
 
     return (
@@ -342,11 +323,11 @@ const DevelopmentPage = () => {
                         <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="relative w-24 h-24 mx-auto mb-6"
+                            className="relative w-32 h-32 mx-auto mb-6"
                         >
                             <div className="absolute inset-0 bg-emerald-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
-                            <div className="w-full h-full bg-gradient-to-br from-gray-900 to-slate-800 dark:from-white dark:to-slate-200 text-white dark:text-slate-900 rounded-3xl flex items-center justify-center shadow-xl relative z-10 transform group-hover:-translate-y-2 transition-transform duration-500">
-                                <Code size={44} strokeWidth={2.5} />
+                            <div className="w-full h-full bg-white dark:bg-slate-900 rounded-3xl flex items-center justify-center shadow-xl relative z-10 transform group-hover:-translate-y-2 transition-transform duration-500 p-4">
+                                <img src="/logo1.svg" alt="SpendWise Logo" className="w-full h-full object-contain" />
                             </div>
                         </motion.div>
 
@@ -355,41 +336,23 @@ const DevelopmentPage = () => {
                             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse"></span>
                             <span>Student Edition</span>
                             <span className="text-gray-300 dark:text-slate-600 px-1">|</span>
-                            <span>v{displayedVersion}</span>
+                            <span>v{version}</span>
                         </div>
 
-                        {!loading && (
-                            <motion.div
-                                initial={{ y: 10, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                onClick={handleUpdate}
-                                className={`flex items-center justify-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer hover:scale-[1.02] active:scale-95 ${isUpdateAvailable
-                                    ? 'bg-amber-50/50 border-amber-100 text-amber-800 dark:bg-amber-900/10 dark:border-amber-900/20 dark:text-amber-400'
-                                    : 'bg-emerald-50/50 border-emerald-100 text-emerald-800 dark:bg-emerald-900/10 dark:border-emerald-900/20 dark:text-emerald-400'}`}
-                            >
-                                {isUpdateAvailable ? (
-                                    <>
-                                        <div className="shrink-0 p-2 bg-amber-200 dark:bg-amber-900/40 rounded-full animate-pulse">
-                                            <RefreshCw size={20} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-sm">Update Available</p>
-                                            <p className="text-xs opacity-80">Version {remoteVersion} is ready</p>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="shrink-0 p-2 bg-emerald-200 dark:bg-emerald-900/40 rounded-full">
-                                            <CheckCircle2 size={20} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-sm">You're up to date</p>
-                                            <p className="text-xs opacity-80">Running latest version {displayedVersion}</p>
-                                        </div>
-                                    </>
-                                )}
-                            </motion.div>
-                        )}
+                        <motion.div
+                            initial={{ y: 10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            onClick={handleUpdate}
+                            className="flex items-center justify-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer hover:scale-[1.02] active:scale-95 bg-emerald-50/50 border-emerald-100 text-emerald-800 dark:bg-emerald-900/10 dark:border-emerald-900/20 dark:text-emerald-400"
+                        >
+                            <div className="shrink-0 p-2 bg-emerald-200 dark:bg-emerald-900/40 rounded-full">
+                                <CheckCircle2 size={20} />
+                            </div>
+                            <div className="text-left">
+                                <p className="font-bold text-sm">You're up to date</p>
+                                <p className="text-xs opacity-80">Running version {version}</p>
+                            </div>
+                        </motion.div>
 
                         <p className="text-[10px] text-gray-400 dark:text-slate-600 font-medium uppercase tracking-[0.2em] mt-8">
                             Designed with Precision
@@ -440,12 +403,18 @@ const DevelopmentPage = () => {
                             <div className="h-[1px] flex-1 bg-gradient-to-r from-gray-100 to-transparent dark:from-slate-800"></div>
                         </div>
                         <div className="flex flex-wrap gap-2.5 justify-center">
-                            <TechItem name="React 18" icon={TechIcons.React} delay={0.1} />
+                            <TechItem name="React 19" icon={TechIcons.React} delay={0.1} />
+                            <TechItem name="Redux" icon={TechIcons.Redux} delay={0.15} />
                             <TechItem name="Node.js" icon={TechIcons.Node} delay={0.2} />
                             <TechItem name="MongoDB" icon={TechIcons.Mongo} delay={0.3} />
                             <TechItem name="Firebase" icon={TechIcons.Firebase} delay={0.4} />
+                            <TechItem name="Framer" icon={TechIcons.Framer} delay={0.45} />
                             <TechItem name="Vite" icon={TechIcons.Vite} delay={0.5} />
-                            <TechItem name="Tailwind" icon={TechIcons.Tailwind} delay={0.6} />
+                            <TechItem name="Tailwind" icon={TechIcons.Tailwind} delay={0.55} />
+                            <TechItem name="Vercel" icon={TechIcons.Vercel} delay={0.6} />
+                            <TechItem name="Lucide" icon={TechIcons.Lucide} delay={0.65} />
+                            <TechItem name="Axios" icon={TechIcons.Axios} delay={0.7} />
+                            <TechItem name="Sonner" icon={TechIcons.Sonner} delay={0.75} />
                         </div>
                     </div>
 

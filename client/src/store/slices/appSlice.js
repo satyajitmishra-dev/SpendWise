@@ -9,11 +9,14 @@ export const initAppConfig = createAsyncThunk(
         try {
             await fetchRemoteConfig();
 
+            // Small delay to ensure Firebase processes activation
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             const versionConfig = getVersionConfig();
             const featureConfig = getFeatureConfig();
 
             return {
-                version: versionConfig.latestVersion || packageJson.version, // Use remote version if available
+                version: versionConfig.latestVersion || packageJson.version,
                 featureBanner: {
                     show: featureConfig.showBanner,
                     text: featureConfig.bannerText,
@@ -30,7 +33,7 @@ export const initAppConfig = createAsyncThunk(
 );
 
 const initialState = {
-    version: packageJson.version, // Start with local package.json version
+    version: packageJson.version,
     featureBanner: {
         show: false,
         text: '',
@@ -47,7 +50,6 @@ const appSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
-        // Manual override if needed
         setVersion: (state, action) => {
             state.version = action.payload;
         }
