@@ -13,7 +13,7 @@ const StudentBudgetPlannerPage = () => {
                 title="Best Student Budget Planner App (Free)"
                 description="A budget planner designed for university life. Track textbooks, food, and fun without the stress. Free for students."
                 keywords="student budget planner, college budget app, university finance tracker, free budget app for students"
-                canonicalUrl="https://spendwise.app/student-budget-planner"
+                canonicalUrl="https://spendwise.satyajitmishra.me/student-budget-planner"
             />
 
             {/* Navbar */}

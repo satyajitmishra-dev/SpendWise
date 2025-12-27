@@ -159,9 +159,8 @@ const expenseSlice = createSlice({
                 state.statsLoading = false;
                 state.stats = action.payload;
             })
-            .addCase(fetchExpenseStats.rejected, (state, action) => {
+            .addCase(fetchExpenseStats.rejected, (state) => {
                 state.statsLoading = false;
-
             })
 
             .addCase(addExpense.fulfilled, (state, action) => {

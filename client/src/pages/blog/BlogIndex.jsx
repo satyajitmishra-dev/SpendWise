@@ -14,7 +14,7 @@ const BlogIndex = () => {
                 title="Financial Tips & Tricks for Students"
                 description="Read our latest articles on saving money, budgeting for college, and managing your personal finances."
                 keywords="student finance blog, money saving tips, college budgeting guide, personal finance articles"
-                canonicalUrl="https://spendwise.app/blog"
+                canonicalUrl="https://spendwise.satyajitmishra.me/blog"
             />
 
             {/* Navbar */}

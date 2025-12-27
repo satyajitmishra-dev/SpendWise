@@ -22,7 +22,7 @@ const BlogPost = () => {
                 title={post.title}
                 description={post.excerpt}
                 keywords={`${post.category}, student finance, SpendWise blog`}
-                canonicalUrl={`https://spendwise.app/blog/${post.slug}`}
+                canonicalUrl={`https://spendwise.satyajitmishra.me/blog/${post.slug}`}
             />
 
             {/* Navbar Stub */}

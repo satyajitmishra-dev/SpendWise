@@ -181,7 +181,6 @@ const initialState = {
     loading: true, // Start true to check auth status
     error: null,
     otpSent: false,
-    otpSent: false,
     isAuthenticated: false,
     isAppLocked: false
 };

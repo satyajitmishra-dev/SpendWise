@@ -13,7 +13,7 @@ const TrackDailyExpensesPage = () => {
                 title="How to Track Daily Expenses as a Student"
                 description="Learn the best way to track daily expenses without spreadsheets. Simple, fast, and free tracking for college students."
                 keywords="how to track daily expenses, student expense tracker, daily spending log, simple expense tracking"
-                canonicalUrl="https://spendwise.app/track-daily-expenses"
+                canonicalUrl="https://spendwise.satyajitmishra.me/track-daily-expenses"
             />
 
             {/* Navbar */}

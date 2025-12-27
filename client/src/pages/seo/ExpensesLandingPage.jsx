@@ -52,7 +52,7 @@ const ExpensesLandingPage = () => {
                 title="Track Daily Expenses"
                 description="The easiest way for students to track daily expenses and stick to a monthly budget. Simple, fast, and free expense tracker app."
                 keywords="daily expense tracker, track expenses, expense tracker for students, personal finance app, student budget"
-                canonicalUrl="https://spendwise.app/expenses"
+                canonicalUrl="https://spendwise.satyajitmishra.me/expenses"
             />
 
             {/* Inject JSON-LD */}

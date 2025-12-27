@@ -2,39 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Public Landing Pages -->
   <url>
-    <loc>https://spendwise.app/</loc>
+    <loc>https://spendwise.satyajitmishra.me/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://spendwise.app/expenses</loc>
+    <loc>https://spendwise.satyajitmishra.me/expenses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://spendwise.app/budgets</loc>
+    <loc>https://spendwise.satyajitmishra.me/budgets</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://spendwise.app/track-daily-expenses</loc>
+    <loc>https://spendwise.satyajitmishra.me/track-daily-expenses</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://spendwise.app/student-budget-planner</loc>
+    <loc>https://spendwise.satyajitmishra.me/student-budget-planner</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Auth Pages -->
   <url>
-    <loc>https://spendwise.app/login</loc>
+    <loc>https://spendwise.satyajitmishra.me/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://spendwise.app/signup</loc>
+    <loc>https://spendwise.satyajitmishra.me/signup</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

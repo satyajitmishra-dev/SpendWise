@@ -83,9 +83,6 @@ function App() {
 
   // Monitor network status
   useEffect(() => {
-    // Set initial state
-    setIsOffline(!navigator.onLine);
-
     // Setup network listeners
     const cleanup = addNetworkListeners(
       () => setIsOffline(false), // Online callback

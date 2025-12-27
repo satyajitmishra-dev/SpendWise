@@ -44,7 +44,7 @@ const BudgetLandingPage = () => {
                 title="Monthly Budget Planner for Students"
                 description="The simple monthly budget planner for students. Set limits, track spending, and avoid running out of money before the month ends."
                 keywords="monthly budget tracker, student budget planner, budget management app, expense control, save money student"
-                canonicalUrl="https://spendwise.app/budget"
+                canonicalUrl="https://spendwise.satyajitmishra.me/budget"
             />
 
             {/* Inject JSON-LD */}
