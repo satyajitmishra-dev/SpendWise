@@ -112,7 +112,7 @@ api.interceptors.response.use(
             // Don't show toast for certain status codes that components handle themselves
             const silentStatuses = [401, 400]; // Add more if needed
 
-            if (!silentStatuses.includes(status)) {
+            if (!silentStatuses.includes(status) && !originalRequest.skipErrorToast) {
                 const errorMsg = getErrorMessage(error);
                 showErrorToast(errorMsg);
             }

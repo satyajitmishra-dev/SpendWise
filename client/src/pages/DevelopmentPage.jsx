@@ -214,7 +214,7 @@ const DeveloperModal = ({ isOpen, onClose, githubData }) => {
                                         <motion.a
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
-                                            href="https://linkedin.com/in/satyajitmishra"
+                                            href="https://linkedin.com/in/satyajitmishra1"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 p-3.5 bg-[#0077b5] text-white rounded-xl font-bold shadow-lg shadow-blue-100 dark:shadow-none hover:shadow-xl transition-all"

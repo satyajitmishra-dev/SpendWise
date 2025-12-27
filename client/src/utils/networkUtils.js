@@ -38,9 +38,9 @@ export const getErrorMessage = (error) => {
             return 'No internet connection. Please check your network and try again.';
         }
         if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
-            return 'Request timeout. Please try again.';
+            return 'Connection timed out. Retrying...';
         }
-        return 'Unable to connect to server. Please check your internet connection.';
+        return 'Unable to connect. Check your internet connection.';
     }
 
     // HTTP error responses
@@ -56,15 +56,15 @@ export const getErrorMessage = (error) => {
             case 403:
                 return 'You do not have permission to perform this action.';
             case 404:
-                return 'The requested resource was not found.';
+                return 'We couldn\'t find the data you requested.';
             case 409:
                 return message || 'A conflict occurred. Please try again.';
             case 429:
-                return 'Too many requests. Please wait a moment and try again.';
+                return 'We\'re getting too many requests. Please wait a moment.';
             case 500:
-                return 'Server error. Please try again later.';
+                return 'Our server is acting up. We\'re working to fix it! (500)';
             case 503:
-                return 'Service temporarily unavailable. Please try again later.';
+                return 'Service temporarily unavailable. We\'ll be back soon.';
             default:
                 return message || 'An error occurred. Please try again.';
         }

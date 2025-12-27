@@ -76,6 +76,17 @@ app.use('/api/loans', require('./routes/loans'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/cron', require('./routes/cron'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.get('/api/health', (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+    res.json({
+        status: 'UP',
+        timestamp: new Date(),
+        dbState: states[dbState] || 'unknown',
+        env: process.env.NODE_ENV
+    });
+});
+
 app.use('/api/support', require('./routes/support'));
 
 
