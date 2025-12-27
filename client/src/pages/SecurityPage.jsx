@@ -118,6 +118,14 @@ const SecurityPage = () => {
         try {
             await dispatch(resetDataConfirm(otp)).unwrap();
             toast.success("All data reset successfully. Application will restart.");
+
+            // Clear persistent local state for "Brand New App" feel
+            localStorage.removeItem('theme');
+            localStorage.removeItem('installPromptDismissed');
+            localStorage.removeItem('guest_expenses');
+            localStorage.removeItem('guestUser');
+            // Keep 'token' and 'refreshToken' to stay logged in
+
             setTimeout(() => {
                 window.location.reload();
             }, 1000);

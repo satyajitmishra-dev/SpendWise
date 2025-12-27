@@ -123,7 +123,7 @@ const AddBudgetSheet = ({ isOpen, onClose, initialData }) => {
     return (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[96vh] overflow-y-auto no-scrollbar">
                 {showConfirm ? (
                     <div className="flex flex-col items-center text-center animate-in fade-in duration-300">
                         <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 rounded-full flex items-center justify-center mb-4">

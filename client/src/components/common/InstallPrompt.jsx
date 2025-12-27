@@ -71,7 +71,7 @@ const InstallPrompt = ({ isOpen, onClose }) => {
                     initial={{ opacity: 0, y: 50, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                    className="relative w-full max-w-md bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] p-8 shadow-2xl overflow-hidden"
+                    className="relative w-full max-w-md bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] p-8 shadow-2xl overflow-y-auto no-scrollbar max-h-[90vh]"
                 >
                     {/* Background Effects */}
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>

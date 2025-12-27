@@ -13,9 +13,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import api from '../../services/api';
 import { initAppConfig } from '../../store/slices/appSlice';
 import UpdateChecker from './UpdateChecker';
-
+import Footer from './Footer';
 import ErrorBoundary from '../common/ErrorBoundary';
-
 
 const Layout = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -230,9 +229,8 @@ const Layout = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-6 md:pb-6 md:px-8 w-full scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    {/* Constraints for large screens */}
-                    <div className="max-w-7xl mx-auto w-full h-full p-2 md:p-0">
+                <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-6 md:pb-6 md:px-8 w-full scroll-smooth flex flex-col" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="max-w-7xl mx-auto w-full flex-grow p-2 md:p-0">
                         <Outlet context={{ openInfo: () => setIsInfoOpen(true) }} />
                     </div>
                 </div>

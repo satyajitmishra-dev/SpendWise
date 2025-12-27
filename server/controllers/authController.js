@@ -752,11 +752,11 @@ exports.resetDataConfirm = async (req, res) => {
         // DELETE ALL DATA
         const userId = req.user.id;
         await Promise.all([
-            Expense.deleteMany({ user: userId }),
-            Account.deleteMany({ user: userId }),
-            Budget.deleteMany({ user: userId }),
-            Loan.deleteMany({ user: userId }),
-            Subscription.deleteMany({ user: userId }),
+            Expense.deleteMany({ userId: userId }),
+            Account.deleteMany({ userId: userId }),
+            Budget.deleteMany({ userId: userId }),
+            Loan.deleteMany({ userId: userId }),
+            Subscription.deleteMany({ userId: userId }),
             Notification.deleteMany({ user: userId })
         ]);
 
@@ -765,7 +765,14 @@ exports.resetDataConfirm = async (req, res) => {
         user.currency = 'INR';
         user.onboardingComplete = false;
         user.status = 'student'; // Default
-        // user.college = undefined; // Optional: Keep college or reset? "Like new user" implies reset.
+        user.college = undefined; // Reset college
+        user.avatar = undefined; // Reset avatar
+
+        // Reset Security
+        user.isPasscodeEnabled = false;
+        user.passcode = undefined;
+        user.passcodeLength = 4;
+
         await user.save();
 
         res.json({ msg: 'All account data has been reset successfully.' });

@@ -1,6 +1,9 @@
 const Expense = require('../models/Expense');
 const mongoose = require('mongoose');
 const { createNotification } = require('./notificationController');
+const Budget = require('../models/Budget');
+const User = require('../models/User');
+const { sendEmail } = require('../services/emailService');
 
 exports.getExpenses = async (req, res) => {
     try {
@@ -68,6 +71,9 @@ exports.addExpense = async (req, res) => {
             'success'
         );
 
+        // Check for Budget Alerts (Async - don't block response)
+        checkBudgetAlerts(req.user.id, expense).catch(err => console.error("Budget Alert Error:", err));
+
         res.json(expense);
     } catch (err) {
         console.error(err.message);
@@ -124,6 +130,10 @@ exports.updateExpense = async (req, res) => {
         if (accountId === null) updateBody.accountId = null;
 
         expense = await Expense.findByIdAndUpdate(req.params.id, { $set: updateBody }, { new: true });
+
+        // Check for Budget Alerts
+        checkBudgetAlerts(req.user.id, expense).catch(err => console.error("Budget Alert Error:", err));
+
         res.json(expense);
     } catch (err) {
         console.error(err.message);
@@ -282,5 +292,123 @@ exports.getExpenseStats = async (req, res) => {
     } catch (err) {
         console.error('Stats Error:', err.message);
         res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};
+
+/**
+ * Helper: Check if budget is exceeded > 90% and send email
+ */
+const checkBudgetAlerts = async (userId, expense) => {
+    try {
+        console.log(`Checking budget alerts for user ${userId}, category: ${expense.category}, amount: ${expense.amount}`);
+        if (expense.type !== 'expense') return; // Only track expenses
+
+        // 1. Find User (for email)
+        const user = await User.findById(userId);
+        if (!user || !user.email) return;
+
+        const expenseDate = new Date(expense.date);
+
+        // 2. Find Relevant Budgets (Category match OR Overall)
+        // Active budgets that cover this expense date
+        const budgets = await Budget.find({
+            userId: userId,
+            $or: [{ category: expense.category }, { category: 'Monthly Budget' }],
+            startDate: { $lte: expenseDate },
+            endDate: { $gte: expenseDate }
+        });
+
+        if (!budgets || budgets.length === 0) return;
+
+        // 3. For each budget, calculate total spent
+        for (const budget of budgets) {
+            // Aggregate expenses in this budget's period and category (if specific)
+            // If budget is 'Monthly Budget' (Overall), we sum ALL expenses in that period.
+            // If budget is category specific, we sum only that category.
+
+            const matchQuery = {
+                userId: new mongoose.Types.ObjectId(userId),
+                date: { $gte: new Date(budget.startDate), $lte: new Date(budget.endDate) },
+                type: 'expense'
+            };
+
+            if (budget.category !== 'Monthly Budget') {
+                matchQuery.category = budget.category;
+            }
+
+            const stats = await Expense.aggregate([
+                { $match: matchQuery },
+                { $group: { _id: null, total: { $sum: "$amount" } } }
+            ]);
+
+            const totalSpent = stats.length > 0 ? stats[0].total : 0;
+            const percentage = (totalSpent / budget.amount) * 100;
+
+            // 4. Check Threshold (90%)
+            if (percentage >= 90) {
+                console.log(`Budget Alert Triggered: ${budget.category} is at ${percentage.toFixed(1)}%`);
+
+                // Send Email
+                const isOver = totalSpent > budget.amount;
+                const subject = isOver
+                    ? `🚨 Budget Exceeded: ${budget.category}`
+                    : `⚠️ Budget Alert: ${budget.category} is ${percentage.toFixed(0)}% used`;
+
+                const mailOptions = {
+                    from: `"SpendWise Alert" <${process.env.EMAIL_USER}>`,
+                    to: user.email,
+                    subject: subject,
+                    html: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }
+                            .container { background-color: #ffffff; max-width: 500px; margin: 40px auto; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+                            .header { background-color: ${isOver ? '#ef4444' : '#f59e0b'}; padding: 30px 20px; text-align: center; color: white; }
+                            .content { padding: 30px; color: #334155; }
+                            .stat-box { background: #f1f5f9; border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0; }
+                            .big-number { font-size: 32px; font-weight: 800; color: #0f172a; display: block; }
+                            .label { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 600; }
+                            .footer { text-align: center; padding: 20px; color: #94a3b8; font-size: 12px; border-top: 1px solid #f1f5f9; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1 style="margin:0; font-size: 24px;">${isOver ? 'Budget Exceeded!' : 'Almost Full!'}</h1>
+                            </div>
+                            <div class="content">
+                                <p style="font-size: 16px; line-height: 1.6;">
+                                    Hello <strong>${user.name}</strong>,<br><br>
+                                    You've used <strong>${percentage.toFixed(0)}%</strong> of your <strong>${budget.category}</strong> budget.
+                                </p>
+                                
+                                <div class="stat-box">
+                                    <span class="label">Total Spent</span>
+                                    <span class="big-number">${user.currency === 'USD' ? '$' : '₹'}${totalSpent.toLocaleString()}</span>
+                                    <span style="font-size: 14px; color: #64748b;">of ${user.currency === 'USD' ? '$' : '₹'}${budget.amount.toLocaleString()} limit</span>
+                                </div>
+
+                                <p style="font-size: 14px; color: #64748b; text-align: center;">
+                                    ${isOver ? 'You have crossed your limit. Time to review your spending!' : 'Slow down! You are getting close to your limit.'}
+                                </p>
+                            </div>
+                            <div class="footer">
+                                SpendWise Smart Alerts
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    `
+                };
+
+                await sendEmail(mailOptions);
+                console.log("Budget Alert Email Sent");
+            }
+        }
+    } catch (err) {
+        console.error("Error in checkBudgetAlerts:", err); // Non-blocking
     }
 };

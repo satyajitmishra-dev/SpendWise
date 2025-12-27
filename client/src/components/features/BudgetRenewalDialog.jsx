@@ -24,7 +24,7 @@ const BudgetRenewalDialog = ({ isOpen, onClose, expiredBudgets, onRenew, onDismi
                         initial={{ scale: 0.9, opacity: 0, y: 20 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl overflow-hidden border border-white/20"
+                        className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl overflow-y-auto no-scrollbar border border-white/20 max-h-[90vh]"
                     >
                         {/* Background Decor */}
                         <div className="absolute top-0 left-0 w-full h-32 bg-indigo-600/10 dark:bg-indigo-500/10 rounded-b-[50%]" />

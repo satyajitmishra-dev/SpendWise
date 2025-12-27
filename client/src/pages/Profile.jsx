@@ -2,8 +2,10 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { useDispatch, useSelector } from 'react-redux';
+import { fetchBudgets } from '../store/slices/budgetSlice';
 import { logout } from '../store/slices/authSlice';
 import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ThemeToggler from '../components/layout/ThemeToggler';
@@ -14,6 +16,23 @@ const Profile = () => {
     const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
     const { version } = useSelector((state) => state.app);
+    const { items: budgets } = useSelector((state) => state.budgets);
+
+    useEffect(() => {
+        dispatch(fetchBudgets());
+    }, [dispatch]);
+
+    // Calculate Effective Budget Goal
+    const effectiveBudget = useMemo(() => {
+        if (!budgets || budgets.length === 0) return user?.budget || 0;
+
+        // 1. Check for "Overall" budget
+        const overallBudget = budgets.find(b => b.category === 'Monthly Budget');
+        if (overallBudget) return overallBudget.amount;
+
+        // 2. Sum of categories
+        return budgets.reduce((sum, b) => sum + b.amount, 0);
+    }, [budgets, user]);
 
     const handleLogout = () => {
         dispatch(logout());
@@ -159,7 +178,7 @@ const Profile = () => {
                                             </div>
                                             <span className="text-lg sm:text-xl font-black text-indigo-600 dark:text-white tracking-tight">
                                                 {user?.currency === 'USD' ? '$' : user?.currency === 'EUR' ? '€' : '₹'}
-                                                {(user?.budget || 0).toLocaleString()}
+                                                {(effectiveBudget || 0).toLocaleString()}
                                             </span>
                                         </Card>
                                     </motion.div>

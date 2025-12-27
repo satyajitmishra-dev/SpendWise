@@ -18,6 +18,17 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Verify connection configuration
+if (!USE_SENDGRID) {
+    transporter.verify(function (error, success) {
+        if (error) {
+            console.error("Email Service Error: Connection failed", error);
+        } else {
+            console.log("Email Service: Server is ready to take our messages");
+        }
+    });
+}
+
 /**
  * Send email using SendGrid (production) or Nodemailer (development)
  * @param {Object} mailOptions - Email configuration

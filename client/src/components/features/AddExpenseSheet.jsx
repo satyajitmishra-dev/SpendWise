@@ -145,11 +145,18 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     onClick: async () => {
                         // Manual trigger if they click the button
                         try {
-                            const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
-                            setSelectedAccount(newAcc._id);
-                            toast.success("Created 'Other' wallet!");
+                            // CHECK FOR EXISTING "OTHER"
+                            const existing = accounts.find(a => a.name === 'Other');
+                            if (existing) {
+                                setSelectedAccount(existing._id);
+                                toast.success("Selected existing 'Other' wallet!");
+                            } else {
+                                const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
+                                setSelectedAccount(newAcc._id);
+                                toast.success("Created 'Other' wallet!");
+                            }
                         } catch (e) {
-                            toast.error("Failed to create wallet");
+                            toast.error("Failed to select wallet");
                         }
                     }
                 },
@@ -163,11 +170,18 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
         if (!finalAccountId && confirmNoAccount) {
             // START AUTO-CREATION
             try {
-                // Create "Other" wallet
-                const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
+                // Check if "Other" already exists
+                const existing = accounts.find(a => a.name === 'Other');
 
-                finalAccountId = newAcc._id;
-                toast.success("Created 'Other' wallet & saved expense!");
+                if (existing) {
+                    finalAccountId = existing._id;
+                    toast.success("Saved to existing 'Other' wallet!");
+                } else {
+                    // Create "Other" wallet
+                    const newAcc = await dispatch(addAccount({ name: 'Other', type: 'other', balance: 0 })).unwrap();
+                    finalAccountId = newAcc._id;
+                    toast.success("Created 'Other' wallet & saved expense!");
+                }
             } catch (e) {
                 console.error(e);
                 toast.error("Failed to auto-create wallet. Please try adding one manually.");
@@ -284,7 +298,7 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
 
             {/* Sheet */}
-            <div className={`relative bg-white dark:bg-slate-900 w-full max-w-[28rem] rounded-t-[2.5rem] sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[96vh] border-t-[6px] ${type === 'income' ? 'border-green-500' : 'border-indigo-500'} transition-all`}>
+            <div className={`relative bg-white dark:bg-slate-900 w-full max-w-[28rem] rounded-t-[2.5rem] sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[96vh] overflow-y-auto no-scrollbar border-t-[6px] ${type === 'income' ? 'border-green-500' : 'border-indigo-500'} transition-all`}>
 
                 {/* Header & Toggle Row */}
                 {/* Header Row: Title & Close */}

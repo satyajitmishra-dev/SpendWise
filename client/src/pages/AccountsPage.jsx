@@ -31,7 +31,8 @@ const AccountsPage = () => {
                 await dispatch(deleteAccount(id)).unwrap();
                 toast.success('Account deleted');
             } catch (err) {
-                toast.error('Failed to delete account');
+                console.error("Delete Account Failed:", err);
+                toast.error(`Failed to delete account: ${err.msg || err.message || 'Unknown error'}`);
             }
         }
     };
