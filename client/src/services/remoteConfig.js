@@ -3,10 +3,11 @@ import { remoteConfig } from "../firebase";
 
 export const fetchRemoteConfig = async () => {
     try {
-        await fetchAndActivate(remoteConfig);
+        const activated = await fetchAndActivate(remoteConfig);
+        console.log(`[RemoteConfig] Fetched & Activated. Updates: ${activated}`);
     } catch (err) {
-        console.error("Failed to fetch remote config:", err);
-        throw err;
+        console.error("[RemoteConfig] Fetch Failed:", err);
+        // Don't throw, just log so app doesn't crash
     }
 };
 

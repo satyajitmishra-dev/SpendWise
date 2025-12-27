@@ -37,7 +37,7 @@ remoteConfig.defaultConfig = {
 if (import.meta.env.DEV) {
     remoteConfig.settings.minimumFetchIntervalMillis = 0; // Fetch immediately in dev
 } else {
-    remoteConfig.settings.minimumFetchIntervalMillis = 3600000; // 1 hour in prod
+    remoteConfig.settings.minimumFetchIntervalMillis = 900000; // 15 mins in prod
 }
 
 export { auth, googleProvider, remoteConfig };
