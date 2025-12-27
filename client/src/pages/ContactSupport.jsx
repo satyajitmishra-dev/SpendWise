@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Check, Paperclip, AlertCircle, Loader2, ChevronRight, Shield, FileQuestion } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { ArrowLeft, Upload, X, Check, Paperclip, AlertCircle, Loader2, ChevronRight, Shield, FileQuestion, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import api from '../services/api';
@@ -18,14 +19,23 @@ const ContactSupport = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const fileInputRef = useRef(null);
+    const { isAuthenticated, user } = useSelector(state => state.auth);
 
     const [formData, setFormData] = useState({
         type: location.state?.type || '',
         message: '',
+        email: '', // Manual email for guests
         attachment: null
     });
     const [status, setStatus] = useState('idle'); // idle, loading, success, error
     const [ticketId, setTicketId] = useState('');
+
+    // Pre-fill email if user is logged in
+    useEffect(() => {
+        if (isAuthenticated && user?.email) {
+            setFormData(prev => ({ ...prev, email: user.email }));
+        }
+    }, [isAuthenticated, user]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -52,6 +62,10 @@ const ContactSupport = () => {
 
     const handleSubmit = async () => {
         if (!formData.type || formData.message.length < 10) return;
+        if (!isAuthenticated && !formData.email) {
+            toast.error("Please provide an email address so we can reply.");
+            return;
+        }
 
         setStatus('loading');
         try {
@@ -67,7 +81,7 @@ const ContactSupport = () => {
         }
     };
 
-    const isValid = formData.type && formData.message.length >= 10;
+    const isValid = formData.type && formData.message.length >= 10 && (isAuthenticated || (formData.email && formData.email.includes('@')));
 
     if (status === 'success') {
         return (
@@ -86,7 +100,7 @@ const ContactSupport = () => {
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Request Sent!</h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-                        Thanks for contacting SpendWise.<br />We'll get back to you within 24 hours.
+                        Thanks for contacting SpendWise.<br />We'll get back to you within 24 hours at <b>{formData.email}</b>.
                     </p>
 
                     <div className="bg-gray-50 dark:bg-slate-700/50 py-3 px-6 rounded-xl inline-block mb-8 border border-gray-100 dark:border-slate-600">
@@ -131,6 +145,25 @@ const ContactSupport = () => {
             {/* Content Scrollable Area (Flex-1) */}
             <div className="flex-1 overflow-y-auto px-4 md:px-8 relative z-10 scrollbar-hide py-6">
                 <div className="max-w-xl mx-auto space-y-6">
+
+                    {/* Email Field (Only for Guests) */}
+                    {!isAuthenticated && (
+                        <div className="group">
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 ml-1">Email Address <span className="text-red-500">*</span></label>
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="your@email.com"
+                                    className="w-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border border-gray-200 dark:border-slate-700 focus:border-indigo-500 dark:focus:border-indigo-500 rounded-2xl p-4 pl-12 text-gray-900 dark:text-white font-medium shadow-sm outline-none transition-all ring-0 focus:ring-4 focus:ring-indigo-500/10"
+                                />
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                    <Mail size={20} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Issue Type */}
                     <div className="group">
