@@ -280,7 +280,7 @@ const Home = () => {
                                     </Link>
 
                                     {/* 2. This month's spending direction */}
-                                    <Link to="/expenses" className="h-full block">
+                                    <Link to="/reports" className="h-full block">
                                         <Card variant="interactive" className="p-6 h-full flex flex-col justify-between rounded-[2rem]">
                                             <div className="flex justify-between items-start gap-4 mb-4">
                                                 <div className="flex-1 min-w-0 pr-2">

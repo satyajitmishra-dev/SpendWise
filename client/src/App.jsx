@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './store/slices/authSlice';
@@ -6,33 +6,41 @@ import { addNetworkListeners } from './utils/networkUtils';
 import Layout from './components/layout/Layout';
 import { Toaster } from 'sonner';
 import OfflinePage from './components/common/OfflinePage';
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import LoansPage from './pages/LoansPage';
-import AccountsPage from './pages/AccountsPage';
-import SubscriptionsPage from './pages/SubscriptionsPage';
-import BudgetPage from './pages/BudgetPage';
-import ExpensesPage from './pages/ExpensesPage';
-import ReportsPage from './pages/ReportsPage';
-import SignupPage from './pages/SignupPage';
-import LoginPage from './pages/LoginPage';
-import ProfileSetup from './pages/ProfileSetup';
-import EditProfile from './pages/EditProfile';
-import Notifications from './pages/Notifications';
-import WelcomeScreen from './pages/WelcomeScreen';
-import NotFoundPage from './pages/NotFoundPage';
-
-
-
 import LoadingScreen from './components/common/LoadingScreen';
 import LockScreen from './components/common/LockScreen';
 import IdleTimer from './components/common/IdleTimer';
-import SecurityPage from './pages/SecurityPage';
-import HelpPage from './pages/HelpPage';
-import ContactSupport from './pages/ContactSupport';
-import FAQPage from './pages/FAQPage';
-import DevelopmentPage from './pages/DevelopmentPage';
-import FeatureDetailsPage from './pages/FeatureDetailsPage';
+import PageTitleUpdater from './components/common/PageTitleUpdater';
+import { HelmetProvider } from 'react-helmet-async';
+
+// Lazy Load Pages
+const Home = lazy(() => import('./pages/Home'));
+const Profile = lazy(() => import('./pages/Profile'));
+const LoansPage = lazy(() => import('./pages/LoansPage'));
+const AccountsPage = lazy(() => import('./pages/AccountsPage'));
+const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+const BudgetPage = lazy(() => import('./pages/BudgetPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const WelcomeScreen = lazy(() => import('./pages/WelcomeScreen'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const SecurityPage = lazy(() => import('./pages/SecurityPage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const ContactSupport = lazy(() => import('./pages/ContactSupport'));
+const FAQPage = lazy(() => import('./pages/FAQPage'));
+const DevelopmentPage = lazy(() => import('./pages/DevelopmentPage'));
+const FeatureDetailsPage = lazy(() => import('./pages/FeatureDetailsPage'));
+
+// Lazy Hybrid & SEO Pages
+const HybridExpenses = lazy(() => import('./pages/HybridExpenses'));
+const HybridBudget = lazy(() => import('./pages/HybridBudget'));
+const TrackDailyExpensesPage = lazy(() => import('./pages/seo/TrackDailyExpensesPage'));
+const StudentBudgetPlannerPage = lazy(() => import('./pages/seo/StudentBudgetPlannerPage'));
+const BlogIndex = lazy(() => import('./pages/blog/BlogIndex'));
+const BlogPost = lazy(() => import('./pages/blog/BlogPost'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -63,9 +71,6 @@ const PublicOnlyRoute = ({ children }) => {
 
   return children;
 }
-
-
-import PageTitleUpdater from './components/common/PageTitleUpdater';
 
 function App() {
   const dispatch = useDispatch();
@@ -120,47 +125,62 @@ function App() {
   }
 
   return (
-    <Router>
-      <PageTitleUpdater />
-      <IdleTimer />
-      <LockScreen />
-      <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
-      <Routes>
-        <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
-        <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
-        <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
-        <Route path="/onboarding" element={
-          <ProtectedRoute>
-            <ProfileSetup />
-          </ProtectedRoute>
-        } />
+    <HelmetProvider>
+      <Router>
+        <PageTitleUpdater />
+        <IdleTimer />
+        <LockScreen />
+        <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
+            <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
+            <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
+            <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+            <Route path="/onboarding" element={
+              <ProtectedRoute>
+                <ProfileSetup />
+              </ProtectedRoute>
+            } />
 
-        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Home />} />
-          <Route path="expenses" element={<ExpensesPage />} />
-          <Route path="accounts" element={<AccountsPage />} />
-          <Route path="subscriptions" element={<SubscriptionsPage />} />
-          <Route path="budgets" element={<BudgetPage />} />
-          <Route path="loans" element={<LoansPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="edit-profile" element={<EditProfile />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="security" element={<SecurityPage />} />
-        </Route>
+            {/* Hybrid Public/Private Routes */}
+            <Route path="/expenses" element={<HybridExpenses />} />
+            <Route path="/budgets" element={<HybridBudget />} />
 
-        {/* Help Pages - No Layout/Navbar */}
-        <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
-        <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
-        <Route path="/faq" element={<ProtectedRoute><FAQPage /></ProtectedRoute>} />
-        <Route path="/development" element={<ProtectedRoute><DevelopmentPage /></ProtectedRoute>} />
-        <Route path="/about-feature" element={<ProtectedRoute><FeatureDetailsPage /></ProtectedRoute>} />
+            {/* SEO Landing Pages (Public) */}
+            <Route path="/track-daily-expenses" element={<TrackDailyExpensesPage />} />
+            <Route path="/student-budget-planner" element={<StudentBudgetPlannerPage />} />
 
-        {/* 404 Catch-All */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+            {/* Blog Routes (Public) */}
+            <Route path="/blog" element={<BlogIndex />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route index element={<Home />} />
+              {/* Expenses removed from here, handled by HybridExpenses */}
+              <Route path="accounts" element={<AccountsPage />} />
+              <Route path="subscriptions" element={<SubscriptionsPage />} />
+              {/* Budgets removed from here, handled by HybridBudget */}
+              <Route path="loans" element={<LoansPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="edit-profile" element={<EditProfile />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="security" element={<SecurityPage />} />
+            </Route>
+
+            {/* Help Pages - No Layout/Navbar */}
+            <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+            <Route path="/contact-support" element={<ProtectedRoute><ContactSupport /></ProtectedRoute>} />
+            <Route path="/faq" element={<ProtectedRoute><FAQPage /></ProtectedRoute>} />
+            <Route path="/development" element={<ProtectedRoute><DevelopmentPage /></ProtectedRoute>} />
+            <Route path="/about-feature" element={<ProtectedRoute><FeatureDetailsPage /></ProtectedRoute>} />
+
+            {/* 404 Catch-All */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </HelmetProvider>
   );
 }
 

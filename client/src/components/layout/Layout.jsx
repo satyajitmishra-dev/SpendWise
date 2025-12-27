@@ -16,7 +16,7 @@ import UpdateChecker from './UpdateChecker';
 import Footer from './Footer';
 import ErrorBoundary from '../common/ErrorBoundary';
 
-const Layout = () => {
+const Layout = ({ children }) => {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [addSheetType, setAddSheetType] = useState('expense');
     const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -231,7 +231,12 @@ const Layout = () => {
 
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-24 pt-16 md:pt-6 md:pb-6 md:px-8 w-full scroll-smooth flex flex-col" style={{ WebkitOverflowScrolling: 'touch' }}>
                     <div className="max-w-7xl mx-auto w-full flex-grow p-2 md:p-0">
-                        <Outlet context={{ openInfo: () => setIsInfoOpen(true) }} />
+                        {/* Support manual children for Hybrid Routes or Outlet for standard routes */}
+                        {children ? (
+                            <>{children}</>
+                        ) : (
+                            <Outlet context={{ openInfo: () => setIsInfoOpen(true) }} />
+                        )}
                     </div>
                 </div>
 
