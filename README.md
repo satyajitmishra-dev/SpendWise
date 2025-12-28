@@ -601,7 +601,7 @@ sequenceDiagram
     API->>Database: Find or Create User
     Database->>API: User Document
     API->>API: Generate JWT (exp: 7d)
-    API->>Client: Set-Cookie: jwt=<token>; HttpOnly; Secure
+    API->>Client: Set-Cookie: jwt=token; HttpOnly; Secure
     Client->>API: Subsequent Requests (Cookie auto-sent)
     API->>API: Verify JWT Signature
     API->>Client: Protected Resource
