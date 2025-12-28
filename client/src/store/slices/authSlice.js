@@ -129,6 +129,19 @@ export const resetDataConfirm = createAsyncThunk('auth/resetDataConfirm', async 
     }
 });
 
+export const markLandingSeen = createAsyncThunk('auth/markLandingSeen', async (_, { rejectWithValue }) => {
+    try {
+        const res = await api.post('/auth/mark-landing-seen');
+        // Also set localStorage for guests
+        localStorage.setItem('hasSeenLanding', 'true');
+        return res.data;
+    } catch (err) {
+        // Still mark in localStorage even if API fails
+        localStorage.setItem('hasSeenLanding', 'true');
+        return rejectWithValue(err.response?.data || { msg: 'Failed to mark landing as seen' });
+    }
+});
+
 
 export const syncGuestData = createAsyncThunk('auth/syncGuestData', async (_, { getState, dispatch, rejectWithValue }) => {
     try {
@@ -359,6 +372,12 @@ const authSlice = createSlice({
             })
             .addCase(resetDataConfirm.rejected, (state, action) => {
                 toast.error(action.payload?.msg || "Failed to reset data");
+            })
+            // Mark Landing Seen
+            .addCase(markLandingSeen.fulfilled, (state) => {
+                if (state.user) {
+                    state.user.hasSeenLanding = true;
+                }
             });
     },
 });

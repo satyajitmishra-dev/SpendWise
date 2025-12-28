@@ -34,6 +34,7 @@ const FAQPage = lazy(() => import('./pages/FAQPage'));
 const DevelopmentPage = lazy(() => import('./pages/DevelopmentPage'));
 const FeatureDetailsPage = lazy(() => import('./pages/FeatureDetailsPage'));
 const PreferencesPage = lazy(() => import('./pages/PreferencesPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Lazy Hybrid & SEO Pages
 const HybridExpenses = lazy(() => import('./pages/HybridExpenses'));
@@ -131,6 +132,7 @@ function App() {
         <Toaster position="top-center" richColors style={{ zIndex: 99999 }} />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/welcome" element={<PublicOnlyRoute><WelcomeScreen /></PublicOnlyRoute>} />
             <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />

@@ -25,7 +25,10 @@ const UserSchema = new mongoose.Schema({
     // App Preferences
     preferences: {
         emailNotifications: { type: Boolean, default: true }
-    }
+    },
+
+    // Landing Page Tracking
+    hasSeenLanding: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -875,3 +875,20 @@ exports.firebaseLogin = async (req, res) => {
         res.status(401).json({ msg: 'Invalid Firebase Token', error: err.message });
     }
 };
+
+// Mark Landing Page as Seen
+exports.markLandingSeen = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        user.hasSeenLanding = true;
+        await user.save();
+
+        res.json({ msg: 'Landing marked as seen', hasSeenLanding: true });
+    } catch (err) {
+        console.error('markLandingSeen Error:', err);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};
+
