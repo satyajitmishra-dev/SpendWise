@@ -161,11 +161,7 @@ const Layout = ({ children }) => {
                     <SidebarItem to="/budgets" icon={PieChart} label="Budgets" />
                     <SidebarItem to="/reports" icon={BarChart} label="Reports" />
                     <div className="my-2 border-t border-gray-100 dark:border-slate-800/50 mx-4"></div>
-                    <SidebarItem
-                        icon={Info}
-                        label="Help & Guide"
-                        onClick={() => setIsInfoOpen(true)}
-                    />
+
                 </nav>
 
                 <div className="p-4 mt-auto space-y-3">
@@ -210,12 +206,7 @@ const Layout = ({ children }) => {
                                     </button>
                                 )}
 
-                                <button
-                                    onClick={() => setIsInfoOpen(true)}
-                                    className="w-10 h-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm active:scale-95 transition-all"
-                                >
-                                    <Info size={20} className="fill-indigo-100 dark:fill-indigo-900/40" />
-                                </button>
+
                                 <button
                                     onClick={() => navigate('/profile')}
                                     className="relative w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center text-sm font-bold bg-clip-padding text-indigo-600 dark:text-indigo-400 ring-2 ring-white/50 dark:ring-slate-900/50 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all hover:shadow-indigo-500/20 overflow-hidden"

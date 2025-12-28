@@ -7,8 +7,8 @@ import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
 import { fetchBudgets, updateBudget } from '../store/slices/budgetSlice'; // NEW
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Info, Zap, Snowflake } from 'lucide-react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Zap, Snowflake } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import HomeSkeleton from '../components/common/HomeSkeleton';
@@ -136,8 +136,7 @@ const Home = () => {
         return 'Good Evening';
     };
 
-    // Get openInfo from Layout context (may be null if not provided, handle safely)
-    const { openInfo } = useOutletContext() || {};
+
 
     // Prevent "Blink" / Skeleton Flash on navigation
     // Only show skeleton if we are loading AND have no data yet.
@@ -156,13 +155,7 @@ const Home = () => {
                     </h1>
                 </div>
                 {/* Desktop Info Button */}
-                <button
-                    onClick={openInfo}
-                    className="hidden md:flex w-12 h-12 bg-white dark:bg-slate-800 rounded-full items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-md hover:shadow-lg hover:scale-105 transition-all border border-indigo-50 dark:border-slate-700"
-                    title="Help & Guide"
-                >
-                    <Info size={24} />
-                </button>
+
             </div>
 
             {showSkeleton ? (

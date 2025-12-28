@@ -376,7 +376,7 @@ exports.loadUser = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    const { userId, name, college, status, currency, budget, onboardingComplete, avatar } = req.body;
+    const { userId, name, college, status, currency, budget, onboardingComplete, avatar, preferences } = req.body;
 
     try {
         let user = await User.findById(userId);
@@ -389,6 +389,12 @@ exports.updateProfile = async (req, res) => {
         user.budget = budget || user.budget;
         if (onboardingComplete !== undefined) user.onboardingComplete = onboardingComplete;
         if (avatar !== undefined) user.avatar = avatar;
+        if (preferences) {
+            user.preferences = {
+                ...user.preferences,
+                ...preferences
+            };
+        }
 
         await user.save();
         res.json(user);

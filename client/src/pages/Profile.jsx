@@ -8,7 +8,6 @@ import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet,
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import ThemeToggler from '../components/layout/ThemeToggler';
 import { motion } from 'framer-motion';
 
 const Profile = () => {
@@ -120,7 +119,7 @@ const Profile = () => {
                         Profile
                     </h1>
                     <div className="scale-90 origin-right">
-                        <ThemeToggler />
+
                     </div>
                 </motion.div>
 
@@ -231,12 +230,7 @@ const Profile = () => {
                             />
                         </MenuSection>
 
-                        {/* Appearance */}
-                        <MenuSection title="Appearance">
-                            <div className="px-1 py-1">
-                                <ThemeToggler showLabel className="w-full justify-between" />
-                            </div>
-                        </MenuSection>
+
 
                         {/* Actions */}
                         <motion.div

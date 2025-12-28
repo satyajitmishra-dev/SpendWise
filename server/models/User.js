@@ -20,7 +20,12 @@ const UserSchema = new mongoose.Schema({
 
     // Firebase Auth
     firebaseUid: { type: String, unique: true, sparse: true },
-    phone: { type: String, unique: true, sparse: true }
+    phone: { type: String, unique: true, sparse: true },
+
+    // App Preferences
+    preferences: {
+        emailNotifications: { type: Boolean, default: true }
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

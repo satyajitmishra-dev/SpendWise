@@ -33,6 +33,7 @@ const ContactSupport = lazy(() => import('./pages/ContactSupport'));
 const FAQPage = lazy(() => import('./pages/FAQPage'));
 const DevelopmentPage = lazy(() => import('./pages/DevelopmentPage'));
 const FeatureDetailsPage = lazy(() => import('./pages/FeatureDetailsPage'));
+const PreferencesPage = lazy(() => import('./pages/PreferencesPage'));
 
 // Lazy Hybrid & SEO Pages
 const HybridExpenses = lazy(() => import('./pages/HybridExpenses'));
@@ -162,6 +163,7 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="edit-profile" element={<EditProfile />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="preferences" element={<PreferencesPage />} />
               <Route path="security" element={<SecurityPage />} />
             </Route>
 
