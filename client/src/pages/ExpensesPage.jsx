@@ -3,16 +3,18 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { cn, formatSmartDate } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchExpenses, deleteExpense } from '../store/slices/expenseSlice';
-import { fetchAccounts } from '../store/slices/accountSlice';
+import { fetchAccounts, updateAccountBalance } from '../store/slices/accountSlice';
 import ExpenseItem from '../components/features/ExpenseItem';
 import AddExpenseSheet from '../components/features/AddExpenseSheet';
 import { Filter, Plus, Trash2, Pencil, Search, Calendar, Copy, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import InfoDialog from '../components/common/InfoDialog';
+import { useLocation } from 'react-router-dom';
 
 const ExpensesPage = () => {
     const dispatch = useDispatch();
+    const location = useLocation();
     const { items, loading } = useSelector((state) => state.expenses);
     const { items: accounts } = useSelector((state) => state.accounts);
     const [filter, setFilter] = useState('all');
@@ -23,6 +25,16 @@ const ExpensesPage = () => {
     const [expenseToEdit, setExpenseToEdit] = useState(null);
     const [initialData, setInitialData] = useState(null); // For duplication
     const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+    // Handle navigation from SmartInput
+    useEffect(() => {
+        if (location.state?.openAdd && location.state?.initialData) {
+            setInitialData(location.state.initialData);
+            setExpenseToEdit(null);
+            setIsSheetOpen(true);
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleEdit = (expense) => {
         setExpenseToEdit(expense);

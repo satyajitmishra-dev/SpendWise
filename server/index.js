@@ -66,16 +66,28 @@ mongoose.connect(MONGO_URI)
 const { initScheduler } = require('./services/scheduler');
 initScheduler();
 
+const authRoutes = require('./routes/auth');
+const expenseRoutes = require('./routes/expenses');
+const accountRoutes = require('./routes/accounts');
+const subscriptionRoutes = require('./routes/subscriptions');
+const loanRoutes = require('./routes/loans');
+const budgetRoutes = require('./routes/budgets');
+const cronRoutes = require('./routes/cron');
+const notificationRoutes = require('./routes/notifications');
+const supportRoutes = require('./routes/support');
+const smartRoutes = require('./routes/smart');
 
+app.use('/api/auth', authRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/loans', loanRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/cron', cronRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/support', supportRoutes);
+app.use('/api/smart', smartRoutes);
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/expenses', require('./routes/expenses'));
-app.use('/api/accounts', require('./routes/accounts'));
-app.use('/api/subscriptions', require('./routes/subscriptions'));
-app.use('/api/loans', require('./routes/loans'));
-app.use('/api/budgets', require('./routes/budgets'));
-app.use('/api/cron', require('./routes/cron'));
-app.use('/api/notifications', require('./routes/notifications'));
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
     const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };

@@ -7,7 +7,7 @@ import { fetchAccounts } from '../store/slices/accountSlice';
 import { fetchSubscriptions } from '../store/slices/subscriptionSlice';
 import { fetchLoans } from '../store/slices/loanSlice';
 import { fetchBudgets, updateBudget } from '../store/slices/budgetSlice'; // NEW
-import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Zap, Snowflake } from 'lucide-react';
+import { TrendingDown, TrendingUp, Wallet, CreditCard, ArrowRight, ArrowUpRight, Zap, Snowflake, Megaphone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
@@ -17,6 +17,7 @@ import BudgetRenewalDialog from '../components/features/BudgetRenewalDialog';
 import AddBudgetSheet from '../components/features/AddBudgetSheet';
 import { addDays } from 'date-fns';
 import { toast } from 'sonner';
+import SmartInput from '../components/features/SmartInput';
 
 const Home = () => {
     const dispatch = useDispatch();
@@ -154,9 +155,14 @@ const Home = () => {
                         {user?.name || 'Guest'} <span className="text-2xl">👋</span>
                     </h1>
                 </div>
-                {/* Desktop Info Button */}
-
             </div>
+
+            {/* Smart Input - AI Expense Entry */}
+            <div className="relative z-10 mb-6">
+                <SmartInput />
+            </div>
+
+
 
             {showSkeleton ? (
                 <div className="space-y-8 animate-pulse">
@@ -202,37 +208,48 @@ const Home = () => {
 
                         return (
                             <div className="flex flex-col gap-8">
-                                {/* Remote Feature Banner */}
+                                {/* Remote Feature Banner - Dark Winter Premium */}
                                 {featureBanner.show && (
                                     <Link to={featureBanner.link}>
                                         <motion.div
-                                            initial={{ height: 0, opacity: 0, y: -20 }}
+                                            initial={{ height: 0, opacity: 0, y: -10 }}
                                             animate={{ height: 'auto', opacity: 1, y: 0 }}
-                                            className="relative rounded-2xl p-1 mb-6 cursor-pointer overflow-hidden group shadow-xl shadow-sky-200 dark:shadow-none"
+                                            whileHover={{ scale: 1.005 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="relative rounded-2xl p-0.5 mb-6 cursor-pointer overflow-hidden group"
                                         >
-                                            {/* Ice Background Gradient */}
-                                            <div className="absolute inset-0 bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-300 opacity-90 dark:opacity-80 backdrop-blur-md"></div>
+                                            {/* Premium Winter Gradient - Deep Blue/Cyan/Slate */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-[#0B1A2E] to-cyan-950" />
 
-                                            {/* Frost/Noise Overlay */}
-                                            <div className="absolute inset-0 bg-white/20 mix-blend-overlay"></div>
+                                            {/* Subtle Frost/Snow sheen animation */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-shimmer" />
 
-                                            {/* Snowflake Decorations - Abstract */}
-                                            <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/30 rounded-full blur-xl animate-pulse"></div>
-                                            <div className="absolute -bottom-2 -left-2 w-12 h-12 bg-cyan-100/40 rounded-full blur-lg"></div>
+                                            {/* Clean Content Card */}
+                                            <div className="relative bg-slate-950/40 backdrop-blur-md rounded-[14px] p-4 flex items-center justify-between border border-white/5 group-hover:border-cyan-500/20 transition-colors duration-300">
 
-                                            <div className="relative bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 flex items-center justify-between border border-white/60 dark:border-white/10 group-hover:bg-white/50 transition-colors">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-white/80 dark:bg-sky-900/50 p-2 rounded-xl text-sky-600 dark:text-sky-200 shadow-sm ring-1 ring-white/50">
-                                                        <Snowflake size={20} className="animate-[spin_4s_linear_infinite]" />
+                                                <div className="flex items-center gap-4 min-w-0">
+                                                    {/* Winter Icon Container */}
+                                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cyan-900/20 flex items-center justify-center border border-cyan-500/20 group-hover:bg-cyan-900/30 transition-colors relative">
+                                                        <Megaphone size={18} className="text-cyan-400 relative z-10" />
+                                                        <Snowflake size={10} className="text-white/40 absolute top-1.5 right-1.5 animate-spin-slow" />
                                                     </div>
-                                                    <div>
-                                                        <p className="text-[10px] uppercase font-bold text-sky-800 dark:text-sky-200 tracking-wider mb-0.5 opacity-80">Winter Special</p>
-                                                        <p className="font-bold text-sm text-sky-950 dark:text-white tracking-wide drop-shadow-sm">{featureBanner.text}</p>
+
+                                                    {/* Typography */}
+                                                    <div className="flex flex-col gap-0.5 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-1">
+                                                                <Snowflake size={10} /> Winter Special
+                                                            </span>
+                                                        </div>
+                                                        <p className="font-semibold text-sm sm:text-base text-slate-100 truncate pr-4 group-hover:text-cyan-50 transition-colors">
+                                                            {featureBanner.text}
+                                                        </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="w-8 h-8 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                                                    <ArrowRight size={16} className="text-sky-900 dark:text-white" />
+                                                {/* Arrow */}
+                                                <div className="flex-shrink-0 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all duration-300">
+                                                    <ArrowRight size={18} />
                                                 </div>
                                             </div>
                                         </motion.div>

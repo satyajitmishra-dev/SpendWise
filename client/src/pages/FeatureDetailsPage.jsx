@@ -46,7 +46,7 @@ const FeatureDetailsPage = () => {
 
                     {/* Floating Badge */}
                     <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-md border border-white/30 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
-                        New Arrival
+                        Upcoming Feature
                     </div>
                 </div>
 

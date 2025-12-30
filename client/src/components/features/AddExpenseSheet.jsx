@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import CustomCalendar from '../ui/CustomCalendar';
 import { format, isToday } from 'date-fns';
 import { triggerHaptic, HAPTIC_SUCCESS, HAPTIC_ERROR, HAPTIC_TAP } from '../../lib/haptics';
+import { scanReceipt } from '../../services/smartService';
+import { Camera, Loader2 } from 'lucide-react';
 
 const CATEGORIES = [
     { id: 'food', label: 'Food', icon: Utensils, color: 'text-orange-500' },
@@ -56,6 +58,43 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
     const [confirmNoAccount, setConfirmNoAccount] = useState(false);
     const [showCalendar, setShowCalendar] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
+    const [scanning, setScanning] = useState(false);
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setScanning(true);
+        const toastId = toast.loading("Analyzing Receipt...");
+
+        try {
+            const { data } = await scanReceipt(file);
+
+            if (data) {
+                if (data.amount) setAmount(data.amount.toString());
+                if (data.category && (CATEGORIES.find(c => c.id === data.category.toLowerCase()) || INCOME_CATEGORIES.find(c => c.id === data.category.toLowerCase()))) {
+                    setCategory(data.category.toLowerCase());
+                }
+                if (data.note) setNote(data.note);
+                if (data.date) setDate(data.date);
+                if (data.type) setType(data.type.toLowerCase() === 'income' ? 'income' : 'expense');
+
+                toast.success("Receipt Scanned!", { id: toastId });
+                triggerHaptic(HAPTIC_SUCCESS);
+            }
+        } catch (error) {
+            console.error("Scan Failed", error);
+            toast.error("Failed to read receipt", { id: toastId });
+            triggerHaptic(HAPTIC_ERROR);
+        } finally {
+            setScanning(false);
+            e.target.value = '';
+        }
+    };
+
+
+
+
 
     useEffect(() => {
         setConfirmNegative(false);
@@ -306,9 +345,29 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                     <h2 className="text-xl font-bold dark:text-white tracking-tight">
                         {expenseToEdit ? 'Edit Transaction' : 'New Transaction'}
                     </h2>
-                    <button onClick={onClose} className="p-2 -mr-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors active:scale-95">
-                        <X size={22} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {/* AI Scan Button */}
+                        <div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                id="receipt-upload"
+                                className="hidden"
+                                onChange={handleFileChange}
+                                disabled={scanning}
+                            />
+                            <label
+                                htmlFor="receipt-upload"
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${scanning ? 'bg-gray-100 text-gray-400' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-slate-800 dark:text-indigo-400'}`}
+                            >
+                                {scanning ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                                {scanning ? 'Scanning...' : 'Scan'}
+                            </label>
+                        </div>
+                        <button onClick={onClose} className="p-2 -mr-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors active:scale-95">
+                            <X size={22} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Toggle Row */}
@@ -525,8 +584,8 @@ const AddExpenseSheet = ({ isOpen, onClose, expenseToEdit, initialData, initialA
                         )}
                     </button>
                 </form>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
 

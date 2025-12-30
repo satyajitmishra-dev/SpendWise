@@ -14,6 +14,7 @@ import api from '../../services/api';
 import { initAppConfig } from '../../store/slices/appSlice';
 import UpdateChecker from './UpdateChecker';
 import UpdateModal from '../common/UpdateModal';
+import WhatsNewButton from '../common/WhatsNewButton';
 import Footer from './Footer';
 import ErrorBoundary from '../common/ErrorBoundary';
 
@@ -23,6 +24,7 @@ const Layout = ({ children }) => {
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isInstallPromptOpen, setIsInstallPromptOpen] = useState(false);
+    const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
 
     // FAB Long Press Logic
     const [isFabMenuOpen, setIsFabMenuOpen] = useState(false);
@@ -138,7 +140,7 @@ const Layout = ({ children }) => {
 
             {/* Version Check Logic */}
             <UpdateChecker />
-            <UpdateModal />
+            <UpdateModal isOpen={isWhatsNewOpen} onClose={() => setIsWhatsNewOpen(false)} />
 
             {/* Desktop Sidebar - Premium Floating Dock Style */}
             <aside className="hidden md:flex flex-col w-72 h-[96vh] my-auto ml-4 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-2xl z-50 transition-all duration-300 relative">
@@ -161,6 +163,11 @@ const Layout = ({ children }) => {
                     <SidebarItem to="/budgets" icon={PieChart} label="Budgets" />
                     <SidebarItem to="/reports" icon={BarChart} label="Reports" />
                     <div className="my-2 border-t border-gray-100 dark:border-slate-800/50 mx-4"></div>
+
+                    {/* What's New Button */}
+                    <div className="px-0">
+                        <WhatsNewButton onClick={() => setIsWhatsNewOpen(true)} variant="sidebar" />
+                    </div>
 
                 </nav>
 
@@ -206,6 +213,8 @@ const Layout = ({ children }) => {
                                     </button>
                                 )}
 
+                                {/* What's New Button - Mobile */}
+                                <WhatsNewButton onClick={() => setIsWhatsNewOpen(true)} variant="mobile" />
 
                                 <button
                                     onClick={() => navigate('/profile')}
@@ -312,7 +321,7 @@ const Layout = ({ children }) => {
                 </div>
 
                 {/* Mobile Bottom Navigation - Simplified 5 Items */}
-                <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-2xl shadow-xl flex justify-around items-center z-40 px-4 py-4">
+                <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800 rounded-3xl shadow-xl flex justify-around items-center z-40 px-4 py-4">
                     <NavItem to="/" icon={<Home size={22} />} label="Home" />
                     <NavItem to="/expenses" icon={<ListMinus size={22} />} label="Expenses" />
                     <div className="w-12"></div> {/* Spacer for FAB */}

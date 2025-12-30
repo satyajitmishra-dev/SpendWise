@@ -17,31 +17,14 @@ const UpdateChecker = () => {
 
             // Compare versions
             if (latestVersion !== currentVersion) {
-                // Check if we've already shown the toast for this specific version
-                const toastShownKey = `update_toast_shown_${latestVersion}`;
-                const hasShownToast = localStorage.getItem(toastShownKey);
+                // DISABLED: Automatic toast notifications removed
+                // Users will now click "What's New" button to see updates
 
-                if (!hasShownToast) {
-                    // Clear any old version keys
-                    Object.keys(localStorage).forEach(key => {
-                        if (key.startsWith('update_toast_shown_') && key !== toastShownKey) {
-                            localStorage.removeItem(key);
-                        }
-                    });
-
-                    toast.success('New update available!', {
-                        description: `Version ${latestVersion} is now live. Click to update.`,
-                        icon: <ArrowUpCircle className="text-indigo-500" />,
-                        duration: 10000,
-                        action: {
-                            label: 'Update Now',
-                            onClick: () => window.location.reload()
-                        }
-                    });
-                    localStorage.setItem(toastShownKey, 'true');
-                }
-
+                // Keep version check logic but don't show toast
                 setUpdateAvailable(true);
+
+                // Note: Toast notification code disabled as per user request
+                // Users now see updates via the "What's New" button/modal
             }
         };
 
