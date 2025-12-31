@@ -6,7 +6,8 @@ const BudgetSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     period: { type: String, default: 'monthly' }, // monthly, yearly
     startDate: { type: Date },
-    endDate: { type: Date }
+    endDate: { type: Date },
+    emailSent: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Budget', BudgetSchema);

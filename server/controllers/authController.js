@@ -354,6 +354,9 @@ exports.verifyOtp = async (req, res) => {
         user.refreshToken = refreshToken;
         await user.save();
 
+        // Check for expired budgets and send emails if needed
+        checkAndSendBudgetEmails(user.id).catch(err => console.error('Budget Email Check Error:', err));
+
         res.json({ token: accessToken, refreshToken, user });
     } catch (err) {
         console.error(err);
@@ -368,6 +371,10 @@ exports.loadUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
+
+        // Check for expired budgets
+        checkAndSendBudgetEmails(user.id).catch(err => console.error('Budget Email Check Error:', err));
+
         res.json(user);
     } catch (err) {
         console.error('loadUser Error:', err);
@@ -868,6 +875,9 @@ exports.firebaseLogin = async (req, res) => {
         user.refreshToken = tokens.refreshToken;
         await user.save();
 
+        // Check for expired budgets
+        checkAndSendBudgetEmails(user.id).catch(err => console.error('Budget Email Check Error:', err));
+
         res.json({ token: tokens.accessToken, refreshToken: tokens.refreshToken, user });
 
     } catch (err) {
@@ -888,7 +898,134 @@ exports.markLandingSeen = async (req, res) => {
         res.json({ msg: 'Landing marked as seen', hasSeenLanding: true });
     } catch (err) {
         console.error('markLandingSeen Error:', err);
+    } catch (err) {
+        console.error('markLandingSeen Error:', err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
+    }
+};
+
+const checkAndSendBudgetEmails = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user || !user.email) return;
+
+        // Find budgets that have expired (endDate < now) and email not sent
+        const expiredBudgets = await Budget.find({
+            userId: userId,
+            endDate: { $lt: new Date() },
+            emailSent: { $ne: true }
+        });
+
+        if (expiredBudgets.length === 0) return;
+
+        for (const budget of expiredBudgets) {
+            // Find expenses for this budget period
+            let expenseQuery = {
+                userId: userId,
+                date: { $gte: budget.startDate, $lte: budget.endDate },
+                type: 'expense'
+            };
+
+            // Calculate total spent based on category
+            if (budget.category !== 'Monthly Budget') {
+                expenseQuery.category = budget.category;
+            }
+            // If Monthly Budget, we include all expenses (implied Overall)
+
+            const expenses = await Expense.find(expenseQuery);
+
+            // "monthly expenses if exist send in mail"
+            if (expenses.length > 0) {
+                const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+                const remaining = budget.amount - totalSpent;
+                const statusColor = remaining >= 0 ? '#166534' : '#dc2626'; // Green or Red
+                const statusText = remaining >= 0 ? 'Within Budget' : 'Over Budget';
+
+                // Format Currency
+                const currency = user.currency || 'INR';
+
+                // Top 5 expenses list for the email
+                const topExpenses = expenses
+                    .sort((a, b) => b.amount - a.amount)
+                    .slice(0, 5)
+                    .map(exp => `
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                            <span style="color: #334155;">${exp.category} - ${new Date(exp.date).toLocaleDateString()}</span>
+                            <span style="font-weight: 600; color: #0f172a;">${exp.amount}</span>
+                        </div>
+                    `).join('');
+
+                const mailOptions = {
+                    from: `"SpendWise Budget" <${process.env.EMAIL_USER}>`,
+                    to: user.email, // Fixed variable name issue in thought but code is using user.email
+                    subject: `Budget Report: ${budget.category}`,
+                    html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+             body { margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+            .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; overflow: hidden; }
+            .header { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 40px 0; text-align: center; position: relative; }
+            .header::after { content: ''; position: absolute; bottom: -20px; left: 0; right: 0; height: 40px; background: #ffffff; border-radius: 24px 24px 0 0; }
+            .logo { color: white; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0; }
+            .content { padding: 40px 40px 60px; color: #334155; }
+            .title { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 8px; text-align: center; }
+            .subtitle { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 16px; }
+            .card { background: #f8fafc; border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; border: 1px solid #e2e8f0; }
+            .stat-label { font-size: 14px; color: #64748b; margin-bottom: 4px; }
+            .stat-value { font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: -1px; }
+            .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; background: #f1f5f9; color: ${statusColor}; margin-top: 12px; }
+            .expenses-list { margin-top: 32px; }
+            .expenses-title { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 16px; }
+            .footer { background: #ffffff; padding: 20px; text-align: center; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1 class="logo">SpendWise</h1>
+            </div>
+            <div class="content">
+                <h2 class="title">Budget Report</h2>
+                <p class="subtitle">Summary for <strong>${budget.category}</strong><br>Ended on ${new Date(budget.endDate).toLocaleDateString()}</p>
+                
+                <div class="card">
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value">${currency} ${totalSpent}</div>
+                    <div class="stat-label" style="margin-top: 12px;">Budget Limit: ${currency} ${budget.amount}</div>
+                    <div class="status-badge" style="background: ${remaining >= 0 ? '#dcfce7' : '#fee2e2'};">
+                        ${statusText} (${remaining >= 0 ? '+' : ''}${remaining})
+                    </div>
+                </div>
+
+                <div class="expenses-list">
+                    <div class="expenses-title">Top Expenses</div>
+                    ${topExpenses}
+                    ${expenses.length > 5 ? `<p style="text-align: center; font-size: 13px; color: #94a3b8; margin-top: 16px;">+ ${expenses.length - 5} more transactions</p>` : ''}
+                </div>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} SpendWise • Automated Report
+            </div>
+        </div>
+    </body>
+    </html>
+                    `
+                };
+
+                mailOptions.text = `Budget Report for ${budget.category}\n\nPeriod Ended: ${new Date(budget.endDate).toLocaleDateString()}\n\nTotal Spent: ${currency} ${totalSpent}\nBudget Limit: ${currency} ${budget.amount}\nStatus: ${statusText}\n\nTop Expenses included in email. Login to view full details.`;
+
+                await sendEmail(mailOptions); // Fixed syntax from userEmail => ... to just object. Code below is correct inside content.
+            }
+
+            // Mark as sent
+            budget.emailSent = true;
+            await budget.save();
+        }
+    } catch (err) {
+        console.error('checkAndSendBudgetEmails Error:', err);
     }
 };
 
