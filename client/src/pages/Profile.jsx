@@ -3,8 +3,9 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBudgets } from '../store/slices/budgetSlice';
-import { logout } from '../store/slices/authSlice';
-import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles } from 'lucide-react';
+import { logout, updateUser } from '../store/slices/authSlice';
+import api from '../services/api';
+import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -16,6 +17,24 @@ const Profile = () => {
     const { user } = useSelector((state) => state.auth);
     const { version } = useSelector((state) => state.app);
     const { items: budgets } = useSelector((state) => state.budgets);
+
+    const handleStatusToggle = async () => {
+        const statuses = ['student', 'professional', 'freelancer', 'other'];
+        const currentIndex = statuses.indexOf(user?.status || 'student');
+        const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+
+        try {
+            const res = await api.post('/auth/update-profile', {
+                userId: user._id || user.id,
+                status: nextStatus
+            });
+            dispatch(updateUser(res.data));
+            toast.success(`Switched to ${nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}`);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update status');
+        }
+    };
 
     useEffect(() => {
         dispatch(fetchBudgets());
@@ -161,10 +180,16 @@ const Profile = () => {
 
                                 {/* Name & Email */}
                                 <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 tracking-tight">{user?.name || 'Guest'}</h2>
-                                <div className="mb-8">
-                                    <span className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-slate-300 text-xs font-medium shadow-sm">
-                                        {user?.email || 'No email linked'}
+                                <div className="mb-6 flex flex-col items-center gap-3">
+                                    <span className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-slate-300 text-xs font-medium shadow-sm flex items-center gap-2">
+                                        {user?.email || 'student@spendwise.com'}
                                     </span>
+                                    {user?.college && (
+                                        <span className="text-slate-400 text-sm font-medium flex items-center gap-2">
+                                            <School size={14} className="text-indigo-400" />
+                                            {user.college}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Stats Grid */}
@@ -181,10 +206,18 @@ const Profile = () => {
                                             {(effectiveBudget || 0).toLocaleString()}
                                         </span>
                                     </motion.button>
-                                    <div className="bg-[#1e293b] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 border border-slate-600/30">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
-                                        <span className="text-2xl font-black text-white capitalize">{user?.status || 'Student'}</span>
-                                    </div>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleStatusToggle}
+                                        className="bg-[#1e293b] p-5 rounded-2xl flex flex-col items-center justify-center gap-2 border border-slate-600/30 hover:border-indigo-500/50 transition-all cursor-pointer group"
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-400 transition-colors">Profession</span>
+                                            <RefreshCw size={10} className="text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </div>
+                                        <span className="text-xl sm:text-2xl font-black text-white capitalize">{user?.status || 'Student'}</span>
+                                    </motion.button>
                                 </div>
 
                                 {/* Edit Button - Enhanced */}

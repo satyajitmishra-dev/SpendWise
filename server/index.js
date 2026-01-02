@@ -59,9 +59,21 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/spendwise';
 
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error(err));
+const connectDB = async () => {
+    try {
+        await mongoose.connect(MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
+        console.log('MongoDB Connected');
+    } catch (err) {
+        console.error('MongoDB connection error:', err.message);
+        console.log('Retrying connection in 5 seconds...');
+        setTimeout(connectDB, 5000);
+    }
+};
+
+connectDB();
 
 const { initScheduler } = require('./services/scheduler');
 initScheduler();

@@ -898,8 +898,6 @@ exports.markLandingSeen = async (req, res) => {
         res.json({ msg: 'Landing marked as seen', hasSeenLanding: true });
     } catch (err) {
         console.error('markLandingSeen Error:', err);
-    } catch (err) {
-        console.error('markLandingSeen Error:', err);
         res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };

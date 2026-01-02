@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
     avatar: { type: String },
 
     // Legacy/Context fields
-    status: { type: String, enum: ['student', 'intern', 'professional', 'other'], default: 'student' },
+    status: { type: String, enum: ['student', 'intern', 'professional', 'freelancer', 'other'], default: 'student' },
     college: { type: String },
     currency: { type: String, default: 'INR' },
     budget: { type: Number, default: 0 },

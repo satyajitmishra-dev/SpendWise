@@ -295,7 +295,28 @@ const ProfileSetup = () => {
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">College / Workplace</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profession / Status</label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-3 text-gray-400" size={18} />
+                                <select
+                                    name="status"
+                                    value={profileData.status}
+                                    onChange={handleProfileChange}
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all dark:text-white appearance-none"
+                                >
+                                    <option value="student">Student</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="freelancer">Freelancer</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                {profileData.status === 'student' ? 'College / University' :
+                                    profileData.status === 'professional' ? 'Workplace / Company' :
+                                        'Organization / Institution'}
+                            </label>
                             <div className="relative">
                                 <School className="absolute left-3 top-3 text-gray-400" size={18} />
                                 <input
@@ -303,7 +324,11 @@ const ProfileSetup = () => {
                                     name="college"
                                     value={profileData.college}
                                     onChange={handleProfileChange}
-                                    placeholder="e.g. IIT Delhi"
+                                    placeholder={
+                                        profileData.status === 'student' ? "e.g. IIT Delhi" :
+                                            profileData.status === 'professional' ? "e.g. Google" :
+                                                "e.g. Organization Name"
+                                    }
                                     className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all dark:text-white"
                                 />
                             </div>

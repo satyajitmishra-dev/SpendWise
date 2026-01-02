@@ -52,7 +52,7 @@ const ProtectedRoute = ({ children }) => {
   if (loading) return <LoadingScreen />;
 
   if (!user) {
-    return <Navigate to="/welcome" state={{ from: location }} replace />;
+    return <Navigate to="/landing" state={{ from: location }} replace />;
   }
 
   if (!user.onboardingComplete && location.pathname !== '/onboarding') {

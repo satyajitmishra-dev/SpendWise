@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { verifyPasscode, logout, loadUser } from '../../store/slices/authSlice';
 import { toast } from 'sonner';
@@ -127,6 +128,7 @@ const LockScreen = () => {
     const [loading, setLoading] = useState(false);
     const [errorShake, setErrorShake] = useState(0);
     const [showForgot, setShowForgot] = useState(false);
+    const location = useLocation();
 
     const expectedLength = user?.passcodeLength || 4;
 
@@ -194,8 +196,8 @@ const LockScreen = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [loading, passcode.length, expectedLength, isAppLocked, user?.isPasscodeEnabled]);
 
-    // Safety check: Don't show if not locked OR if user hasn't enabled passcode
-    if (!isAppLocked || !user?.isPasscodeEnabled) return null;
+    // Safety check: Don't show if not locked OR if user hasn't enabled passcode OR if on Landing Page
+    if (!isAppLocked || !user?.isPasscodeEnabled || location.pathname === '/landing') return null;
 
 
 

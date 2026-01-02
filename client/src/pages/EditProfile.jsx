@@ -16,6 +16,7 @@ const EditProfile = () => {
     const [formData, setFormData] = useState({
         name: user?.name || '',
         college: user?.college || '',
+        status: user?.status || 'student',
         currency: user?.currency || 'INR',
         budget: user?.budget || '',
         avatar: user?.avatar || ''
@@ -191,7 +192,29 @@ const EditProfile = () => {
                         </div>
 
                         <div className="group">
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 ml-1">College / Workplace</label>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 ml-1">Profession / Status</label>
+                            <div className="relative transition-all group-focus-within:scale-[1.01]">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={20} />
+                                <select
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none dark:text-white transition-all font-medium appearance-none"
+                                >
+                                    <option value="student">Student</option>
+                                    <option value="professional">Professional</option>
+                                    <option value="freelancer">Freelancer</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="group">
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 ml-1">
+                                {formData.status === 'student' ? 'College / University' :
+                                    formData.status === 'professional' ? 'Workplace / Company' :
+                                        'Organization / Institution'}
+                            </label>
                             <div className="relative transition-all group-focus-within:scale-[1.01]">
                                 <School className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors" size={20} />
                                 <input
@@ -200,7 +223,11 @@ const EditProfile = () => {
                                     value={formData.college}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 focus:outline-none dark:text-white transition-all font-medium"
-                                    placeholder="e.g. IIT Delhi"
+                                    placeholder={
+                                        formData.status === 'student' ? "e.g. IIT Delhi" :
+                                            formData.status === 'professional' ? "e.g. Google" :
+                                                "e.g. Organization Name"
+                                    }
                                 />
                             </div>
                         </div>

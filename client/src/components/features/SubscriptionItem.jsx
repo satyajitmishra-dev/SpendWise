@@ -9,8 +9,11 @@ const SubscriptionItem = ({ subscription, onEdit }) => {
     const [showMenu, setShowMenu] = useState(false);
     const menuRef = useRef(null);
 
-    const daysLeft = differenceInDays(new Date(subscription.renewalDate), new Date());
+    const renewalDate = new Date(subscription.renewalDate);
+    const isValidDate = !isNaN(renewalDate.getTime());
+    const daysLeft = isValidDate ? differenceInDays(renewalDate, new Date()) : 0;
     const isUrgent = daysLeft <= 3 && daysLeft >= 0;
+    const formattedDate = isValidDate ? format(renewalDate, 'MMM d') : 'Inv. Date';
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -59,7 +62,7 @@ const SubscriptionItem = ({ subscription, onEdit }) => {
 
             <div className="text-right">
                 <p className="font-bold text-gray-900 dark:text-white">₹{subscription.amount}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">{format(new Date(subscription.renewalDate), 'MMM d')}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{formattedDate}</p>
                 <div className="mt-2 flex justify-end relative" ref={menuRef}>
                     <button
                         onClick={() => setShowMenu(!showMenu)}
