@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLoans, updateLoan } from '../store/slices/loanSlice';
-import { Plus, Filter, CheckCircle, Clock } from 'lucide-react';
+import { fetchLoans, updateLoan, deleteLoan } from '../store/slices/loanSlice';
+import { Plus, Filter, CheckCircle, Clock, Search, Edit2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { triggerConfetti } from '../utils/confettiUtils';
 import AddLoanSheet from '../components/features/AddLoanSheet';
@@ -11,16 +11,21 @@ const LoansPage = () => {
     const dispatch = useDispatch();
     const { items, loading } = useSelector((state) => state.loans);
     const [filter, setFilter] = useState('all'); // all, given, taken
+    const [searchAmount, setSearchAmount] = useState('');
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [editingLoan, setEditingLoan] = useState(null);
 
     useEffect(() => {
         dispatch(fetchLoans());
     }, [dispatch]);
 
-    const filteredItems = items.filter(item => {
-        if (filter === 'all') return true;
-        return item.type === filter;
-    });
+    const filteredItems = items
+        .filter(item => {
+            if (filter !== 'all' && item.type !== filter) return false;
+            if (searchAmount && !item.amount.toString().includes(searchAmount)) return false;
+            return true;
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const handleToggleStatus = (item) => {
         const newStatus = item.status === 'settled' ? 'pending' : 'settled';
@@ -28,6 +33,12 @@ const LoansPage = () => {
         if (newStatus === 'settled' || confirm('Mark as pending again?')) {
             if (newStatus === 'settled') triggerConfetti();
             dispatch(updateLoan({ id: item._id, data: { status: newStatus } }));
+        }
+    };
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this loan record?')) {
+            dispatch(deleteLoan(id));
         }
     };
 
@@ -72,15 +83,41 @@ const LoansPage = () => {
                 >
                     {item.status === 'settled' ? <><CheckCircle size={12} /> Paid</> : <><Clock size={12} /> Pending</>}
                 </button>
+                <div className="flex gap-2 justify-end mt-2">
+                    <button
+                        onClick={() => { setEditingLoan(item); setIsAddOpen(true); }}
+                        className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
+                        title="Edit"
+                    >
+                        <Edit2 size={14} />
+                    </button>
+                    <button
+                        onClick={() => handleDelete(item._id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                        title="Delete"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+                </div>
             </div>
         </div>
     );
 
     return (
         <div className="p-6 pb-24">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <h1 className="text-2xl font-bold dark:text-white">Loans & Debts</h1>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search amount..."
+                            value={searchAmount}
+                            onChange={(e) => setSearchAmount(e.target.value)}
+                            className="bg-gray-100 dark:bg-slate-800 dark:text-white pl-8 pr-3 py-2 rounded-lg text-sm font-medium focus:outline-none w-32 md:w-40 placeholder-gray-400"
+                        />
+                    </div>
                     <div className="relative">
                         <select
                             value={filter}
@@ -94,7 +131,7 @@ const LoansPage = () => {
                         <Filter size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     </div>
                     <button
-                        onClick={() => setIsAddOpen(true)}
+                        onClick={() => { setEditingLoan(null); setIsAddOpen(true); }}
                         className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 active:scale-95 transition-all"
                     >
                         <Plus size={20} />
@@ -139,7 +176,11 @@ const LoansPage = () => {
                 </motion.div>
             )}
 
-            <AddLoanSheet isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} />
+            <AddLoanSheet 
+                isOpen={isAddOpen} 
+                onClose={() => { setIsAddOpen(false); setEditingLoan(null); }} 
+                initialData={editingLoan} 
+            />
         </div>
     );
 };

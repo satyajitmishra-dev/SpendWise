@@ -38,6 +38,18 @@ export const updateLoan = createAsyncThunk(
     }
 );
 
+export const deleteLoan = createAsyncThunk(
+    'loans/deleteLoan',
+    async (id, { rejectWithValue }) => {
+        try {
+            await api.delete(`/loans/${id}`);
+            return id;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
 const initialState = {
     items: [],
     loading: true,
@@ -72,6 +84,10 @@ const loanSlice = createSlice({
                 if (index !== -1) {
                     state.items[index] = action.payload;
                 }
+            })
+            
+            .addCase(deleteLoan.fulfilled, (state, action) => {
+                state.items = state.items.filter(item => item._id !== action.payload);
             });
     },
 });

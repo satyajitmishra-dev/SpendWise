@@ -827,6 +827,10 @@ exports.firebaseLogin = async (req, res) => {
     if (!idToken) return res.status(400).json({ msg: 'No token provided' });
 
     try {
+        if (!admin.apps || admin.apps.length === 0) {
+            console.error('Firebase Admin not initialized. Cannot verify token.');
+            return res.status(503).json({ msg: 'Authentication Service Unavailable (Configuration Error)' });
+        }
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const { uid, email, phone_number, name, picture } = decodedToken;
 

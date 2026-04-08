@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { addLoan } from '../../store/slices/loanSlice';
+import { addLoan, updateLoan } from '../../store/slices/loanSlice';
 import { X, Calendar, User, FileText, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
@@ -10,14 +10,32 @@ const LOAN_TYPES = [
     { id: 'taken', label: 'I Borrowed', icon: ArrowDownCircle, color: 'text-green-600 bg-green-100', border: 'border-green-200' },
 ];
 
-const AddLoanSheet = ({ isOpen, onClose }) => {
+const AddLoanSheet = ({ isOpen, onClose, initialData = null }) => {
     const dispatch = useDispatch();
-    const [amount, setAmount] = useState('');
-    const [person, setPerson] = useState('');
-    const [type, setType] = useState('given');
-    const [note, setNote] = useState('');
-    const [dueDate, setDueDate] = useState('');
+    const [amount, setAmount] = useState(initialData?.amount || '');
+    const [person, setPerson] = useState(initialData?.person || '');
+    const [type, setType] = useState(initialData?.type || 'given');
+    const [note, setNote] = useState(initialData?.note || '');
+    const [dueDate, setDueDate] = useState(initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '');
     const [submitting, setSubmitting] = useState(false);
+
+    // Update state when initialData changes
+    useEffect(() => {
+        if (initialData) {
+            setAmount(initialData.amount || '');
+            setPerson(initialData.person || '');
+            setType(initialData.type || 'given');
+            setNote(initialData.note || '');
+            setDueDate(initialData.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '');
+        } else {
+            setAmount('');
+            setPerson('');
+            setType('given');
+            setNote('');
+            setDueDate('');
+        }
+    }, [initialData]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,25 +46,33 @@ const AddLoanSheet = ({ isOpen, onClose }) => {
 
         setSubmitting(true);
         try {
-            await dispatch(addLoan({
+            const dataToSubmit = {
                 amount: parseFloat(amount),
                 person,
                 type,
                 note,
                 dueDate: dueDate || null
-            })).unwrap();
+            };
 
-            toast.success('Loan record saved!');
+            if (initialData) {
+                await dispatch(updateLoan({
+                    id: initialData._id,
+                    data: dataToSubmit
+                })).unwrap();
+                toast.success('Loan record updated!');
+            } else {
+                await dispatch(addLoan(dataToSubmit)).unwrap();
+                toast.success('Loan record saved!');
+                // Only reset the form if it is a new addition since edit clears it anyway
+                setAmount('');
+                setPerson('');
+                setNote('');
+                setDueDate('');
+                setType('given');
+            }
             onClose();
-
-            // Reset form
-            setAmount('');
-            setPerson('');
-            setNote('');
-            setDueDate('');
-            setType('given');
         } catch (err) {
-            toast.error('Failed to save loan. Please try again.');
+            toast.error(initialData ? 'Failed to update loan. Please try again.' : 'Failed to save loan. Please try again.');
         } finally {
             setSubmitting(false);
         }
@@ -62,7 +88,7 @@ const AddLoanSheet = ({ isOpen, onClose }) => {
             {/* Sheet */}
             <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold dark:text-white">Add Loan Record</h2>
+                    <h2 className="text-xl font-bold dark:text-white">{initialData ? 'Edit Loan Record' : 'Add Loan Record'}</h2>
                     <button onClick={onClose} className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} />
                     </button>
@@ -143,7 +169,7 @@ const AddLoanSheet = ({ isOpen, onClose }) => {
                         disabled={submitting}
                         className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 active:scale-95 transition-all"
                     >
-                        {submitting ? 'Saving...' : 'Save Record'}
+                        {submitting ? 'Saving...' : (initialData ? 'Update Record' : 'Save Record')}
                     </button>
                 </form>
             </div>

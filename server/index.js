@@ -103,11 +103,18 @@ app.use('/api/smart', smartRoutes);
 app.get('/api/health', (req, res) => {
     const dbState = mongoose.connection.readyState;
     const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+
+    // Check Firebase
+    const firebaseStatus = (admin.apps && admin.apps.length > 0) ? 'initialized' : 'missing_config';
+
     res.json({
-        status: 'UP',
+        status: dbState === 1 ? 'UP' : 'DOWN',
         timestamp: new Date(),
-        dbState: states[dbState] || 'unknown',
-        env: process.env.NODE_ENV
+        services: {
+            database: states[dbState] || 'unknown',
+            firebase: firebaseStatus,
+            node_env: process.env.NODE_ENV
+        }
     });
 });
 

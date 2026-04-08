@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchBudgets } from '../store/slices/budgetSlice';
 import { logout, updateUser } from '../store/slices/authSlice';
 import api from '../services/api';
-import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
+import { User, Settings, LogOut, Bell, Shield, HelpCircle, ChevronRight, Wallet, Calendar, CreditCard, Sparkles, RefreshCw, School } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -19,8 +19,13 @@ const Profile = () => {
     const { items: budgets } = useSelector((state) => state.budgets);
 
     const handleStatusToggle = async () => {
+        if (!user) {
+            toast.error("Please log in to change status");
+            return;
+        }
+
         const statuses = ['student', 'professional', 'freelancer', 'other'];
-        const currentIndex = statuses.indexOf(user?.status || 'student');
+        const currentIndex = statuses.indexOf(user.status || 'student');
         const nextStatus = statuses[(currentIndex + 1) % statuses.length];
 
         try {

@@ -39,20 +39,30 @@ if (!USE_SENDGRID) {
  */
 async function sendEmail(mailOptions) {
     if (USE_SENDGRID) {
-
-        const msg = {
-            to: mailOptions.to,
-            from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
-            subject: mailOptions.subject,
-            replyTo: mailOptions.replyTo || process.env.EMAIL_REPLY_TO, // Handle replyTo or default
-            text: mailOptions.text, // Plain text fallback
-            html: mailOptions.html,
-            attachments: mailOptions.attachments, // Pass attachments array { content, filename, type, disposition }
-        };
-
-        return await sgMail.send(msg);
+        if (!process.env.SENDGRID_API_KEY) {
+            console.warn('SendGrid API Key missing. Skipping email.');
+            return;
+        }
+        try {
+            const msg = {
+                to: mailOptions.to,
+                from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
+                subject: mailOptions.subject,
+                replyTo: mailOptions.replyTo || process.env.EMAIL_REPLY_TO,
+                text: mailOptions.text,
+                html: mailOptions.html,
+                attachments: mailOptions.attachments,
+            };
+            return await sgMail.send(msg);
+        } catch (error) {
+            console.error('SendGrid Error:', error.response ? error.response.body : error);
+            // Fallback? Or just log.
+        }
     } else {
-
+        if (!transporter) {
+            console.warn('Nodemailer transporter not ready. Skipping email.');
+            return;
+        }
         return await transporter.sendMail(mailOptions);
     }
 }
